@@ -1,15 +1,16 @@
 package com.github.milomarten.fracktail4.base;
 
+import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 
 import java.util.Set;
 
-public class SimplePrefixedCommand extends AbstractPrefixedCommand {
+public class SimpleCommand implements Command, DiscordCommand {
     private final CommandData commandData;
     private final String response;
 
-    public SimplePrefixedCommand(String command, String response, String... aliases) {
+    public SimpleCommand(String command, String response, String... aliases) {
         this.commandData = CommandData.builder()
                 .id(command)
                 .alias(command)
@@ -20,7 +21,7 @@ public class SimplePrefixedCommand extends AbstractPrefixedCommand {
     }
 
     @Override
-    protected Mono<?> doCommand(MessageCreateEvent event) {
+    public Mono<?> doCommand(MessageCreateEvent event) {
         return event.getMessage()
                 .getChannel()
                 .flatMap(mc -> mc.createMessage(this.response));

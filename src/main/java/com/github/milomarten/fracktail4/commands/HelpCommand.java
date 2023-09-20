@@ -1,23 +1,17 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.github.milomarten.fracktail4.base.*;
-import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 @NoArgsConstructor
-public class HelpCommand extends NormalPrefixedCommand {
-    @Setter private CommandRegistry registry = null;
+public class HelpCommand extends NormalCommand implements CommandRegistryAware {
+    private CommandRegistry registry = null;
 
     @Override
     public CommandData getCommandData() {
@@ -25,6 +19,10 @@ public class HelpCommand extends NormalPrefixedCommand {
                 .id("help")
                 .alias("help")
                 .description("Give help with how to use a command")
+                .param(CommandData.Param.builder()
+                        .name("command")
+                        .optional(true)
+                        .build())
                 .build();
     }
 
@@ -49,10 +47,27 @@ public class HelpCommand extends NormalPrefixedCommand {
 
     private String helpStringForCommand(Command cmd) {
         CommandData cd = cmd.getCommandData();
-        String prefix = "";
-        if (cmd instanceof AbstractPrefixedCommand prefixed) {
-            prefix = prefixed.getPrefix();
-        }
-        return String.format("%s%s - %s", prefix, String.join(",", cd.getAliases()), cd.getDescription());
+        String prefix = this.registry.getPrefix();
+        return String.format("%s%s %s - %s",
+                prefix, String.join(",", cd.getAliases()),
+                helpStringForParams(cmd.getCommandData().getParams()),
+                cd.getDescription());
+    }
+
+    private String helpStringForParams(List<CommandData.Param> params) {
+        return params.stream()
+                .map(p -> {
+                    if (p.isOptional()) {
+                        return "[_" + p.getName() + "_]";
+                    } else {
+                        return "_" + p.getName() + "_";
+                    }
+                })
+                .collect(Collectors.joining(" "));
+    }
+
+    @Override
+    public void setCommandRegistry(CommandRegistry registry) {
+        this.registry = registry;
     }
 }
