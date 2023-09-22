@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 
 @RequiredArgsConstructor
 @Component
@@ -52,6 +53,8 @@ class RoleReactCommand implements Command, DiscordCommand {
         var retVal = switch (first.get()) {
             case "create" -> create(event);
             case "discard" -> discard(event);
+            case "delete" -> delete(event, params.range(2));
+            case "edit" -> edit(event, params.range(2));
             case "set-channel" -> setChannel(event, params.range(2));
             case "set-description" -> setDescription(event);
             case "set-guild" -> setGuild(event, params.range(2));
@@ -178,5 +181,33 @@ class RoleReactCommand implements Command, DiscordCommand {
                 .flatMap(idx -> respondWithDM(event, "Role React has been published. ID is: " + idx))
                 .doOnSuccess(msg -> this.oven = null)
                 .doOnError(ex -> respondWithDM(event, "I ran into an issue publishing your Role React. Sorry. Exception: " + ex.getMessage()));
+    }
+
+    private Mono<?> edit(MessageCreateEvent event, Parameters parameters) {
+        OptionalInt maybeId = parameters.getIntParameter(0);
+
+        if (maybeId.isEmpty()) {
+            return respondWithDM(event, "Correct use is `role-react delete <id>`");
+        }
+
+        Optional<RoleReactMessage> messageMaybe = this.handler.getById(maybeId.getAsInt());
+        if (messageMaybe.isEmpty()) {
+            return respondWithDM(event, "No Role React found with ID " + maybeId.getAsInt());
+        }
+
+        this.oven = new RoleReactMessage(messageMaybe.get());
+        return respondWithDM(event, "Editing Role Reach message with ID " + maybeId.getAsInt());
+    }
+
+    private Mono<?> delete(MessageCreateEvent event, Parameters parameters) {
+        OptionalInt maybeId = parameters.getIntParameter(0);
+
+        if (maybeId.isEmpty()) {
+            return respondWithDM(event, "Correct use is `role-react delete <id>`");
+        }
+
+        return this.handler.deleteById(maybeId.getAsInt())
+                .switchIfEmpty(respondWithDM(event, "React was deleted.").then())
+                .onErrorResume(ex -> respondWithDM(event, "I ran into an issue deleting your Role React. Sorry. Exception: " + ex.getMessage()).then());
     }
 }

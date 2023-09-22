@@ -27,25 +27,33 @@ public class RoleHandler implements DiscordHookSource {
 
     private GatewayDiscordClient gateway;
 
-//    @PostConstruct
-//    public void load() {
-//        var reacts = persistence.retrieve("role-reacts", RoleReactMessage[].class)
-//                .block();
-//        log.info("Loaded {} existing role reacts from persistence", reacts == null ? 0 : reacts.length);
-//        if (reacts == null) {
-//            this.roleReactMessages = new ArrayList<>();
-//        } else {
-//            this.roleReactMessages = new ArrayList<>(List.of(reacts));
-//        }
-//    }
+    @PostConstruct
+    public void load() {
+        var reacts = persistence.retrieve("role-reacts", RoleReactMessage[].class)
+                .block();
+        log.info("Loaded {} existing role reacts from persistence", reacts == null ? 0 : reacts.length);
+        if (reacts == null) {
+            this.roleReactMessages = new ArrayList<>();
+        } else {
+            this.roleReactMessages = new ArrayList<>(List.of(reacts));
+        }
+    }
 
     @Override
     public void addDiscordHook(GatewayDiscordClient client){
         this.gateway = client;
     }
 
+    private Mono<Void> updatePersistence() {
+        return this.persistence.store("role-reacts", this.roleReactMessages);
+    }
+
     public Mono<Integer> publish(RoleReactMessage message) {
-        return publishNew(message);
+        if (message.getMessageId() == null) {
+            return publishNew(message);
+        } else {
+            return Mono.error(new RuntimeException("Edit not supported yet. Soon!"));
+        }
     }
 
     private Mono<Integer> publishNew(RoleReactMessage message) {
@@ -62,8 +70,7 @@ public class RoleHandler implements DiscordHookSource {
                 })
                 .flatMap(vod -> {
                     this.roleReactMessages.add(message);
-                    return this.persistence.store("role-reacts", this.roleReactMessages)
-                            .thenReturn(this.roleReactMessages.size() - 1);
+                    return updatePersistence().thenReturn(this.roleReactMessages.size() - 1);
                 });
     }
 
@@ -91,5 +98,20 @@ public class RoleHandler implements DiscordHookSource {
         } else {
             return Optional.ofNullable(this.roleReactMessages.get(id));
         }
+    }
+
+    public Mono<Void> deleteById(int id) {
+        if (id < 0 || id >= this.roleReactMessages.size()) {
+            return Mono.empty();
+        }
+        var message = this.roleReactMessages.get(id);
+        if (message == null) {
+            return Mono.empty();
+        }
+
+        return this.gateway.getMessageById(message.getChannelId(), message.getMessageId())
+                .flatMap(m -> m.delete("React Complete"))
+                .doOnSuccess(e -> this.roleReactMessages.set(id, null)) // Preserves subsequent IDs
+                .flatMap(e -> updatePersistence());
     }
 }
