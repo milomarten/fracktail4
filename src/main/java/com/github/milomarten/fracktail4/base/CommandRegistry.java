@@ -30,9 +30,12 @@ public class CommandRegistry implements DiscordHookSource {
     private Map<String, Command> commands;
     private Map<String, Command> commandsByAlias;
 
-    public CommandRegistry(List<Command> commands) {
+    public CommandRegistry(List<CommandBundle> bundles, List<Command> commands) {
         this.commands = new HashMap<>();
         this.commandsByAlias = new HashMap<>();
+        bundles.stream()
+            .flatMap(bundle -> bundle.getCommands().stream())
+            .forEach(this::registerCommand);
         commands.forEach(this::registerCommand);
     }
 
