@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4;
 
-import com.github.milomarten.fracktail4.hook.DiscordHookSource;
+import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
 import discord4j.core.GatewayDiscordClient;
 import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Component;

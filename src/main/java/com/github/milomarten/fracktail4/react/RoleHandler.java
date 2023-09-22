@@ -1,6 +1,7 @@
-package com.github.milomarten.fracktail4.commands.roles;
+package com.github.milomarten.fracktail4.react;
 
-import com.github.milomarten.fracktail4.hook.DiscordHookSource;
+import com.github.milomarten.fracktail4.react.roles.RoleReactMessage;
+import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
 import com.github.milomarten.fracktail4.persistence.Persistence;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.TextChannel;

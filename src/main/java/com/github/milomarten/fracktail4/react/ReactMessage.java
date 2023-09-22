@@ -1,15 +1,24 @@
-package com.github.milomarten.fracktail4.commands.roles;
+package com.github.milomarten.fracktail4.react;
 
 import discord4j.common.util.Snowflake;
+import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
-public class RoleReactMessage extends ReactMessage<Snowflake> {
-    public RoleReactMessage() {
+@Data
+public class ReactMessage<ID> {
+    private Snowflake guildId;
+    private Snowflake channelId;
+    private Snowflake messageId;
+    private String description;
+    private List<ReactOption<ID>> options = new ArrayList<>();
+
+    public ReactMessage() {
     }
 
-    public RoleReactMessage(RoleReactMessage toCopy) {
+    public ReactMessage(ReactMessage<ID> toCopy) {
         this.setGuildId(toCopy.getGuildId());
         this.setChannelId(toCopy.getChannelId());
         this.setMessageId(toCopy.getMessageId());

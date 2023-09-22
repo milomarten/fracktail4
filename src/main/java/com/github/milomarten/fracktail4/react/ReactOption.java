@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.roles;
+package com.github.milomarten.fracktail4.react;
 
 import discord4j.core.object.reaction.ReactionEmoji;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-class ReactOption<ID> {
+public class ReactOption<ID> {
     private ID id;
     private ReactionEmoji emoji;
     private String description;

@@ -1,7 +1,7 @@
 package com.github.milomarten.fracktail4.base;
 
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
-import com.github.milomarten.fracktail4.hook.DiscordHookSource;
+import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;

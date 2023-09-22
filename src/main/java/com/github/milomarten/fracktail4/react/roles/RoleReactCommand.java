@@ -1,9 +1,11 @@
-package com.github.milomarten.fracktail4.commands.roles;
+package com.github.milomarten.fracktail4.react.roles;
 
 import com.github.milomarten.fracktail4.base.Command;
 import com.github.milomarten.fracktail4.base.CommandData;
 import com.github.milomarten.fracktail4.base.Parameters;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
+import com.github.milomarten.fracktail4.react.ReactOption;
+import com.github.milomarten.fracktail4.react.RoleHandler;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.Channel;
