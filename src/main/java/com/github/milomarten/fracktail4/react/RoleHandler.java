@@ -6,9 +6,11 @@ import com.github.milomarten.fracktail4.persistence.Persistence;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
+import discord4j.core.spec.MessageEditSpec;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.SetUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -50,11 +52,15 @@ public class RoleHandler implements DiscordHookSource {
     }
 
     public Mono<Integer> publish(RoleReactMessage message) {
-        if (message.getMessageId() == null) {
-            return publishNew(message);
-        } else {
-            return Mono.error(new RuntimeException("Edit not supported yet. Soon!"));
+        if (message.getMessageId() != null) {
+            for (int idx = 0; idx < this.roleReactMessages.size(); idx++) {
+                var rrm = this.roleReactMessages.get(idx);
+                if (rrm.getMessageId().equals(message.getMessageId())) {
+                    return publishEdit(rrm, message, idx);
+                }
+            }
         }
+        return publishNew(message);
     }
 
     private Mono<Integer> publishNew(RoleReactMessage message) {
@@ -72,6 +78,36 @@ public class RoleHandler implements DiscordHookSource {
                 .flatMap(vod -> {
                     this.roleReactMessages.add(message);
                     return updatePersistence().thenReturn(this.roleReactMessages.size() - 1);
+                });
+    }
+
+    public Mono<Integer> publishEdit(RoleReactMessage old, RoleReactMessage nu, int idx) {
+        String messageBody = getMessageBody(nu);
+        Set<ReactionEmoji> oldEmoji = old.getOptions()
+                .stream()
+                .map(ReactOption::getEmoji)
+                .collect(Collectors.toSet()); // [A, B, C]
+        Set<ReactionEmoji> newEmoji = nu.getOptions()
+                .stream()
+                .map(ReactOption::getEmoji)
+                .collect(Collectors.toSet()); // [B, C, D]
+
+        var toAdd = SetUtils.difference(newEmoji, oldEmoji); // [ D ]
+
+        return gateway.getMessageById(nu.getChannelId(), nu.getMessageId())
+                .flatMap(msg -> {
+                    return msg.edit(MessageEditSpec.builder()
+                        .contentOrNull(messageBody)
+                        .build());
+                })
+                .flatMap(msg -> {
+                    return Flux.fromIterable(toAdd)
+                                .flatMap(msg::addReaction)
+                                .then(Mono.just(msg));
+                })
+                .flatMap(vod -> {
+                    this.roleReactMessages.set(idx, nu);
+                    return updatePersistence().thenReturn(idx);
                 });
     }
 

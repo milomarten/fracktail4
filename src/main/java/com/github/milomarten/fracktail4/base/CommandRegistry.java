@@ -79,6 +79,10 @@ public class CommandRegistry implements DiscordHookSource {
                         return Mono.empty();
                     }
                 })
+                .onErrorResume(ex -> {
+                    log.error("Encountered uncaught error", ex);
+                    return Mono.empty();
+                })
                 .subscribe();
     }
 

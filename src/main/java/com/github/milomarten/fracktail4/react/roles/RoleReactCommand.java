@@ -87,7 +87,7 @@ class RoleReactCommand implements Command, DiscordCommand {
     }
 
     private Mono<Void> failure(MessageCreateEvent event, String cause) {
-        return reactWith(event, "☒")
+        return reactWith(event, "❌")
                 .then(respondWithDM(event, cause))
                 .then();
     }

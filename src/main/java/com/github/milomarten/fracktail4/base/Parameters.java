@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 @Data
 public class Parameters {
     private static final Pattern CUSTOM_EMOTE_PATTERN = Pattern.compile("<(a)?:([^:]+):([0-9]+)>");
-    private static final Pattern EMOJI_PATTERN = Pattern.compile("([\\u20a0-\\u32ff\\ud83c\\udc00-\\ud83d\\udeff\\udbb9\\udce5-\\udbb9\\udcee]\\u200D?)+");
     private static final Pattern ROLE_MENTION_PATTERN = Pattern.compile("<@&([0-9]+)>");
     private final String[] sourceParams;
 
@@ -76,12 +75,7 @@ public class Parameters {
                 return ReactionEmoji.custom(snowflake, name, animated);
             }
 
-            matcher = EMOJI_PATTERN.matcher(s);
-            if (matcher.matches()) {
-                return ReactionEmoji.unicode(s);
-            }
-
-            return null;
+            return ReactionEmoji.unicode(s);
         });
     }
 }
