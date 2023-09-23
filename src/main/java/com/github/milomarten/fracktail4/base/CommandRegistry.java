@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.*;
 
@@ -19,20 +21,15 @@ import java.util.*;
 @Slf4j
 @Component
 public class CommandRegistry implements DiscordHookSource {
-    @Value("${command.prefix:!}")
-    @Getter @Setter
-    protected String prefix;
-
-    @Value("${command.delimiter: }")
-    @Getter @Setter
-    protected String delimiter;
-
+    private final CommandConfiguration configuration;
     private Map<String, Command> commands;
     private Map<String, Command> commandsByAlias;
 
-    public CommandRegistry(List<CommandBundle> bundles, List<Command> commands) {
+    public CommandRegistry(List<CommandBundle> bundles, List<Command> commands, CommandConfiguration configuration) {
         this.commands = new HashMap<>();
         this.commandsByAlias = new HashMap<>();
+        this.configuration = configuration;
+
         bundles.stream()
             .flatMap(bundle -> bundle.getCommands().stream())
             .forEach(this::registerCommand);
@@ -72,9 +69,12 @@ public class CommandRegistry implements DiscordHookSource {
         client.getEventDispatcher().on(MessageCreateEvent.class)
                 .filter(mce -> isRealPerson(mce.getMessage()))
                 .flatMap(mce -> {
-                    Command match = getMatchedCommand(mce.getMessage());
-                    if (match instanceof DiscordCommand dc) {
-                        return dc.doCommand(mce);
+                    var match = getMatchedCommand(mce.getMessage());
+                    if (match != null && match.getT1() instanceof DiscordCommand dc) {
+                        Parameters params = match.getT1()
+                                .getParameterParser()
+                                .parse(this.configuration, match.getT2());
+                        return dc.doCommand(params, mce);
                     } else {
                         return Mono.empty();
                     }
@@ -88,11 +88,11 @@ public class CommandRegistry implements DiscordHookSource {
                 .orElse(false);
     }
 
-    private Command getMatchedCommand(Message message) {
-        var tokens = message.getContent().split(delimiter, 2);
-        if (tokens[0].startsWith(prefix)) {
+    private Tuple2<Command, String> getMatchedCommand(Message message) {
+        var tokens = message.getContent().split(configuration.getDelimiter(), 2);
+        if (tokens[0].startsWith(configuration.getPrefix())) {
             var commandString = tokens[0].substring(1);
-            return this.commandsByAlias.get(commandString);
+            return Tuples.of(this.commandsByAlias.get(commandString), tokens.length == 1 ? "" : tokens[1]);
         }
         return null;
     }

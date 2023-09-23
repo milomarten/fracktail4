@@ -21,7 +21,7 @@ public class SimpleCommand implements Command, DiscordCommand {
     }
 
     @Override
-    public Mono<?> doCommand(MessageCreateEvent event) {
+    public Mono<?> doCommand(Parameters parameters, MessageCreateEvent event) {
         return event.getMessage()
                 .getChannel()
                 .flatMap(mc -> mc.createMessage(this.response));

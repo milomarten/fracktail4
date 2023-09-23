@@ -1,12 +1,14 @@
 package com.github.milomarten.fracktail4.base.platform;
 
+import com.github.milomarten.fracktail4.base.Parameters;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.reaction.ReactionEmoji;
 import reactor.core.publisher.Mono;
 
 public interface DiscordCommand {
-    Mono<?> doCommand(MessageCreateEvent event);
+    Mono<?> doCommand(Parameters parameters, MessageCreateEvent event);
 
     default Mono<Message> respondWith(MessageCreateEvent event, String message) {
         return event.getMessage()
@@ -18,5 +20,10 @@ public interface DiscordCommand {
         return Mono.justOrEmpty(event.getMessage().getAuthor())
                 .flatMap(User::getPrivateChannel)
                 .flatMap(pc -> pc.createMessage(message));
+    }
+
+    default Mono<Void> reactWith(MessageCreateEvent event, String emoji) {
+        return event.getMessage()
+                .addReaction(ReactionEmoji.unicode(emoji));
     }
 }

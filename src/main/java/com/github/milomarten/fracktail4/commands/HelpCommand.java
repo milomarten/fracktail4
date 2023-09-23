@@ -47,7 +47,7 @@ public class HelpCommand extends NormalCommand implements CommandRegistryAware {
 
     private String helpStringForCommand(Command cmd) {
         CommandData cd = cmd.getCommandData();
-        String prefix = this.registry.getPrefix();
+        String prefix = registry.getConfiguration().getPrefix();
         return String.format("%s%s %s - %s",
                 prefix, String.join(",", cd.getAliases()),
                 helpStringForParams(cmd.getCommandData().getParams()),
