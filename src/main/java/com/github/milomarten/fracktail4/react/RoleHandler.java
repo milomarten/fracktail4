@@ -3,7 +3,10 @@ package com.github.milomarten.fracktail4.react;
 import com.github.milomarten.fracktail4.react.roles.RoleReactMessage;
 import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
 import com.github.milomarten.fracktail4.persistence.Persistence;
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.message.ReactionAddEvent;
+import discord4j.core.event.domain.message.ReactionRemoveEvent;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.MessageEditSpec;
@@ -15,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +50,64 @@ public class RoleHandler implements DiscordHookSource {
     @Override
     public void addDiscordHook(GatewayDiscordClient client){
         this.gateway = client;
+        this.gateway.on(ReactionAddEvent.class)
+                .flatMap(rae -> {
+                    return findMatchingRoleReact(rae.getMessageId())
+                            .map(match -> Mono.just(Tuples.of(rae, match)))
+                            .orElseGet(Mono::empty);
+                })
+                .flatMap(tuple -> {
+                    var event = tuple.getT1();
+                    var choiceMaybe = getMatchingOption(event.getEmoji(), tuple.getT2());
+                    if (choiceMaybe.isEmpty()) {
+                        return Mono.empty();
+                    } else {
+                        // This *shouldn't* throw...all role reacts should happen out of DMs
+                        var member = event.getMember().orElseThrow();
+                        return member.addRole(choiceMaybe.get().getId(), "Self-assign");
+                    }
+                })
+                .onErrorResume(ex -> {
+                    log.error("Uncaught exception", ex);
+                    return Mono.empty();
+                })
+                .subscribe();
+
+        this.gateway.on(ReactionRemoveEvent.class)
+                .flatMap(rre -> {
+                    return findMatchingRoleReact(rre.getMessageId())
+                            .map(match -> Mono.just(Tuples.of(rre, match)))
+                            .orElseGet(Mono::empty);
+                })
+                .flatMap(tuple -> {
+                    var event = tuple.getT1();
+                    var choiceMaybe = getMatchingOption(event.getEmoji(), tuple.getT2());
+                    return choiceMaybe.map(snowflakeReactOption -> event.getClient().getMemberById(
+                                    event.getGuildId().orElseThrow(),
+                                    event.getUserId())
+                            .flatMap(member -> member.removeRole(snowflakeReactOption.getId(), "Self-unassign")))
+                            .orElseGet(Mono::empty);
+                })
+                .onErrorResume(ex -> {
+                    log.error("Uncaught exception", ex);
+                    return Mono.empty();
+                })
+                .subscribe();
+    }
+
+    private Optional<RoleReactMessage> findMatchingRoleReact(Snowflake message) {
+        return this.roleReactMessages
+                .stream()
+                .filter(rrm -> rrm.getMessageId().equals(message))
+                .findFirst();
+    }
+
+    private static Optional<ReactOption<Snowflake>> getMatchingOption(ReactionEmoji emoji, RoleReactMessage react) {
+        return react
+                .getOptions()
+                .stream()
+                .filter(ro -> ro.getEmoji().equals(emoji))
+                .findFirst();
     }
 
     private Mono<Void> updatePersistence() {
