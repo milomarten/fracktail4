@@ -9,18 +9,15 @@ import com.github.milomarten.fracktail4.base.parameter.DefaultParameterParser;
 import com.github.milomarten.fracktail4.base.parameter.ParameterParser;
 import com.github.milomarten.fracktail4.base.parameter.VarargsParameterParser;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
+import com.github.milomarten.fracktail4.react.ReactMessage;
 import com.github.milomarten.fracktail4.react.ReactOption;
-import com.github.milomarten.fracktail4.react.RoleHandler;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.Channel;
-import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -34,7 +31,7 @@ class RoleReactCommand implements Command, DiscordCommand {
 
     private final ObjectMapper objectMapper;
 
-    private RoleReactMessage oven = null;
+    private ReactMessage<Snowflake> oven = null;
 
     @Override
     public CommandData getCommandData() {
@@ -243,13 +240,12 @@ class RoleReactCommand implements Command, DiscordCommand {
             return failure(event, "Correct use is `role-react edit <id>`");
         }
 
-        Optional<RoleReactMessage> messageMaybe = this.handler.getById(maybeId.getAsInt())
-                .map(rm -> (RoleReactMessage) rm);
+        var messageMaybe = this.handler.getById(maybeId.getAsInt());
         if (messageMaybe.isEmpty()) {
             return failure(event, "No Role React found with ID " + maybeId.getAsInt());
         }
 
-        this.oven = new RoleReactMessage(messageMaybe.get());
+        this.oven = new ReactMessage<>(messageMaybe.get());
         return success(event);
     }
 

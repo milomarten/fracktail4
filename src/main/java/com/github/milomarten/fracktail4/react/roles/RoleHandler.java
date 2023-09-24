@@ -1,30 +1,16 @@
-package com.github.milomarten.fracktail4.react;
+package com.github.milomarten.fracktail4.react.roles;
 
-import com.github.milomarten.fracktail4.react.roles.RoleReactMessage;
-import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
+import com.github.milomarten.fracktail4.react.AbstractReactHandler;
 import com.github.milomarten.fracktail4.persistence.Persistence;
 import discord4j.common.util.Snowflake;
-import discord4j.core.GatewayDiscordClient;
-import discord4j.core.event.domain.message.ReactionAddEvent;
-import discord4j.core.event.domain.message.ReactionRemoveEvent;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.object.reaction.ReactionEmoji;
-import discord4j.core.spec.MessageEditSpec;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.SetUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
