@@ -243,7 +243,8 @@ class RoleReactCommand implements Command, DiscordCommand {
             return failure(event, "Correct use is `role-react edit <id>`");
         }
 
-        Optional<RoleReactMessage> messageMaybe = this.handler.getById(maybeId.getAsInt());
+        Optional<RoleReactMessage> messageMaybe = this.handler.getById(maybeId.getAsInt())
+                .map(rm -> (RoleReactMessage) rm);
         if (messageMaybe.isEmpty()) {
             return failure(event, "No Role React found with ID " + maybeId.getAsInt());
         }
