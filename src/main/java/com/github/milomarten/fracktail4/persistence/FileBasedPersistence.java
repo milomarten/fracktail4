@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.persistence;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,18 @@ public class FileBasedPersistence implements Persistence {
 
     @Override
     public <T> Mono<T> retrieve(String key, Class<T> clazz) {
+        return Mono.fromCallable(() -> {
+            var file = getFile(key);
+            if (file.exists()) {
+                return mapper.readValue(file, clazz);
+            } else {
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public <T> Mono<T> retrieve(String key, TypeReference<T> clazz) {
         return Mono.fromCallable(() -> {
             var file = getFile(key);
             if (file.exists()) {

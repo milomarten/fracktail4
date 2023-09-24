@@ -94,7 +94,7 @@ class RoleReactCommand implements Command, DiscordCommand {
             return failure(event, "There is a role react in progress. Use `!role-react discard` to discard.");
         }
 
-        this.oven = new RoleReactMessage();
+        this.oven = new ReactMessage<>();
         oven.setGuildId(event.getGuildId().orElse(null));
         oven.setChannelId(event.getMessage().getChannelId());
 

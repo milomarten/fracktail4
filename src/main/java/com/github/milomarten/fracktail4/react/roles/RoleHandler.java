@@ -1,7 +1,9 @@
 package com.github.milomarten.fracktail4.react.roles;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.milomarten.fracktail4.react.AbstractReactHandler;
 import com.github.milomarten.fracktail4.persistence.Persistence;
+import com.github.milomarten.fracktail4.react.ReactMessage;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
 import jakarta.annotation.PostConstruct;
@@ -18,13 +20,15 @@ import java.util.*;
 public class RoleHandler extends AbstractReactHandler<Snowflake> {
     private final Persistence persistence;
 
+    private static final TypeReference<List<ReactMessage<Snowflake>>> ROLE_REACT_TYPE = new TypeReference<>() {  };
+
     @PostConstruct
     public void load() {
-        var reacts = persistence.retrieve("role-reacts", RoleReactMessage[].class)
+        var reacts = persistence.retrieve("role-reacts", ROLE_REACT_TYPE)
                 .block();
-        log.info("Loaded {} existing role reacts from persistence", reacts == null ? 0 : reacts.length);
+        log.info("Loaded {} existing role reacts from persistence", reacts == null ? 0 : reacts.size());
         if (reacts != null) {
-            this.getRoleReactMessages().addAll(List.of(reacts));
+            this.getRoleReactMessages().addAll(reacts);
         }
     }
 
