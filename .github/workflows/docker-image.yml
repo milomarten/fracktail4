@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Deploy Docker Image
 
 on:
   push:
@@ -20,8 +20,11 @@ jobs:
         java-version: 17
         distribution: corretto
         
-    - name: Gradle Build Action
+    - name: Setup Gradle
       uses: gradle/gradle-build-action@v2.8.0
+
+    - name: Execute Gradle build
+      run: ./gradlew build
       
     # - name: Build and Push to Docker
     #   run: |
