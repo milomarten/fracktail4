@@ -26,8 +26,8 @@ jobs:
     - name: Execute Gradle build
       run: ./gradlew build
       
-    # - name: Build and Push to Docker
-    #   run: |
-    #     docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_TOKEN }}
-    #     docker image build . --file --tag fracktail4:latest --tag fracktail4:${{ github.ref_name }}
-    #     docker image push --all-tags fracktail4
+    - name: Build and Push to Docker
+      run: |
+       docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_TOKEN }}
+       docker image build . --file --tag fracktail4:latest
+       docker image push --all-tags fracktail4
