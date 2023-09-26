@@ -2,9 +2,12 @@ package com.github.milomarten.fracktail4.base;
 
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
+import com.github.milomarten.fracktail4.permissions.discord.RoleEngine;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,19 +19,23 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 @Slf4j
 @Component
 public class CommandRegistry implements DiscordHookSource {
     private final CommandConfiguration configuration;
+    private final RoleEngine roleEngine;
     private Map<String, Command> commands;
     private Map<String, Command> commandsByAlias;
 
-    public CommandRegistry(List<CommandBundle> bundles, List<Command> commands, CommandConfiguration configuration) {
+    public CommandRegistry(List<CommandBundle> bundles, List<Command> commands,
+                           CommandConfiguration configuration, RoleEngine roleEngine) {
         this.commands = new HashMap<>();
         this.commandsByAlias = new HashMap<>();
         this.configuration = configuration;
+        this.roleEngine = roleEngine;
 
         bundles.stream()
             .flatMap(bundle -> bundle.getCommands().stream())
@@ -60,8 +67,32 @@ public class CommandRegistry implements DiscordHookSource {
         return Optional.ofNullable(this.commandsByAlias.get(alias));
     }
 
+    public Optional<Command> lookupByAliasAndRole(String alias, Member member) {
+        return lookupByAlias(alias)
+                .filter(cmd -> roleEngine.canUseCommand(member, cmd));
+    }
+
+    public Optional<Command> lookupByAliasAndRole(String alias, User user) {
+        return lookupByAlias(alias)
+                .filter(cmd -> roleEngine.canUseCommand(user, cmd));
+    }
+
     public Collection<Command> getCommands() {
         return this.commands.values();
+    }
+
+    public Collection<Command> getUsableCommands(Member member) {
+        return this.commands.values()
+                .stream()
+                .filter(cmd -> roleEngine.canUseCommand(member, cmd))
+                .collect(Collectors.toCollection(List::of));
+    }
+
+    public Collection<Command> getUsableCommands(User user) {
+        return this.commands.values()
+                .stream()
+                .filter(cmd -> roleEngine.canUseCommand(user, cmd))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Override
@@ -74,10 +105,17 @@ public class CommandRegistry implements DiscordHookSource {
                         Parameters params = match.getT1()
                                 .getParameterParser()
                                 .parse(this.configuration, match.getT2());
-                        return dc.doCommand(params, mce);
-                    } else {
-                        return Mono.empty();
+
+                        boolean canUseCommand = mce.getMember()
+                                .map(member -> roleEngine.canUseCommand(member, dc))
+                                .or(() -> mce.getMessage().getAuthor().map(user -> roleEngine.canUseCommand(user, dc)))
+                                .orElse(false);
+
+                        if (canUseCommand) {
+                            return dc.doCommand(params, mce);
+                        }
                     }
+                    return Mono.empty();
                 })
                 .onErrorResume(ex -> {
                     log.error("Encountered uncaught error", ex);

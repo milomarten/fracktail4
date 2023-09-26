@@ -9,6 +9,7 @@ import com.github.milomarten.fracktail4.base.parameter.DefaultParameterParser;
 import com.github.milomarten.fracktail4.base.parameter.ParameterParser;
 import com.github.milomarten.fracktail4.base.parameter.VarargsParameterParser;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
+import com.github.milomarten.fracktail4.permissions.Role;
 import com.github.milomarten.fracktail4.react.ReactMessage;
 import com.github.milomarten.fracktail4.react.ReactOption;
 import discord4j.common.util.Snowflake;
@@ -39,6 +40,7 @@ class RoleReactCommand implements Command, DiscordCommand {
                 .id("role-react")
                 .alias("role-react")
                 .description("Handle role react commands")
+                .role(Role.MODERATOR)
                 .param(CommandData.Param.builder()
                         .name("operation")
                         .build())
