@@ -1,11 +1,7 @@
 package com.github.milomarten.fracktail4.base.filter;
 
-import com.github.milomarten.fracktail4.base.Command;
-import com.github.milomarten.fracktail4.base.CommandData;
-import com.github.milomarten.fracktail4.base.Parameters;
-import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
+import com.github.milomarten.fracktail4.base.*;
 import com.github.milomarten.fracktail4.permissions.Role;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -15,7 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
-public class BotDisableCommand implements DiscordCommand, CommandFilter {
+public class BotDisableCommand implements AllPlatformCommand, CommandFilter {
     private static final Set<String> PERMISSIBLE_ARG1_VALUES = Set.of("on", "off");
 
     private boolean lock;
@@ -49,22 +45,22 @@ public class BotDisableCommand implements DiscordCommand, CommandFilter {
     }
 
     @Override
-    public Mono<?> doCommand(Parameters parameters, MessageCreateEvent event) {
+    public Mono<?> doCommand(Parameters parameters, Context context) {
         Optional<String> lockUnlock = parameters.getParameter(0);
         Optional<String> cmdToUse = parameters.getParameter(1);
 
         if (lockUnlock.isEmpty() || !PERMISSIBLE_ARG1_VALUES.contains(lockUnlock.get())) {
-            return respondWith(event, "Correct usage: `!lock _on|off_ <command>`");
+            return context.respond("Correct usage: `!lock _on|off_ <command>`");
         }
 
         var lockOrNot = lockUnlock.get().equals("on");
 
         if (cmdToUse.isEmpty()) {
             this.lock = lockOrNot;
-            return respondWith(event, "Bot has been " + (lockOrNot ? "locked" : "unlocked"));
+            return context.respond("Bot has been " + (lockOrNot ? "locked" : "unlocked"));
         } else {
             this.locks.put(cmdToUse.get(), lockOrNot);
-            return respondWith(event, "Command " + cmdToUse.get() + " has been " + (lockOrNot ? "locked" : "unlocked"));
+            return context.respond("Command " + cmdToUse.get() + " has been " + (lockOrNot ? "locked" : "unlocked"));
         }
     }
 }

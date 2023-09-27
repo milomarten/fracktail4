@@ -3,6 +3,8 @@ package com.github.milomarten.fracktail4.base;
 import com.github.milomarten.fracktail4.base.filter.CommandFilterChain;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
+import com.github.milomarten.fracktail4.base.platform.DiscordContext;
+import com.github.milomarten.fracktail4.permissions.Role;
 import com.github.milomarten.fracktail4.permissions.discord.RoleEngine;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -10,13 +12,11 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
 import java.util.*;
@@ -80,6 +80,11 @@ public class CommandRegistry implements DiscordHookSource {
                 .filter(cmd -> roleEngine.canUseCommand(user, cmd));
     }
 
+    public Optional<Command> lookupByAliasAndRole(String alias, Role role) {
+        return lookupByAlias(alias)
+                .filter(cmd -> roleEngine.canUseCommand(role, cmd));
+    }
+
     public Collection<Command> getCommands() {
         return this.commands.values();
     }
@@ -98,38 +103,43 @@ public class CommandRegistry implements DiscordHookSource {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    public Collection<Command> getUsableCommands(Role role) {
+        return this.commands.values()
+                .stream()
+                .filter(cmd -> roleEngine.canUseCommand(role, cmd))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
     @Override
     public void addDiscordHook(GatewayDiscordClient client) {
         client.getEventDispatcher().on(MessageCreateEvent.class)
                 .filter(mce -> isRealPerson(mce.getMessage()))
                 .flatMap(mce -> {
                     var match = getMatchedCommand(mce.getMessage());
-                    if (match != null && match.getT1() instanceof DiscordCommand dc) {
+                    if (match != null) {
                         Parameters params = match.getT1()
                                 .getCommandData()
                                 .getParameterParser()
                                 .parse(this.configuration, match.getT2());
 
-                        return Mono.just(Tuples.of(mce, dc, params));
+                        return Mono.just(Tuples.of(mce, match.getT1(), params));
                     }
                     return Mono.empty();
                 })
-                .filter(tuple -> {
-                    var mce = tuple.getT1();
-                    var cmd = tuple.getT2();
-
-                    return mce.getMember()
-                            .map(member -> roleEngine.canUseCommand(member, cmd))
-                            .or(() -> mce.getMessage().getAuthor().map(user -> roleEngine.canUseCommand(user, cmd)))
-                            .orElse(false);
-                })
-                .filterWhen(tuple -> chain.callNext(tuple.getT2(), tuple.getT3(), tuple.getT1()))
-                .flatMap(tuple -> {
+                .filterWhen((Tuple3<MessageCreateEvent, Command, Parameters> tuple) ->
+                        chain.callNext(tuple.getT2(), tuple.getT3(), tuple.getT1()))
+                .flatMap((Tuple3<MessageCreateEvent, Command, Parameters> tuple) -> {
                     var mce = tuple.getT1();
                     var cmd = tuple.getT2();
                     var params = tuple.getT3();
 
-                    return cmd.doCommand(params, mce);
+                    if (cmd instanceof DiscordCommand dc) {
+                        return dc.doCommand(params, mce);
+                    } else if (cmd instanceof AllPlatformCommand apc) {
+                        return apc.doCommand(params, new DiscordContext(mce, roleEngine.getRole(mce)));
+                    } else {
+                        return Mono.empty();
+                    }
                 })
                 .onErrorResume(ex -> {
                     log.error("Encountered uncaught error", ex);

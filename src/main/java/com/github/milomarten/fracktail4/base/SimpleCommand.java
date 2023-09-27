@@ -1,12 +1,10 @@
 package com.github.milomarten.fracktail4.base;
 
-import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import reactor.core.publisher.Mono;
 
 import java.util.Set;
 
-public class SimpleCommand implements Command, DiscordCommand {
+public class SimpleCommand implements AllPlatformCommand {
     private final CommandData commandData;
     private final String response;
 
@@ -21,14 +19,12 @@ public class SimpleCommand implements Command, DiscordCommand {
     }
 
     @Override
-    public Mono<?> doCommand(Parameters parameters, MessageCreateEvent event) {
-        return event.getMessage()
-                .getChannel()
-                .flatMap(mc -> mc.createMessage(this.response));
+    public CommandData getCommandData() {
+        return this.commandData;
     }
 
     @Override
-    public CommandData getCommandData() {
-        return this.commandData;
+    public Mono<?> doCommand(Parameters parameters, Context context) {
+        return context.respond(this.response);
     }
 }

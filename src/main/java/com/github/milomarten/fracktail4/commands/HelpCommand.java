@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Component
 @NoArgsConstructor
-public class HelpCommand implements DiscordCommand, CommandRegistryAware {
+public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
     private CommandRegistry registry = null;
 
     @Override
@@ -32,27 +32,22 @@ public class HelpCommand implements DiscordCommand, CommandRegistryAware {
     }
 
     @Override
-    public Mono<?> doCommand(Parameters parameters, MessageCreateEvent event) {
-        return Mono.fromSupplier(() -> doHelp(parameters, event))
-                .flatMap(response -> respondWith(event, response));
+    public Mono<?> doCommand(Parameters parameters, Context context) {
+        return Mono.fromSupplier(() -> doHelp(parameters, context))
+                .flatMap(context::respond);
     }
 
-    protected String doHelp(Parameters params, MessageCreateEvent event) {
+    protected String doHelp(Parameters params, Context context) {
         var subcommand = params.getParameter(0);
         if (subcommand.isPresent()) {
-            var p_command = event.getMember()
-                    .flatMap(member -> registry.lookupByAliasAndRole(subcommand.get(), member))
-                    .or(() -> event.getMessage().getAuthor().flatMap(user -> registry.lookupByAliasAndRole(subcommand.get(), user)));
+            var p_command = registry.lookupByAliasAndRole(subcommand.get(), context.getRole());
             if (p_command.isPresent()) {
                 return helpStringForCommand(p_command.get());
             } else {
                 return String.format("No command found with name %s", subcommand.get());
             }
         } else {
-            var usableCommands = event.getMember()
-                    .map(member -> registry.getUsableCommands(member))
-                    .or(() -> event.getMessage().getAuthor().map(user -> registry.getUsableCommands(user)))
-                    .orElseGet(List::of);
+            var usableCommands = registry.getUsableCommands(context.getRole());
             if (usableCommands.isEmpty()) {
                 return "You don't have access to any commands. Try joining Milo Marten's server!";
             }
