@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.base;
 
+import com.github.milomarten.fracktail4.base.filter.CommandFilterChain;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
 import com.github.milomarten.fracktail4.permissions.discord.RoleEngine;
@@ -27,15 +28,17 @@ import java.util.stream.Collectors;
 public class CommandRegistry implements DiscordHookSource {
     private final CommandConfiguration configuration;
     private final RoleEngine roleEngine;
+    private final CommandFilterChain chain;
     private Map<String, Command> commands;
     private Map<String, Command> commandsByAlias;
 
     public CommandRegistry(List<CommandBundle> bundles, List<Command> commands,
-                           CommandConfiguration configuration, RoleEngine roleEngine) {
+                           CommandConfiguration configuration, RoleEngine roleEngine, CommandFilterChain chain) {
         this.commands = new HashMap<>();
         this.commandsByAlias = new HashMap<>();
         this.configuration = configuration;
         this.roleEngine = roleEngine;
+        this.chain = chain;
 
         bundles.stream()
             .flatMap(bundle -> bundle.getCommands().stream())
@@ -107,16 +110,26 @@ public class CommandRegistry implements DiscordHookSource {
                                 .getParameterParser()
                                 .parse(this.configuration, match.getT2());
 
-                        boolean canUseCommand = mce.getMember()
-                                .map(member -> roleEngine.canUseCommand(member, dc))
-                                .or(() -> mce.getMessage().getAuthor().map(user -> roleEngine.canUseCommand(user, dc)))
-                                .orElse(false);
-
-                        if (canUseCommand) {
-                            return dc.doCommand(params, mce);
-                        }
+                        return Mono.just(Tuples.of(mce, dc, params));
                     }
                     return Mono.empty();
+                })
+                .filter(tuple -> {
+                    var mce = tuple.getT1();
+                    var cmd = tuple.getT2();
+
+                    return mce.getMember()
+                            .map(member -> roleEngine.canUseCommand(member, cmd))
+                            .or(() -> mce.getMessage().getAuthor().map(user -> roleEngine.canUseCommand(user, cmd)))
+                            .orElse(false);
+                })
+                .filterWhen(tuple -> chain.callNext(tuple.getT2(), tuple.getT3(), tuple.getT1()))
+                .flatMap(tuple -> {
+                    var mce = tuple.getT1();
+                    var cmd = tuple.getT2();
+                    var params = tuple.getT3();
+
+                    return cmd.doCommand(params, mce);
                 })
                 .onErrorResume(ex -> {
                     log.error("Encountered uncaught error", ex);
