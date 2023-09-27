@@ -103,6 +103,7 @@ public class CommandRegistry implements DiscordHookSource {
                     var match = getMatchedCommand(mce.getMessage());
                     if (match != null && match.getT1() instanceof DiscordCommand dc) {
                         Parameters params = match.getT1()
+                                .getCommandData()
                                 .getParameterParser()
                                 .parse(this.configuration, match.getT2());
 
@@ -134,7 +135,11 @@ public class CommandRegistry implements DiscordHookSource {
         var tokens = message.getContent().split(configuration.getDelimiter(), 2);
         if (tokens[0].startsWith(configuration.getPrefix())) {
             var commandString = tokens[0].substring(1);
-            return Tuples.of(this.commandsByAlias.get(commandString), tokens.length == 1 ? "" : tokens[1]);
+            if (this.commandsByAlias.containsKey(commandString)) {
+                return Tuples.of(this.commandsByAlias.get(commandString), tokens.length == 1 ? "" : tokens[1]);
+            } else {
+                return null;
+            }
         }
         return null;
     }

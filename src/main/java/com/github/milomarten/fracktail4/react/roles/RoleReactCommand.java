@@ -5,9 +5,7 @@ import com.github.milomarten.fracktail4.base.Command;
 import com.github.milomarten.fracktail4.base.CommandConfiguration;
 import com.github.milomarten.fracktail4.base.CommandData;
 import com.github.milomarten.fracktail4.base.Parameters;
-import com.github.milomarten.fracktail4.base.parameter.DefaultParameterParser;
-import com.github.milomarten.fracktail4.base.parameter.ParameterParser;
-import com.github.milomarten.fracktail4.base.parameter.VarargsParameterParser;
+import com.github.milomarten.fracktail4.base.parameter.*;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import com.github.milomarten.fracktail4.permissions.Role;
 import com.github.milomarten.fracktail4.react.ReactMessage;
@@ -28,6 +26,9 @@ import java.util.OptionalInt;
 @RequiredArgsConstructor
 @Component
 class RoleReactCommand implements Command, DiscordCommand {
+    private static final ParameterParser PARSER = SubcommandParameterParser.builder()
+            .option("set-description", NoOpParameterParser.INSTANCE)
+            .build();
     private final RoleHandler handler;
 
     private final ObjectMapper objectMapper;
@@ -41,6 +42,7 @@ class RoleReactCommand implements Command, DiscordCommand {
                 .alias("role-react")
                 .description("Handle role react commands")
                 .role(Role.MODERATOR)
+                .parameterParser(PARSER)
                 .param(CommandData.Param.builder()
                         .name("operation")
                         .build())
@@ -48,11 +50,6 @@ class RoleReactCommand implements Command, DiscordCommand {
                         .name("args")
                         .build())
                 .build();
-    }
-
-    @Override
-    public ParameterParser getParameterParser() {
-        return RoleReactCommandParser.INSTANCE;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.github.milomarten.fracktail4.base;
 
+import com.github.milomarten.fracktail4.base.parameter.DefaultParameterParser;
+import com.github.milomarten.fracktail4.base.parameter.ParameterParser;
 import com.github.milomarten.fracktail4.permissions.Role;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +18,7 @@ public class CommandData {
     private String description;
     @Singular private List<Param> params;
     @Builder.Default private Role role = Role.NORMAL;
+    @Builder.Default private ParameterParser parameterParser = DefaultParameterParser.INSTANCE;
 
     @Data
     @Builder

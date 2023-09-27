@@ -5,7 +5,7 @@ aws:
 roles:
   discord:
     dm:
-      defaultRole: BLOCKED
+      defaultRole: NORMAL
       mappings:
         - userId: 248612704019808258
           role: ADMIN

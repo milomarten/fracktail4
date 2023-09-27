@@ -16,6 +16,14 @@ public class Parameters {
 
     public int getNumberOfParameters() { return this.sourceParams.length; }
 
+    public Parameters prepend(String parameter) {
+        int newLength = sourceParams.length + 1;
+        String[] newParams = new String[newLength];
+        newParams[0] = parameter;
+        System.arraycopy(this.sourceParams, 0, newParams, 1, this.sourceParams.length);
+        return new Parameters(newParams);
+    }
+
     public Parameters range(int start) {
         int newLength = sourceParams.length - start;
         if (newLength < 0) {
