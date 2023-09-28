@@ -2,7 +2,6 @@ package com.github.milomarten.fracktail4;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
-import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

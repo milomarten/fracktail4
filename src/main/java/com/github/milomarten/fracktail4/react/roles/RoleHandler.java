@@ -1,8 +1,8 @@
 package com.github.milomarten.fracktail4.react.roles;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.milomarten.fracktail4.react.AbstractReactHandler;
 import com.github.milomarten.fracktail4.persistence.Persistence;
+import com.github.milomarten.fracktail4.react.AbstractReactHandler;
 import com.github.milomarten.fracktail4.react.ReactMessage;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.List;
 
 @Component
 @Slf4j

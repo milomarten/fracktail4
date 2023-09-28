@@ -1,9 +1,7 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.github.milomarten.fracktail4.base.*;
-import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import com.github.milomarten.fracktail4.permissions.Role;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
