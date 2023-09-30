@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.base;
 
 import com.github.milomarten.fracktail4.base.filter.CommandFilterChain;
+import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import com.github.milomarten.fracktail4.base.platform.DiscordContext;
 import com.github.milomarten.fracktail4.base.platform.DiscordHookSource;
@@ -92,7 +93,6 @@ public class CommandRegistry implements DiscordHookSource {
                     var match = getMatchedCommand(mce.getMessage());
                     if (match != null) {
                         Parameters params = match.getT1()
-                                .getCommandData()
                                 .getParameterParser()
                                 .parse(this.configuration, match.getT2());
 

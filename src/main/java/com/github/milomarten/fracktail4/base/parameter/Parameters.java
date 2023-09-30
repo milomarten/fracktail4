@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.base;
+package com.github.milomarten.fracktail4.base.parameter;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.reaction.ReactionEmoji;

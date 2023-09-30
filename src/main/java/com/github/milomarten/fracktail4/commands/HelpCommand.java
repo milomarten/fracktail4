@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.github.milomarten.fracktail4.base.*;
+import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.permissions.Role;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,8 +26,12 @@ public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
                         .name("command")
                         .optional(true)
                         .build())
-                .role(Role.BLOCKED) // Anyone can use the Help command, even in DMs
                 .build();
+    }
+
+    @Override
+    public Role getRequiredRole() {
+        return Role.BLOCKED; // Anyone can use the Help command, even in DMs
     }
 
     @Override
@@ -40,7 +45,7 @@ public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
         if (subcommand.isPresent()) {
             var p_command = registry.lookupByAliasAndRole(subcommand.get(), context.getRole());
             if (p_command.isPresent()) {
-                return helpStringForCommand(p_command.get());
+                return p_command.get().getHelpText();
             } else {
                 return String.format("No command found with name %s", subcommand.get());
             }
@@ -52,32 +57,11 @@ public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
             return usableCommands
                     .stream()
                     .sorted(Comparator.comparing(c -> c.getCommandData().getId()))
-                    .map(this::helpStringForCommand)
+                    .map(Command::getHelpText)
                     .collect(Collectors.joining("\n",
                             "You have access to " + usableCommands.size() + " command(s):\n",
                             ""));
         }
-    }
-
-    private String helpStringForCommand(Command cmd) {
-        CommandData cd = cmd.getCommandData();
-        String prefix = registry.getConfiguration().getPrefix();
-        return String.format("%s%s %s - %s",
-                prefix, String.join(",", cd.getAliases()),
-                helpStringForParams(cmd.getCommandData().getParams()),
-                cd.getDescription());
-    }
-
-    private String helpStringForParams(List<CommandData.Param> params) {
-        return params.stream()
-                .map(p -> {
-                    if (p.isOptional()) {
-                        return "[_" + p.getName() + "_]";
-                    } else {
-                        return "_" + p.getName() + "_";
-                    }
-                })
-                .collect(Collectors.joining(" "));
     }
 
     @Override

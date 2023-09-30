@@ -1,7 +1,7 @@
 package com.github.milomarten.fracktail4.base.platform;
 
 import com.github.milomarten.fracktail4.base.Command;
-import com.github.milomarten.fracktail4.base.Parameters;
+import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;

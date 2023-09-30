@@ -17,8 +17,6 @@ public class CommandData {
     @Singular private Set<String> aliases;
     private String description;
     @Singular private List<Param> params;
-    @Builder.Default private Role role = Role.NORMAL;
-    @Builder.Default private ParameterParser parameterParser = DefaultParameterParser.INSTANCE;
 
     @Data
     @Builder

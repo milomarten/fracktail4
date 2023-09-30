@@ -1,7 +1,6 @@
 package com.github.milomarten.fracktail4.base.parameter;
 
 import com.github.milomarten.fracktail4.base.CommandConfiguration;
-import com.github.milomarten.fracktail4.base.Parameters;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

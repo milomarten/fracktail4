@@ -2,9 +2,8 @@ package com.github.milomarten.fracktail4.react.roles;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.milomarten.fracktail4.base.Command;
-import com.github.milomarten.fracktail4.base.CommandConfiguration;
 import com.github.milomarten.fracktail4.base.CommandData;
-import com.github.milomarten.fracktail4.base.Parameters;
+import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.base.parameter.*;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import com.github.milomarten.fracktail4.permissions.Role;
@@ -14,8 +13,6 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.reaction.ReactionEmoji;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -41,8 +38,6 @@ class RoleReactCommand implements Command, DiscordCommand {
                 .id("role-react")
                 .alias("role-react")
                 .description("Handle role react commands")
-                .role(Role.MODERATOR)
-                .parameterParser(PARSER)
                 .param(CommandData.Param.builder()
                         .name("operation")
                         .build())
@@ -50,6 +45,16 @@ class RoleReactCommand implements Command, DiscordCommand {
                         .name("args")
                         .build())
                 .build();
+    }
+
+    @Override
+    public Role getRequiredRole() {
+        return Role.MODERATOR;
+    }
+
+    @Override
+    public ParameterParser getParameterParser() {
+        return PARSER;
     }
 
     @Override
@@ -258,20 +263,5 @@ class RoleReactCommand implements Command, DiscordCommand {
         return this.handler.deleteById(maybeId.getAsInt())
                 .switchIfEmpty(success(event))
                 .onErrorResume(ex -> failure(event, "I ran into an issue deleting your Role React. Sorry. Exception: " + ex.getMessage()).then());
-    }
-
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    private static class RoleReactCommandParser implements ParameterParser {
-        public static final RoleReactCommandParser INSTANCE = new RoleReactCommandParser();
-        private static final VarargsParameterParser VARARGS_PARAMETER_PARSER = new VarargsParameterParser(2);
-
-        @Override
-        public Parameters parse(CommandConfiguration configuration, String contents) {
-            if (contents.startsWith("set-description")) {
-                return VARARGS_PARAMETER_PARSER.parse(configuration, contents);
-            } else {
-                return DefaultParameterParser.INSTANCE.parse(configuration, contents);
-            }
-        }
     }
 }

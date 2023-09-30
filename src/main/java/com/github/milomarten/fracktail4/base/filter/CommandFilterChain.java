@@ -1,7 +1,7 @@
 package com.github.milomarten.fracktail4.base.filter;
 
 import com.github.milomarten.fracktail4.base.Command;
-import com.github.milomarten.fracktail4.base.Parameters;
+import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import reactor.core.publisher.Mono;
 
 import java.util.Iterator;

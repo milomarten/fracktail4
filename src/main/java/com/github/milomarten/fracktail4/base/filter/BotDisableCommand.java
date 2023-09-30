@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.base.filter;
 
 import com.github.milomarten.fracktail4.base.*;
+import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.permissions.Role;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -30,8 +31,12 @@ public class BotDisableCommand implements AllPlatformCommand, CommandFilter {
                         .name("command-name")
                         .optional(true)
                         .build())
-                .role(Role.ADMIN)
                 .build();
+    }
+
+    @Override
+    public Role getRequiredRole() {
+        return Role.ADMIN;
     }
 
     @Override

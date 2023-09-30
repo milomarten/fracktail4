@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -122,7 +124,7 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
                 });
     }
 
-    public Mono<Integer> publishEdit(ReactMessage<ID> old, ReactMessage<ID> nu, int idx) {
+    private Mono<Integer> publishEdit(ReactMessage<ID> old, ReactMessage<ID> nu, int idx) {
         String messageBody = getMessageBody(nu);
         Set<ReactionEmoji> oldEmoji = old.getOptions()
                 .stream()
@@ -176,6 +178,17 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
         } else {
             return Optional.ofNullable(this.roleReactMessages.get(id));
         }
+    }
+
+    public Mono<Integer> editById(int id, UnaryOperator<ReactMessage<ID>> editFunc) {
+        return Mono.justOrEmpty(getById(id))
+                .flatMap(rm -> {
+                    var newRm = editFunc.apply(rm);
+                    if (newRm == null) {
+                        return Mono.empty();
+                    }
+                    return publish(newRm);
+                });
     }
 
     public Mono<Void> deleteById(int id) {

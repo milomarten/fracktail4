@@ -1,7 +1,7 @@
 package com.github.milomarten.fracktail4.permissions.discord;
 
 import com.github.milomarten.fracktail4.base.Command;
-import com.github.milomarten.fracktail4.base.Parameters;
+import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.base.filter.CommandFilter;
 import com.github.milomarten.fracktail4.base.filter.CommandFilterChain;
 import com.github.milomarten.fracktail4.permissions.Role;
@@ -21,18 +21,15 @@ public class RoleEngine implements CommandFilter {
     private final RoleConfiguration roleConfiguration;
 
     public boolean canUseCommand(Member caller, Command command) {
-        var data = command.getCommandData();
-        return getBestRole(caller).meetsOrExceeds(data.getRole());
+        return getBestRole(caller).meetsOrExceeds(command.getRequiredRole());
     }
 
     public boolean canUseCommand(User user, Command command) {
-        var data = command.getCommandData();
-        return getBestRole(user).meetsOrExceeds(data.getRole());
+        return getBestRole(user).meetsOrExceeds(command.getRequiredRole());
     }
 
     public boolean canUseCommand(Role role, Command command) {
-        var data = command.getCommandData();
-        return role.meetsOrExceeds(data.getRole());
+        return role.meetsOrExceeds(command.getRequiredRole());
     }
 
     public Role getRole(MessageCreateEvent event) {
