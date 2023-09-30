@@ -1,15 +1,14 @@
-package com.github.milomarten.fracktail4.base.filter;
+package com.github.milomarten.fracktail4.commands;
 
 import com.github.milomarten.fracktail4.base.*;
+import com.github.milomarten.fracktail4.base.filter.CommandFilter;
+import com.github.milomarten.fracktail4.base.filter.CommandFilterChain;
 import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.permissions.Role;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class BotDisableCommand implements AllPlatformCommand, CommandFilter {
@@ -24,12 +23,15 @@ public class BotDisableCommand implements AllPlatformCommand, CommandFilter {
                 .id("lock")
                 .alias("lock")
                 .description("Lock or unlock the bot, making it non-responsive to commands")
-                .param(CommandData.Param.builder()
-                        .name("on | off")
+                .flow(CommandFlow.builder()
+                        .description("Lock the bot. If command name is provided, only that command is locked.")
+                        .param(CommandParam.builder().name("on").build())
+                        .param(CommandParam.builder().name("command").optional(true).build())
                         .build())
-                .param(CommandData.Param.builder()
-                        .name("command-name")
-                        .optional(true)
+                .flow(CommandFlow.builder()
+                        .description("Unlock the bot. If command name is provided, only that command is unlocked.")
+                        .param(CommandParam.builder().name("off").build())
+                        .param(CommandParam.builder().name("command").optional(true).build())
                         .build())
                 .build();
     }

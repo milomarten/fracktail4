@@ -1,5 +1,7 @@
 package com.github.milomarten.fracktail4.base;
 
+import com.github.milomarten.fracktail4.base.parameter.NoOpParameterParser;
+import com.github.milomarten.fracktail4.base.parameter.ParameterParser;
 import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import reactor.core.publisher.Mono;
 
@@ -9,12 +11,11 @@ public class SimpleCommand implements AllPlatformCommand {
     private final CommandData commandData;
     private final String response;
 
-    public SimpleCommand(String command, String response, String... aliases) {
+    public SimpleCommand(String command, String response, String description) {
         this.commandData = CommandData.builder()
                 .id(command)
                 .alias(command)
-                .aliases(Set.of(aliases))
-                .description(response)
+                .description(description)
                 .build();
         this.response = response;
     }
@@ -22,6 +23,11 @@ public class SimpleCommand implements AllPlatformCommand {
     @Override
     public CommandData getCommandData() {
         return this.commandData;
+    }
+
+    @Override
+    public ParameterParser getParameterParser() {
+        return NoOpParameterParser.INSTANCE;
     }
 
     @Override

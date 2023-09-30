@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -22,9 +21,11 @@ public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
                 .id("help")
                 .alias("help")
                 .description("Give help with how to use a command")
-                .param(CommandData.Param.builder()
-                        .name("command")
-                        .optional(true)
+                .flow(CommandFlow.builder()
+                        .param(CommandParam.builder()
+                                .name("command")
+                                .optional(true)
+                                .build())
                         .build())
                 .build();
     }
@@ -45,7 +46,7 @@ public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
         if (subcommand.isPresent()) {
             var p_command = registry.lookupByAliasAndRole(subcommand.get(), context.getRole());
             if (p_command.isPresent()) {
-                return p_command.get().getHelpText();
+                return getHelpText(p_command.get());
             } else {
                 return String.format("No command found with name %s", subcommand.get());
             }
@@ -57,7 +58,7 @@ public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
             return usableCommands
                     .stream()
                     .sorted(Comparator.comparing(c -> c.getCommandData().getId()))
-                    .map(Command::getHelpText)
+                    .map(HelpCommand::getSummaryText)
                     .collect(Collectors.joining("\n",
                             "You have access to " + usableCommands.size() + " command(s):\n",
                             ""));
@@ -67,5 +68,43 @@ public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
     @Override
     public void setCommandRegistry(CommandRegistry registry) {
         this.registry = registry;
+    }
+
+    private static String getSummaryText(Command cmd) {
+        CommandData cd = cmd.getCommandData();
+        return String.format("%s - %s",
+                String.join(",", cd.getAliases()),
+                cd.getDescription()
+        );
+    }
+
+    private static String getHelpText(Command cmd) {
+        CommandData cd = cmd.getCommandData();
+        String canon = cd.getAliases().iterator().next();
+
+        if (cd.getFlows().isEmpty()) {
+            return String.format("%s - %s",
+                    String.join(",", cd.getAliases()),
+                    cd.getDescription()
+            );
+        }
+        return String.format("%s - %s\nUsage:\n%s",
+                String.join(",", cd.getAliases()),
+                cd.getDescription(),
+                cd.getFlows().stream()
+                        .map(flow -> helpStringForParams(canon, flow))
+                        .collect(Collectors.joining("\n\t", "\t", "")));
+    }
+
+    private static String helpStringForParams(String alias, CommandFlow flow) {
+        return flow.getParams().stream()
+                .map(p -> {
+                    if (p.isOptional()) {
+                        return "[" + p.getName() + "]";
+                    } else {
+                        return p.getType().format(p.getName());
+                    }
+                })
+                .collect(Collectors.joining(" ", "`" + alias + " ", "` - " + flow.getDescription()));
     }
 }

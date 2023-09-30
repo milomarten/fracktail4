@@ -1,17 +1,21 @@
-package com.github.milomarten.fracktail4.react.roles;
+package com.github.milomarten.fracktail4.commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.milomarten.fracktail4.base.Command;
 import com.github.milomarten.fracktail4.base.CommandData;
+import com.github.milomarten.fracktail4.base.CommandFlow;
+import com.github.milomarten.fracktail4.base.CommandParam;
 import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.base.parameter.*;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
 import com.github.milomarten.fracktail4.permissions.Role;
 import com.github.milomarten.fracktail4.react.ReactMessage;
 import com.github.milomarten.fracktail4.react.ReactOption;
+import com.github.milomarten.fracktail4.react.roles.RoleHandler;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.Channel;
+import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,7 +26,7 @@ import java.util.OptionalInt;
 
 @RequiredArgsConstructor
 @Component
-class RoleReactCommand implements Command, DiscordCommand {
+public class RoleReactCommand implements DiscordCommand {
     private static final ParameterParser PARSER = SubcommandParameterParser.builder()
             .option("set-description", NoOpParameterParser.INSTANCE)
             .build();
@@ -38,12 +42,16 @@ class RoleReactCommand implements Command, DiscordCommand {
                 .id("role-react")
                 .alias("role-react")
                 .description("Handle role react commands")
-                .param(CommandData.Param.builder()
-                        .name("operation")
-                        .build())
-                .param(CommandData.Param.builder()
-                        .name("args")
-                        .build())
+                .flow(CommandFlow.of("Initialize a new Role React message", "create"))
+                .flow(CommandFlow.of("Discard all changes to the current Role React", "discard"))
+                .flow(CommandFlow.of("Delete the Role React message completely", "delete"))
+                .flow(CommandFlow.of("Edit a Role React message. Requires publish to make changes take effect", "edit", "role-react-idx"))
+                .flow(CommandFlow.of("Dump the raw contents of the Role React message so far.", "publish"))
+                .flow(CommandFlow.of("Set the Discord channel this message should be put in.", "set-channel", "channel-id"))
+                .flow(CommandFlow.of("Set the text describing the role react message.", "set-description", "description-text"))
+                .flow(CommandFlow.of("Publishes the Role React message in the specified location", "publish"))
+                .flow(CommandFlow.of("Adds a choice to the Role React", "choice-add", "emoji", "role-id"))
+                .flow(CommandFlow.of("Remove a choice from the Role React", "choice-remove", "emoji"))
                 .build();
     }
 
@@ -71,7 +79,6 @@ class RoleReactCommand implements Command, DiscordCommand {
             case "preview" -> preview(event);
             case "set-channel" -> setChannel(event, parameters.range(1));
             case "set-description" -> setDescription(event, parameters.range(1));
-            case "set-guild" -> setGuild(event, parameters.range(1));
             case "publish" -> publish(event);
             case "choice-add" -> addChoice(event, parameters.range(1));
             case "choice-remove" -> removeChoice(event, parameters.range(1));
@@ -105,23 +112,6 @@ class RoleReactCommand implements Command, DiscordCommand {
         return success(event);
     }
 
-    public Mono<?> setGuild(MessageCreateEvent event, Parameters parameters) {
-        if (oven == null) { return nothingInProgress(event); }
-        Optional<Snowflake> guildId = parameters.getSnowflake(0);
-        if (guildId.isEmpty()) {
-            return failure(event, "Correct use is `!role-react set-guild <snowflake>`");
-        }
-
-        return event.getClient()
-                .getGuildById(guildId.get())
-                .flatMap(guild -> {
-                    this.oven.setGuildId(guild.getId());
-                    return success(event);
-                })
-                .onErrorResume(ex -> failure(event,
-                        "I ran into an issue getting the guild information. Sorry. Exception: " + ex.getMessage()));
-    }
-
     private Mono<?> setChannel(MessageCreateEvent event, Parameters parameters) {
         if (oven == null) { return nothingInProgress(event); }
         Optional<Snowflake> channelId = parameters.getSnowflake(0);
@@ -132,8 +122,9 @@ class RoleReactCommand implements Command, DiscordCommand {
         return event.getClient()
                 .getChannelById(channelId.get())
                 .flatMap(channel -> {
-                    if (channel.getType() == Channel.Type.GUILD_TEXT) {
-                        this.oven.setChannelId(channel.getId());
+                    if (channel instanceof TextChannel tc) {
+                        this.oven.setGuildId(tc.getGuildId());
+                        this.oven.setChannelId(tc.getId());
                         return success(event);
                     } else {
                         return failure(event, "Channel must be a normal text channel.");
