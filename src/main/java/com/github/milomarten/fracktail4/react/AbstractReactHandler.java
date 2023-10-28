@@ -107,6 +107,18 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
     }
 
     private Mono<Integer> publishNew(ReactMessage<ID> message) {
+        if (message.hasMoreThan20Options()) {
+            var secondMessage = message.splitOffExcessChoices();
+
+            return publishNew(message) // This should absolutely not recurse
+                    .flatMap(firstIdx -> {
+                        // This may recurse, for excessive amounts of choices.
+                        return publishNew(secondMessage)
+                                .doOnSuccess(message::setLink)
+                                .thenReturn(firstIdx); // Return the first in the chain
+                    });
+        }
+
         String messageBody = getMessageBody(message);
 
         return gateway.getChannelById(message.getChannelId())
