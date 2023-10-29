@@ -193,7 +193,7 @@ class AbstractReactHandlerTest {
     }
 
     private static Snowflake id() {
-        return Snowflake.of(Instant.now());
+        return Snowflake.of(System.nanoTime());
     }
 
     private static ReactMessage<Integer> createReact(Snowflake messageId, int numOptions) {
