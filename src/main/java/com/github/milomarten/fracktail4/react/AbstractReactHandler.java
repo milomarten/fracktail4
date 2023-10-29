@@ -6,9 +6,7 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.event.domain.message.ReactionRemoveEvent;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
-import discord4j.core.spec.MessageEditSpec;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +15,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,6 +26,8 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
 
     protected GatewayDiscordClient gateway;
 
+    protected RoleDiscordInterface connector;
+
     protected abstract Mono<Void> onReact(Member member, ID id);
 
     protected abstract Mono<Void> onUnreact(Member member, ID id);
@@ -40,6 +35,7 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
     @Override
     public void addDiscordHook(GatewayDiscordClient client){
         this.gateway = client;
+        this.connector = new RoleDiscordInterface(client);
         this.gateway.on(ReactionAddEvent.class)
                 .flatMap(rae -> {
                     return findMatchingRoleReact(rae.getMessageId(), rae.getEmoji())
@@ -107,62 +103,69 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
     }
 
     private Mono<Integer> publishNew(ReactMessage<ID> message) {
-        if (message.hasMoreThan20Options()) {
-            var secondMessage = message.splitOffExcessChoices();
+        if (message.getOptions().isEmpty()) {
+            return Mono.empty();
+        }
 
-            return publishNew(message) // This should absolutely not recurse
-                    .flatMap(firstIdx -> {
-                        // This may recurse, for excessive amounts of choices.
-                        return publishNew(secondMessage)
-                                .doOnSuccess(message::setLink)
-                                .thenReturn(firstIdx); // Return the first in the chain
-                    });
+        if (message.hasMoreThan20Options()) {
+            var second = message.splitOffExcessChoices(); // Reduce message to exactly 20 options, pushing the rest into a new ReactMessage
+            // Split into two or more messages, and marking the links appropriately.
+            return publishNew(message) // Publish the first. This is guaranteed to not recurse.
+                    .flatMap(firstIdx -> publishNew(second) // Publish the second. This may recurse in extreme cases.
+                            .doOnSuccess(message::setLink) // Set the first message's link to the second message.
+                            .flatMap(n -> {
+                                String messageBody = getMessageBody(message); // Update the first's text message with a link to the second
+                                return connector.updateMessage(message.getGuildId(), message.getChannelId(), messageBody);
+                            })
+                            .thenReturn(firstIdx)); // Return the root.
         }
 
         String messageBody = getMessageBody(message);
 
-        return gateway.getChannelById(message.getChannelId())
-                .cast(TextChannel.class)
-                .flatMap(tc -> tc.createMessage(messageBody))
-                .flatMap(m -> {
-                    message.setMessageId(m.getId());
-                    return Flux.fromIterable(message.getOptions())
-                            .flatMap(ro -> m.addReaction(ro.getEmoji()))
-                            .then(Mono.just("COMPLETE"));
-                })
-                .flatMap(vod -> {
+        return connector.publishToDiscord(message.getChannelId(), messageBody, message.getOptions())
+                .flatMap(id -> {
+                    message.setMessageId(id);
                     this.roleReactMessages.add(message);
                     return updatePersistence().thenReturn(this.roleReactMessages.size() - 1);
                 });
     }
 
     private Mono<Integer> publishEdit(ReactMessage<ID> old, ReactMessage<ID> nu, int idx) {
+        if (nu.hasNoOptions()) {
+            return deleteById(idx)
+                    .then(Mono.empty());
+        } else if (nu.hasMoreThan20Options()) {
+            if (old.isLinked()) {
+                // If you exceed 20 options on something already linked, we need to do more complex
+                // logic to handle that. For now, throw an exception (to add more, edit the linked one)
+                return Mono.error(new IllegalStateException("I don't know how to do that yet. Try editing " + old.getLink() + " instead"));
+            }
+            else {
+                // The new message pushed the choices past 20.
+                // Update the existing one, then create a new one with the remaining choices.
+                ReactMessage<ID> secondNu = nu.splitOffExcessChoices();
+                return publishEdit(old, nu, idx)
+                        .flatMap(firstIdx -> publishNew(secondNu)
+                                .doOnSuccess(nu::setLink)
+                                .flatMap(n -> {
+                                    String messageBody = getMessageBody(nu); // Update the first's text message with a link to the second
+                                    return connector.updateMessage(nu.getGuildId(), nu.getChannelId(), messageBody);
+                                })
+                                .thenReturn(firstIdx));
+            }
+        }
+
         String messageBody = getMessageBody(nu);
-        Set<ReactionEmoji> oldEmoji = old.getOptions()
-                .stream()
-                .map(ReactOption::getEmoji)
-                .collect(Collectors.toSet()); // [A, B, C]
-        Set<ReactionEmoji> newEmoji = nu.getOptions()
-                .stream()
-                .map(ReactOption::getEmoji)
-                .collect(Collectors.toSet()); // [B, C, D]
+        Set<ReactionEmoji> oldEmoji = getOptionsAsSet(old); // [A, B, C]
+        Set<ReactionEmoji> newEmoji = getOptionsAsSet(nu); // [B, C, D]
 
         var toAdd = SetUtils.difference(newEmoji, oldEmoji); // [ D ]
 
-        return gateway.getMessageById(nu.getChannelId(), nu.getMessageId())
-                .flatMap(msg -> {
-                    return msg.edit(MessageEditSpec.builder()
-                        .contentOrNull(messageBody)
-                        .build());
-                })
-                .flatMap(msg -> {
-                    return Flux.fromIterable(toAdd)
-                                .flatMap(msg::addReaction)
-                                .then(Mono.just(msg));
-                })
-                .flatMap(vod -> {
-                    this.roleReactMessages.set(idx, nu);
-                    return updatePersistence().thenReturn(idx);
+        return connector.publishToDiscord(nu.getGuildId(), nu.getMessageId(), messageBody, toAdd)
+                .thenReturn(idx)
+                .flatMap(i -> {
+                    this.roleReactMessages.set(i, nu);
+                    return updatePersistence().thenReturn(i);
                 });
     }
 
@@ -170,11 +173,25 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
         var list = message.getOptions().stream()
                 .map(ro -> String.format("* %s - %s", getFormattedEmoji(ro.getEmoji()), ro.getDescription()))
                 .collect(Collectors.joining("\n"));
-        if (message.getDescription() == null || message.getDescription().isBlank()) {
-            return list;
-        } else {
-            return message.getDescription() + "\n" + list;
+
+        List<String> body = new ArrayList<>();
+        if (message.getDescription() != null && !message.getDescription().isBlank()) {
+            body.add(message.getDescription());
         }
+        if (message.isLinked()) {
+            getById(message.getLink())
+                    .map(next -> String.format("https://discord.com/channels/%s/%s/%s",
+                            next.getGuildId().asString(),
+                            next.getChannelId().asString(),
+                            next.getMessageId().asString()
+                    ))
+                    .ifPresent(linkUrl -> {
+                        body.add("More choices can be found here: " + linkUrl);
+                    });
+        }
+        body.add(list);
+
+        return String.join("\n\n", body);
     }
 
     private String getFormattedEmoji(ReactionEmoji emoji) {
@@ -192,17 +209,6 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
         }
     }
 
-    public Mono<Integer> editById(int id, UnaryOperator<ReactMessage<ID>> editFunc) {
-        return Mono.justOrEmpty(getById(id))
-                .flatMap(rm -> {
-                    var newRm = editFunc.apply(rm);
-                    if (newRm == null) {
-                        return Mono.empty();
-                    }
-                    return publish(newRm);
-                });
-    }
-
     public Mono<Void> deleteById(int id) {
         if (id < 0 || id >= this.roleReactMessages.size()) {
             return Mono.empty();
@@ -212,9 +218,25 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
             return Mono.empty();
         }
 
-        return this.gateway.getMessageById(message.getChannelId(), message.getMessageId())
-                .flatMap(m -> m.delete("React Complete"))
-                .doOnSuccess(e -> this.roleReactMessages.set(id, null)) // Preserves subsequent IDs
-                .flatMap(e -> updatePersistence());
+        return connector.deleteMessage(message.getChannelId(), message.getMessageId())
+                .doOnSuccess(e -> {
+                    this.roleReactMessages.set(id, null);
+                }) // Preserves subsequent IDs
+                // Update any links
+                .thenMany(Flux.fromStream(this.roleReactMessages.stream().filter(Objects::nonNull)))
+                .filter(rm -> rm.getLink() == id)
+                .flatMap(rm -> {
+                    rm.unlink();
+                    String messageBody = getMessageBody(rm);
+                    return connector.updateMessage(rm.getChannelId(), rm.getMessageId(), messageBody);
+                })
+                .then(updatePersistence());
+    }
+
+    private Set<ReactionEmoji> getOptionsAsSet(ReactMessage<ID> old) {
+        return old.getOptions()
+                .stream()
+                .map(ReactOption::getEmoji)
+                .collect(Collectors.toSet());
     }
 }

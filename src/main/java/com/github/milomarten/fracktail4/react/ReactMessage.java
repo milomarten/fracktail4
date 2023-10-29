@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.react;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import discord4j.common.util.Snowflake;
 import lombok.Data;
 import org.apache.commons.collections4.CollectionUtils;
@@ -15,6 +16,12 @@ public class ReactMessage<ID> {
     private Snowflake messageId;
     private String description;
     private List<ReactOption<ID>> options = new ArrayList<>();
+
+    /**
+     * ID that indicates this ReactMessage is attached to another.
+     * If the link is =/= -1, the link is equal to the ID of the ReactMessage following
+     * this one.
+     */
     private int link = -1;
 
     public ReactMessage() {
@@ -32,8 +39,23 @@ public class ReactMessage<ID> {
         this.setLink(toCopy.getLink());
     }
 
+    @JsonIgnore
+    public boolean isLinked() {
+        return this.link > -1;
+    }
+
+    public void unlink() {
+        this.link = -1;
+    }
+
+    @JsonIgnore
     public boolean hasMoreThan20Options() {
         return options.size() > 20;
+    }
+
+    @JsonIgnore
+    public boolean hasNoOptions() {
+        return options.isEmpty();
     }
 
     public ReactMessage<ID> splitOffExcessChoices() {
