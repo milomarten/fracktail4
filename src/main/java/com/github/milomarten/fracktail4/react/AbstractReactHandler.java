@@ -149,7 +149,7 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
                                 .doOnSuccess(nu::setLink)
                                 .flatMap(n -> {
                                     String messageBody = getMessageBody(nu); // Update the first's text message with a link to the second
-                                    return connector.updateMessage(nu.getGuildId(), nu.getChannelId(), messageBody);
+                                    return connector.updateMessage(nu.getChannelId(), nu.getMessageId(), messageBody);
                                 })
                                 .thenReturn(firstIdx));
             }
