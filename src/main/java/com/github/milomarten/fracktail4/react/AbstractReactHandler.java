@@ -115,7 +115,7 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
                             .doOnSuccess(message::setLink) // Set the first message's link to the second message.
                             .flatMap(n -> {
                                 String messageBody = getMessageBody(message); // Update the first's text message with a link to the second
-                                return connector.updateMessage(message.getGuildId(), message.getChannelId(), messageBody);
+                                return connector.updateMessage(message.getChannelId(), message.getMessageId(), messageBody);
                             })
                             .thenReturn(firstIdx)); // Return the root.
         }
@@ -161,7 +161,7 @@ public abstract class AbstractReactHandler<ID> implements DiscordHookSource {
 
         var toAdd = SetUtils.difference(newEmoji, oldEmoji); // [ D ]
 
-        return connector.publishToDiscord(nu.getGuildId(), nu.getMessageId(), messageBody, toAdd)
+        return connector.publishToDiscord(nu.getChannelId(), nu.getMessageId(), messageBody, toAdd)
                 .thenReturn(idx)
                 .flatMap(i -> {
                     this.roleReactMessages.set(i, nu);
