@@ -4,6 +4,7 @@ import com.github.milomarten.fracktail4.base.*;
 import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.permissions.Role;
 import lombok.NoArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 @Component
 @NoArgsConstructor
+@ConditionalOnBean(CommandRegistry.class)
 public class HelpCommand implements AllPlatformCommand, CommandRegistryAware {
     private CommandRegistry registry = null;
 

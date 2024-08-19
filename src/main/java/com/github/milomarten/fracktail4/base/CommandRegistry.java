@@ -12,6 +12,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @Data
 @Slf4j
 @Component
+@ConditionalOnProperty(prefix = "handlers", name = "discord", havingValue = "CLASSIC", matchIfMissing = true)
 public class CommandRegistry implements DiscordHookSource {
     private final CommandConfiguration configuration;
     private final RoleEngine roleEngine;

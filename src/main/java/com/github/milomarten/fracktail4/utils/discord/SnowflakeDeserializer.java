@@ -15,6 +15,10 @@ public class SnowflakeDeserializer extends StdDeserializer<Snowflake> {
 
     @Override
     public Snowflake deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
-        return Snowflake.of(p.getValueAsString());
+        var value = p.getValueAsString();
+        if (value == null || value.isEmpty()) {
+            return null;
+        }
+        return Snowflake.of(value);
     }
 }

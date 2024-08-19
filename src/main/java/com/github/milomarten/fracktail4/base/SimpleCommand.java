@@ -3,13 +3,14 @@ package com.github.milomarten.fracktail4.base;
 import com.github.milomarten.fracktail4.base.parameter.NoOpParameterParser;
 import com.github.milomarten.fracktail4.base.parameter.ParameterParser;
 import com.github.milomarten.fracktail4.base.parameter.Parameters;
+import lombok.Getter;
 import reactor.core.publisher.Mono;
 
 import java.util.Set;
 
 public class SimpleCommand implements AllPlatformCommand {
     private final CommandData commandData;
-    private final String response;
+    @Getter private final String response;
 
     public SimpleCommand(String command, String response, String description) {
         this.commandData = CommandData.builder()
