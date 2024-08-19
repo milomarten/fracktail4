@@ -1,6 +1,5 @@
 package com.github.milomarten.fracktail4.platform.discord.slash;
 
-import com.github.milomarten.fracktail4.base.filter.CommandFilter;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
