@@ -1,10 +1,7 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.milomarten.fracktail4.base.Command;
-import com.github.milomarten.fracktail4.base.CommandData;
-import com.github.milomarten.fracktail4.base.CommandFlow;
-import com.github.milomarten.fracktail4.base.CommandParam;
+import com.github.milomarten.fracktail4.base.*;
 import com.github.milomarten.fracktail4.base.parameter.Parameters;
 import com.github.milomarten.fracktail4.base.parameter.*;
 import com.github.milomarten.fracktail4.base.platform.DiscordCommand;
@@ -18,6 +15,7 @@ import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -26,6 +24,7 @@ import java.util.OptionalInt;
 
 @RequiredArgsConstructor
 @Component
+@ConditionalOnBean(CommandRegistry.class) // Use for classic commands
 public class RoleReactCommand implements DiscordCommand {
     private static final ParameterParser PARSER = SubcommandParameterParser.builder()
             .option("set-description", NoOpParameterParser.INSTANCE)
