@@ -1,10 +1,12 @@
 package com.github.milomarten.fracktail4.react;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.ReactionAddEvent;
 import discord4j.core.event.domain.message.ReactionRemoveEvent;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.discordjson.json.ImmutableChannelData;
@@ -19,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,13 +38,10 @@ class AbstractReactHandlerTest {
 
     @BeforeEach
     public void initialize() {
-        handler.addDiscordHook(this.client);
-
         when(this.client.on(ReactionAddEvent.class)).thenReturn(Flux.empty());
         when(this.client.on(ReactionRemoveEvent.class)).thenReturn(Flux.empty());
-        when(this.client.getChannelById(any()))
-                .thenReturn(Mono.just(new TextChannel(this.client, ImmutableChannelData.builder()
-                        .build())));
+
+        handler.addDiscordHook(this.client);
     }
 
     @Test
