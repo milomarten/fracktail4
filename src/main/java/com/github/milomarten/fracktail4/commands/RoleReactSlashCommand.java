@@ -1,12 +1,12 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.milomarten.fracktail4.react.ReactMessage;
-import com.github.milomarten.fracktail4.react.ReactOption;
-import com.github.milomarten.fracktail4.react.roles.RoleHandler;
-import com.github.milomarten.fracktail4.slash.SlashCommandRegistry;
-import com.github.milomarten.fracktail4.slash.SlashCommandWrapper;
-import com.github.milomarten.fracktail4.utils.discord.SlashCommands;
+import com.github.milomarten.fracktail4.platform.discord.react.ReactMessage;
+import com.github.milomarten.fracktail4.platform.discord.react.ReactOption;
+import com.github.milomarten.fracktail4.platform.discord.react.RoleHandler;
+import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandRegistry;
+import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
+import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;

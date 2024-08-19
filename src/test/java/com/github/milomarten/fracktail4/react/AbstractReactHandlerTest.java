@@ -1,5 +1,9 @@
 package com.github.milomarten.fracktail4.react;
 
+import com.github.milomarten.fracktail4.platform.discord.react.AbstractReactHandler;
+import com.github.milomarten.fracktail4.platform.discord.react.ReactMessage;
+import com.github.milomarten.fracktail4.platform.discord.react.ReactOption;
+import com.github.milomarten.fracktail4.platform.discord.react.RoleDiscordInterface;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.reaction.ReactionEmoji;
