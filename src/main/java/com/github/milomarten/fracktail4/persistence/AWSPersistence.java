@@ -5,12 +5,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnBean(AmazonS3.class)
 public class AWSPersistence implements Persistence {
     private static final String BUCKET_NAME = "fracktail-persistence";
 
