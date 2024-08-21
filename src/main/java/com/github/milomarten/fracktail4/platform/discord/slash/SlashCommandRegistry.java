@@ -95,6 +95,7 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
                 return Flux.empty();
             }
         })
+        .onErrorContinue((ex, obj) -> log.error("Error thrown by command", ex))
         .subscribe();
 
         client.on(ChatInputInteractionEvent.class).flatMap(acie -> {
