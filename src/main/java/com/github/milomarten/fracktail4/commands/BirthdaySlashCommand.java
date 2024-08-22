@@ -127,9 +127,9 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
             return replyEphemeral(event, "You've already entered your birthday!");
         }
 
-        int month = (int) opt.getOption("month").orElseThrow()
+        String month = opt.getOption("month").orElseThrow()
                 .getValue().orElseThrow()
-                .asLong();
+                .asString();
         int day = (int) opt.getOption("day").orElseThrow()
                 .getValue().orElseThrow()
                 .asLong();
@@ -140,7 +140,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
         MonthDay birthday;
         try {
-            birthday = MonthDay.of(month, day);
+            birthday = MonthDay.of(BirthdayUtils.parseMonth(month).orElseThrow(), day);
         } catch (DateTimeException ex) {
             return replyEphemeral(event,
                     month + "/" + day + " is not a valid day! Nice try!");
