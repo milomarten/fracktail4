@@ -298,7 +298,10 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
     }
 
     private Mono<BirthdayInstance> elaborate(ChatInputInteractionEvent event, BirthdayCritter critter) {
-        return Mono.fromCallable(() -> event.getInteraction().getMember().orElseThrow())
+        return Mono.defer(() -> event.getClient().getMemberById(
+                event.getInteraction().getGuildId().orElseThrow(),
+                critter.getCritter()
+                ))
                         .zipWith(Mono.just(critter), (member, bc) -> new BirthdayInstance(bc, member))
                         .onErrorContinue((ex, obj) -> {});
     }
