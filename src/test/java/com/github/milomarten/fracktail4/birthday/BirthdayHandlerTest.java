@@ -13,8 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @ExtendWith(MockitoExtension.class)
 class BirthdayHandlerTest {
     @Mock private Persistence persistence;
@@ -28,7 +26,7 @@ class BirthdayHandlerTest {
                 Snowflake.of(3), new BirthdayCritter(Snowflake.of(3), MonthDay.of(12, 1))
         );
 
-        birthdayHandler.birthdays = birthdayMap;
+        birthdayHandler.birthdaysById = birthdayMap;
         var nextBirthdays = birthdayHandler.getNextBirthdays(MonthDay.of(7, 1));
 
         assertEquals(1, nextBirthdays.size());
@@ -42,7 +40,7 @@ class BirthdayHandlerTest {
                 Snowflake.of(2), new BirthdayCritter(Snowflake.of(2), MonthDay.of(12, 1))
         );
 
-        birthdayHandler.birthdays = birthdayMap;
+        birthdayHandler.birthdaysById = birthdayMap;
         var nextBirthdays = birthdayHandler.getNextBirthdays(MonthDay.of(7, 1));
 
         assertEquals(2, nextBirthdays.size());
@@ -62,7 +60,7 @@ class BirthdayHandlerTest {
                 Snowflake.of(3), new BirthdayCritter(Snowflake.of(3), MonthDay.of(12, 1))
         );
 
-        birthdayHandler.birthdays = birthdayMap;
+        birthdayHandler.birthdaysById = birthdayMap;
         var nextBirthdays = birthdayHandler.getNextBirthdays(MonthDay.of(12, 16));
 
         assertEquals(1, nextBirthdays.size());
@@ -78,7 +76,7 @@ class BirthdayHandlerTest {
                 Snowflake.of(3), new BirthdayCritter(Snowflake.of(3), MonthDay.of(12, 1))
         );
 
-        birthdayHandler.birthdays = birthdayMap;
+        birthdayHandler.birthdaysById = birthdayMap;
         var nextBirthdays = birthdayHandler.getNextBirthdays(MonthDay.of(12, 16));
 
         assertEquals(2, nextBirthdays.size());
@@ -98,7 +96,7 @@ class BirthdayHandlerTest {
                 Snowflake.of(3), new BirthdayCritter(Snowflake.of(3), MonthDay.of(12, 1))
         );
 
-        birthdayHandler.birthdays = birthdayMap;
+        birthdayHandler.birthdaysById = birthdayMap;
         var nextBirthdays = birthdayHandler.getNextBirthdays(MonthDay.of(10, 1));
 
         assertEquals(1, nextBirthdays.size());

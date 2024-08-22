@@ -41,10 +41,9 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
                         .addOption(ApplicationCommandOptionData.builder()
                                 .name("month")
-                                .type(ApplicationCommandOption.Type.INTEGER.getValue())
+                                .type(ApplicationCommandOption.Type.STRING.getValue())
                                 .description("Month of birth")
-                                .minValue(1d)
-                                .maxValue(12d)
+                                .choices(BirthdayUtils.getMonthOptions())
                                 .required(true)
                                 .build())
                         .addOption(ApplicationCommandOptionData.builder()
@@ -58,7 +57,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         .addOption(ApplicationCommandOptionData.builder()
                                 .name("year")
                                 .type(ApplicationCommandOption.Type.INTEGER.getValue())
-                                .description("Day of birth")
+                                .description("Year of birth")
                                 .minValue(1900d)
                                 .maxValue(2011d)
                                 .required(false)
@@ -66,9 +65,19 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         .build())
                 .addOption(ApplicationCommandOptionData.builder()
                         .name("next")
-                        .description("Get the next upcoming birthday")
+                        .description("Get the next birthday")
                         .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
                         .build())
+                .addOption(ApplicationCommandOptionData.builder()
+                        .name("previous")
+                        .description("Get the previously celebrated birthday")
+                        .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+                        .build())
+//                .addOption(ApplicationCommandOptionData.builder()
+//                        .name("metadata")
+//                        .description("Get information about the calendar")
+//                        .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+//                        .build())
                 .addOption(ApplicationCommandOptionData.builder()
                         .name("lookup")
                         .description("Check on another member's birthday")
@@ -105,6 +114,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
         return switch (first.getName()) {
             case "set" -> set(event, first);
             case "next" -> next(event);
+            case "previous" -> previous(event);
             case "lookup" -> lookup(event, first);
             default -> replyEphemeral(event, "Unknown option " + first.getName());
         };
@@ -142,12 +152,12 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
     private Mono<?> next(ChatInputInteractionEvent event) {
         var now = LocalDate.now();
-        var nextBirthdayDateMaybe = handler.getNextBirthdayDate(now);
-        if (nextBirthdayDateMaybe.isEmpty()) {
+        var nextBirthdaysMaybe = handler.getNextBirthdays(now);
+        if (nextBirthdaysMaybe.isEmpty()) {
             return replyEphemeral(event, "There are no birthdays in the calendar...");
         }
-        var nextBirthdayDate = nextBirthdayDateMaybe.get();
-        var nextBirthdayCritters = handler.getBirthdaysOn(MonthDay.from(nextBirthdayDate));
+        var nextBirthdays = nextBirthdaysMaybe.get();
+        var nextBirthdayCritters = nextBirthdays.critter();
         return event.deferReply()
                 .thenMany(Flux.fromIterable(nextBirthdayCritters))
                 .flatMap(bc -> elaborate(event, bc))
@@ -164,6 +174,36 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         var reply = birthdays.stream()
                                 .map(t -> "\t" + t.getName() + " - " + t.getBirthdayAsString())
                                 .collect(Collectors.joining("\n", "Here are the next birthdays:\n", ""));
+
+                        return followupEphemeral(event, reply);
+                    }
+                });
+    }
+
+    private Mono<?> previous(ChatInputInteractionEvent event) {
+        var now = LocalDate.now();
+        var previousBirthdaysMaybe = handler.getNextBirthdays(now);
+        if (previousBirthdaysMaybe.isEmpty()) {
+            return replyEphemeral(event, "There are no birthdays in the calendar...");
+        }
+        var previousBirthdays = previousBirthdaysMaybe.get();
+        var previousBirthdayCritters = previousBirthdays.critter();
+        return event.deferReply()
+                .thenMany(Flux.fromIterable(previousBirthdayCritters))
+                .flatMap(bc -> elaborate(event, bc))
+                .collectList()
+                .flatMap(birthdays -> {
+                    if (birthdays.isEmpty()) {
+                        // Recursively try birthdays and purging non-member birthdays
+                        return handler.removeBirthdays(previousBirthdayCritters)
+                                .then(previous(event));
+                    } else if (birthdays.size() == 1) {
+                        var birthday = birthdays.get(0);
+                        return followupEphemeral(event, "The previous birthday was " + birthday.getName() + ", on " + birthday.getBirthdayAsString() + "!");
+                    } else {
+                        var reply = birthdays.stream()
+                                .map(t -> "\t" + t.getName() + " - " + t.getBirthdayAsString())
+                                .collect(Collectors.joining("\n", "Here are the previous birthdays:\n", ""));
 
                         return followupEphemeral(event, reply);
                     }
