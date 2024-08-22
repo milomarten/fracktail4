@@ -31,47 +31,47 @@ jobs:
        docker image build . --tag jlamanna/fracktail4:latest --tag jlamanna/fracktail4:${{ github.ref_name }}
        docker image push --all-tags jlamanna/fracktail4
 
-  deploy:
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-    - name: prereqs
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_TOKEN }}
-        AWS_DEFAULT_REGION: 'us-east-2'
-      run: |
-        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-        aws configure set default.region $AWS_DEFAULT_REGION
-        aws configure set region $AWS_DEFAULT_REGION
-        cat ~/.aws/credentials
-
-    - name: Install essentials
-      run: |
-        aws --version
-        sudo apt-get update && sudo apt-get -y install curl jq
-        curl https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl -o /usr/local/bin/lightsailctl
-        chmod +x /usr/local/bin/lightsailctl
-
-    - name: Release to Amazon Lightsail
-      env:
-        CONTAINER_SERVICE_NAME: fracktail4
-        IMAGE_TAG: jlamanna/fracktail4:latest
-        DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-        AWS_TOKEN: ${{ secrets.AWS_TOKEN }}
-      run: |
-        echo "Releasing to Amazon Lightsail"
-        
-         # create a deployment with uploaded docker image
-        aws lightsail create-container-service-deployment \
-          --service-name $CONTAINER_SERVICE_NAME \
-          --containers "{
-            \"$CONTAINER_SERVICE_NAME\": {
-              \"image\": \"$IMAGE_TAG\",
-              \"environment\": {
-                \"discord.token\": \"$DISCORD_TOKEN\",
-                \"aws.token\": \"$AWS_TOKEN\"
-              }
-            }
-          }"
+#  deploy:
+#    needs: [build]
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: prereqs
+#      env:
+#        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}
+#        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_TOKEN }}
+#        AWS_DEFAULT_REGION: 'us-east-2'
+#      run: |
+#        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+#        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+#        aws configure set default.region $AWS_DEFAULT_REGION
+#        aws configure set region $AWS_DEFAULT_REGION
+#        cat ~/.aws/credentials
+#
+#    - name: Install essentials
+#      run: |
+#        aws --version
+#        sudo apt-get update && sudo apt-get -y install curl jq
+#        curl https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl -o /usr/local/bin/lightsailctl
+#        chmod +x /usr/local/bin/lightsailctl
+#
+#    - name: Release to Amazon Lightsail
+#      env:
+#        CONTAINER_SERVICE_NAME: fracktail4
+#        IMAGE_TAG: jlamanna/fracktail4:latest
+#        DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+#        AWS_TOKEN: ${{ secrets.AWS_TOKEN }}
+#      run: |
+#        echo "Releasing to Amazon Lightsail"
+#
+#         # create a deployment with uploaded docker image
+#        aws lightsail create-container-service-deployment \
+#          --service-name $CONTAINER_SERVICE_NAME \
+#          --containers "{
+#            \"$CONTAINER_SERVICE_NAME\": {
+#              \"image\": \"$IMAGE_TAG\",
+#              \"environment\": {
+#                \"discord.token\": \"$DISCORD_TOKEN\",
+#                \"aws.token\": \"$AWS_TOKEN\"
+#              }
+#            }
+#          }"
