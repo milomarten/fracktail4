@@ -23,8 +23,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
-import static com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands.followupEphemeral;
-import static com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands.replyEphemeral;
+import static com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands.*;
 
 @Component
 @RequiredArgsConstructor
@@ -148,7 +147,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
         return event.deferReply()
                 .then(handler.createBirthday(event.getInteraction().getUser().getId(), birthday, year.orElse(null))
-                    .flatMap(i -> followupEphemeral(event, "Added your birthday to the calendar!")))
+                    .flatMap(i -> followup(event, "Added your birthday to the calendar!")))
                 .then();
     }
 
@@ -179,7 +178,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                                 .map(t -> "\t" + t.getName())
                                 .collect(Collectors.joining("\n", title, ""));
 
-                        return followupEphemeral(event, reply);
+                        return followup(event, reply);
                     }
                 });
     }
@@ -211,7 +210,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                                 .map(t -> "\t" + t.getName())
                                 .collect(Collectors.joining("\n", title, ""));
 
-                        return followupEphemeral(event, reply);
+                        return followup(event, reply);
                     }
                 });
     }
@@ -236,17 +235,17 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                 .orElseGet(() -> Mono.just(event.getInteraction().getUser()));
         var birthdayMaybe = handler.getBirthday(userId);
 
-        return event.deferReply().withEphemeral(true)
+        return event.deferReply()
                 .then(Mono.justOrEmpty(birthdayMaybe))
                 .flatMap(bc -> elaborate(event, bc))
-                .flatMap(e -> followupEphemeral(event, e.getName() + "'s birthday is on " + e.getBirthdayAsString()).thenReturn(true))
+                .flatMap(e -> followup(event, e.getName() + "'s birthday is on " + e.getBirthdayAsString()).thenReturn(true))
                 .switchIfEmpty(userMono
                         .flatMap(user -> {
                             return Mono.justOrEmpty(event.getInteraction().getGuildId())
                                     .flatMap(user::asMember)
                                     .map(BirthdaySlashCommand::getName)
                                     .switchIfEmpty(Mono.fromSupplier(user::getUsername))
-                                    .flatMap(name -> followupEphemeral(event, name + "'s birthday is not on the calendar!"));
+                                    .flatMap(name -> followup(event, name + "'s birthday is not on the calendar!"));
                         }).thenReturn(false)
                 );
     }
@@ -268,20 +267,20 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
             return replyEphemeral(event, "There are no birthdays in the calendar for " + BirthdayUtils.getDisplayMonth(searchMonth) + "...");
         }
 
-        return event.deferReply().withEphemeral(true)
+        return event.deferReply()
                 .thenMany(Flux.fromIterable(birthdaysInMonth))
                 .flatMap(bc -> elaborate(event, bc))
                 .collectList()
                 .flatMap(list -> {
                     if (list.isEmpty()) {
-                        return followupEphemeral(event, "There are no birthdays in the calendar for " + BirthdayUtils.getDisplayMonth(searchMonth) + "...");
+                        return followup(event, "There are no birthdays in the calendar for " + BirthdayUtils.getDisplayMonth(searchMonth) + "...");
                     } else {
                         var reply = list.stream()
                                 .sorted(Comparator.comparing(t -> t.celebrator.getDay()))
                                 .map(bi -> "\t" + bi.getName() + " - " + bi.getBirthdayAsString())
                                 .collect(Collectors.joining("\n", "The birthdays for " + BirthdayUtils.getDisplayMonth(searchMonth) + " are:\n", ""));
 
-                        return followupEphemeral(event, reply);
+                        return followup(event, reply);
                     }
                 });
     }

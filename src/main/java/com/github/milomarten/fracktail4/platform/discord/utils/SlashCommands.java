@@ -13,10 +13,16 @@ public class SlashCommands {
                 .build());
     }
 
-    public static Mono<Void> followupEphemeral(ApplicationCommandInteractionEvent event, String content) {
+//    public static Mono<Void> followupEphemeral(ApplicationCommandInteractionEvent event, String content) {
+//        return event.createFollowup(InteractionFollowupCreateSpec.builder()
+//                        .ephemeral(true)
+//                        .content(content)
+//                .build()).then();
+//    }
+
+    public static Mono<Void> followup(ApplicationCommandInteractionEvent event, String content) {
         return event.createFollowup(InteractionFollowupCreateSpec.builder()
-                        .ephemeral(true)
-                        .content(content)
+                .content(content)
                 .build()).then();
     }
 }
