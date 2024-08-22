@@ -147,7 +147,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
         return event.deferReply()
                 .then(handler.createBirthday(event.getInteraction().getUser().getId(), birthday, year.orElse(null))
-                    .flatMap(i -> followup(event, "Added your birthday to the calendar!")))
+                .then(followup(event, "Added your birthday to the calendar!")))
                 .then();
     }
 
