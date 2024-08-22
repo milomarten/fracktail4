@@ -62,16 +62,26 @@ public class BirthdayHandler {
         return birthdaysByDate.getBirthdaysOn(month);
     }
 
-    public Optional<BirthdayCalendar.FutureBirthdayCritters> getNextBirthdays(LocalDate start) {
+    public Optional<BirthdayCalendar.NotNowBirthdayCritters> getNextBirthdays(LocalDate start) {
         return birthdaysByDate.getNextBirthday(start);
     }
 
-    public Optional<BirthdayCalendar.PastBirthdayCritters> getPreviousBirthdays(LocalDate start) {
+    public Optional<BirthdayCalendar.NotNowBirthdayCritters> getPreviousBirthdays(LocalDate start) {
         return birthdaysByDate.getPreviousBirthday(start);
+    }
+
+    public List<BirthdayCritter> getBirthdays() {
+        List<BirthdayCritter> birthdays = new ArrayList<>(birthdaysById.values());
+        birthdays.sort(Comparator.comparing(BirthdayCritter::getDay));
+        return birthdays;
     }
 
     public boolean hasBirthday(Snowflake critter) {
         return this.birthdaysById.containsKey(critter);
+    }
+
+    public int getNumberOfBirthdays() {
+        return this.birthdaysById.size();
     }
 
     public Mono<Void> createBirthday(Snowflake critter, MonthDay day, Year year) {

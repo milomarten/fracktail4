@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.birthday;
 
+import discord4j.common.util.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.time.LocalDate;
@@ -102,41 +103,39 @@ public class BirthdayCalendar {
                 .toList();
     }
 
-    public Optional<FutureBirthdayCritters> getNextBirthday(LocalDate origin) {
+    public Optional<NotNowBirthdayCritters> getNextBirthday(LocalDate origin) {
         if (this.size == 0) {
             // No amount of looping will help...
             return Optional.empty();
         }
 
-        var rollover = false;
+        var year = origin.getYear();
         for (var idx = getIndexForLocalDate(origin) + 1 ;; idx = (idx + 1) % this.holder.length) {
             if (idx == 0) {
-                if (rollover) { return Optional.empty(); } // Safety, should never trigger??
-                rollover = true;
+                year++;
             } else {
                 var ctr = this.holder[idx];
                 if (CollectionUtils.isNotEmpty(ctr)) {
-                    return Optional.of(new FutureBirthdayCritters(ctr, rollover));
+                    return Optional.of(NotNowBirthdayCritters.from(ctr, year));
                 }
             }
         }
     }
 
-    public Optional<PastBirthdayCritters> getPreviousBirthday(LocalDate origin) {
+    public Optional<NotNowBirthdayCritters> getPreviousBirthday(LocalDate origin) {
         if (this.size == 0) {
             // No amount of looping will help...
             return Optional.empty();
         }
 
-        var rollback = false;
+        var year = origin.getYear();
         for (var idx = getIndexForLocalDate(origin) - 1 ;; idx = rollingDecrement(idx)) {
             if (idx == 0) {
-                if (rollback) { return Optional.empty(); } // Safety, should never happen??
-                rollback = true;
+                year++;
             } else {
                 var ctr = this.holder[idx];
                 if (CollectionUtils.isNotEmpty(ctr)) {
-                    return Optional.of(new PastBirthdayCritters(ctr, rollback));
+                    return Optional.of(NotNowBirthdayCritters.from(ctr, year));
                 }
             }
         }
@@ -148,6 +147,11 @@ public class BirthdayCalendar {
         return i;
     }
 
-    public record FutureBirthdayCritters(List<BirthdayCritter> critter, boolean nextYear) {}
-    public record PastBirthdayCritters(List<BirthdayCritter> critter, boolean lastYear) {}
+    public record NotNowBirthdayCritters(List<BirthdayCritter> celebrators, LocalDate when) {
+        public static NotNowBirthdayCritters from(List<BirthdayCritter> critters, int year) {
+            var when = critters.get(0).getDay().atYear(year);
+            var whos = new ArrayList<>(critters);
+            return new NotNowBirthdayCritters(whos, when);
+        }
+    }
 }

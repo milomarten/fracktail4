@@ -4,6 +4,7 @@ import com.github.milomarten.fracktail4.birthday.BirthdayCritter;
 import com.github.milomarten.fracktail4.birthday.BirthdayHandler;
 import com.github.milomarten.fracktail4.birthday.BirthdayUtils;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
+import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
@@ -73,11 +74,11 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         .description("Get the previously celebrated birthday")
                         .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
                         .build())
-//                .addOption(ApplicationCommandOptionData.builder()
-//                        .name("metadata")
-//                        .description("Get information about the calendar")
-//                        .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
-//                        .build())
+                .addOption(ApplicationCommandOptionData.builder()
+                        .name("metadata")
+                        .description("Get information about the calendar")
+                        .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+                        .build())
                 .addOption(ApplicationCommandOptionData.builder()
                         .name("lookup")
                         .description("Check on another member's birthday")
@@ -116,6 +117,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
             case "next" -> next(event);
             case "previous" -> previous(event);
             case "lookup" -> lookup(event, first);
+            case "metadata" -> metadata(event);
             default -> replyEphemeral(event, "Unknown option " + first.getName());
         };
     }
@@ -157,7 +159,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
             return replyEphemeral(event, "There are no birthdays in the calendar...");
         }
         var nextBirthdays = nextBirthdaysMaybe.get();
-        var nextBirthdayCritters = nextBirthdays.critter();
+        var nextBirthdayCritters = nextBirthdays.celebrators();
         return event.deferReply()
                 .thenMany(Flux.fromIterable(nextBirthdayCritters))
                 .flatMap(bc -> elaborate(event, bc))
@@ -167,13 +169,15 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         // Recursively try birthdays and purging non-member birthdays
                         return handler.removeBirthdays(nextBirthdayCritters)
                                 .then(next(event));
-                    } else if (birthdays.size() == 1) {
-                        var birthday = birthdays.get(0);
-                        return followupEphemeral(event, "The next birthday is " + birthday.getName() + ", on " + birthday.getBirthdayAsString() + "!");
                     } else {
+                        var dateOfBirthdays = birthdays.get(0).getBirthdayAsString();
+
+                        var title = String.format("The next birthdays are on %s (%s):\n",
+                                dateOfBirthdays,
+                                BirthdayUtils.getDurationWords(LocalDate.now(), nextBirthdays.when()));
                         var reply = birthdays.stream()
-                                .map(t -> "\t" + t.getName() + " - " + t.getBirthdayAsString())
-                                .collect(Collectors.joining("\n", "Here are the next birthdays:\n", ""));
+                                .map(t -> "\t" + t.getName())
+                                .collect(Collectors.joining("\n", title, ""));
 
                         return followupEphemeral(event, reply);
                     }
@@ -182,12 +186,12 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
     private Mono<?> previous(ChatInputInteractionEvent event) {
         var now = LocalDate.now();
-        var previousBirthdaysMaybe = handler.getNextBirthdays(now);
+        var previousBirthdaysMaybe = handler.getPreviousBirthdays(now);
         if (previousBirthdaysMaybe.isEmpty()) {
             return replyEphemeral(event, "There are no birthdays in the calendar...");
         }
         var previousBirthdays = previousBirthdaysMaybe.get();
-        var previousBirthdayCritters = previousBirthdays.critter();
+        var previousBirthdayCritters = previousBirthdays.celebrators();
         return event.deferReply()
                 .thenMany(Flux.fromIterable(previousBirthdayCritters))
                 .flatMap(bc -> elaborate(event, bc))
@@ -197,13 +201,15 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         // Recursively try birthdays and purging non-member birthdays
                         return handler.removeBirthdays(previousBirthdayCritters)
                                 .then(previous(event));
-                    } else if (birthdays.size() == 1) {
-                        var birthday = birthdays.get(0);
-                        return followupEphemeral(event, "The previous birthday was " + birthday.getName() + ", on " + birthday.getBirthdayAsString() + "!");
                     } else {
+                        var dateOfBirthdays = birthdays.get(0).getBirthdayAsString();
+
+                        var title = String.format("The previous birthdays were on %s (%s):\n",
+                                dateOfBirthdays,
+                                BirthdayUtils.getDurationWords(LocalDate.now(), previousBirthdays.when()));
                         var reply = birthdays.stream()
-                                .map(t -> "\t" + t.getName() + " - " + t.getBirthdayAsString())
-                                .collect(Collectors.joining("\n", "Here are the previous birthdays:\n", ""));
+                                .map(t -> "\t" + t.getName())
+                                .collect(Collectors.joining("\n", title, ""));
 
                         return followupEphemeral(event, reply);
                     }
@@ -280,6 +286,18 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                 });
     }
 
+    private Mono<?> metadata(ChatInputInteractionEvent event) {
+        var response = String.format("There are %d birthdays in the calendar. The dates are: %s",
+                handler.getNumberOfBirthdays(),
+                handler.getBirthdays()
+                        .stream()
+                        .map(BirthdayCritter::getDay)
+                        .map(BirthdayUtils::getDisplayBirthday)
+                        .collect(Collectors.joining(", "))
+                );
+        return replyEphemeral(event, response);
+    }
+
     private Mono<BirthdayInstance> elaborate(ChatInputInteractionEvent event, BirthdayCritter critter) {
         return Mono.fromCallable(() -> event.getInteraction().getMember().orElseThrow())
                         .zipWith(Mono.just(critter), (member, bc) -> new BirthdayInstance(bc, member))
@@ -295,9 +313,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
     private record BirthdayInstance(BirthdayCritter celebrator, Member member) {
         public String getBirthdayAsString() {
-            return String.format("%s %02d",
-                    BirthdayUtils.getDisplayMonth(celebrator.getDay().getMonth()),
-                    celebrator.getDay().getDayOfMonth());
+            return BirthdayUtils.getDisplayBirthday(celebrator.getDay());
         }
 
         public String getName() {
