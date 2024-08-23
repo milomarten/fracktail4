@@ -10,6 +10,10 @@ import reactor.core.publisher.Mono;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A default "persistence" which holds objects in memory only, inside a Hashmap.
+ * This persistence is used if no other is provided.
+ */
 @Component
 @RequiredArgsConstructor
 @ConditionalOnMissingBean(Persistence.class)

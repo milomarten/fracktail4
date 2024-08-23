@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.platform.discord.slash;
 
 import com.github.milomarten.fracktail4.base.SimpleCommand;
+import com.github.milomarten.fracktail4.permissions.discord.DiscordPermissionProvider;
+import com.github.milomarten.fracktail4.permissions.discord.DiscordRole;
 import com.github.milomarten.fracktail4.platform.discord.DiscordHookSource;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.common.util.Snowflake;
@@ -25,11 +27,10 @@ import java.util.stream.Stream;
 @Component
 @Slf4j
 public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcessor {
-    @Value("${discord.slash.guildId}")
+    @Value("${discord.homeGuildId}")
     private Snowflake guildId;
 
-    @Value("${discord.slash.updateCommand.permissibleUsers}")
-    private Set<Long> updateCommandUsers;
+    private DiscordPermissionProvider permissions;
 
     private final Map<String, SlashCommandWrapper> lookup;
     private final List<ApplicationCommandRequest> requests;
@@ -38,7 +39,8 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
     public SlashCommandRegistry(
             @Autowired(required = false) List<SlashCommandWrapper> slashCommands,
             @Autowired(required = false) List<SimpleCommand> simpleCommands,
-            @Autowired(required = false) List<SlashCommandFilter> filters
+            @Autowired(required = false) List<SlashCommandFilter> filters,
+            DiscordPermissionProvider permissions
     ) {
         this.lookup = new HashMap<>();
         this.requests = new ArrayList<>();
@@ -48,6 +50,7 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
                 .forEach(this::addCommand);
 
         this.filters = Objects.requireNonNullElseGet(filters, List::of);
+        this.permissions = permissions;
     }
 
     private static <T> Stream<T> stream(List<T> list) {
@@ -73,11 +76,11 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         client.on(MessageCreateEvent.class).flatMap(mce -> {
             var message = mce.getMessage();
             var author = message.getAuthor();
-            if (author.isEmpty() || !updateCommandUsers.contains(author.get().getId().asLong())) {
+            if (author.isEmpty() || permissions.getPermissionsForUser(author.get()).doesNotHaveRole(DiscordRole.OWNER)) {
                 return Flux.empty();
             }
             String command = message.getContent();
-            if ("!updateGuidSlashCommands".equals(command)) {
+            if ("!updateGuildSlashCommands".equals(command)) {
                 return getId(client)
                         .flatMapMany(id -> client.getRestClient().getApplicationService()
                                 .bulkOverwriteGuildApplicationCommand(id, guildId.asLong(), requests)

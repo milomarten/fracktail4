@@ -62,7 +62,7 @@ public class BotDisableCommand implements SlashCommandWrapper, SlashCommandFilte
 
     @Override
     public Mono<?> handleEvent(ChatInputInteractionEvent event) {
-        if (!permissions.getPermissionsForUser(event.getInteraction().getUser()).contains(DiscordRole.OWNER)) {
+        if (permissions.getPermissionsForUser(event.getInteraction().getUser()).doesNotHaveRole(DiscordRole.OWNER)) {
             return SlashCommands.replyEphemeral(event, "Nice try! Only my owner can do that.");
         }
 

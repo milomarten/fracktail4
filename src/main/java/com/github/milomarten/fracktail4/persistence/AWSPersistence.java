@@ -10,6 +10,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+/**
+ * Use AWS S3 bucket as a persistence layer.
+ * This will be automatically generated if an AmazonS3 bean is present.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -47,6 +51,6 @@ public class AWSPersistence implements Persistence {
 
     @Override
     public Mono<Boolean> hasKey(String key) {
-        return Mono.just(false);
+        return Mono.fromSupplier(() -> s3.doesObjectExist(BUCKET_NAME, key));
     }
 }

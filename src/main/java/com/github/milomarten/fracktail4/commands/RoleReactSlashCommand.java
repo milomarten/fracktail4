@@ -159,7 +159,7 @@ public class RoleReactSlashCommand implements SlashCommandWrapper {
 
     @Override
     public Mono<?> handleEvent(ChatInputInteractionEvent event) {
-        if (!permissions.getPermissionsForUser(event.getInteraction().getUser()).contains(DiscordRole.MOD)) {
+        if (permissions.getPermissionsForUser(event.getInteraction().getUser()).doesNotHaveRole(DiscordRole.MOD)) {
             return SlashCommands.replyEphemeral(event, "Nice try! Only mods can use that.");
         }
 

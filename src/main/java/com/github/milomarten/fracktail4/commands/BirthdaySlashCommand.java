@@ -414,7 +414,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
     }
 
     private boolean isNotMod(ChatInputInteractionEvent event) {
-        return !permissions.getPermissionsForUser(event.getInteraction().getUser())
-                .contains(DiscordRole.MOD);
+        return permissions.getPermissionsForUser(event.getInteraction().getUser())
+                .doesNotHaveRole(DiscordRole.MOD);
     }
 }

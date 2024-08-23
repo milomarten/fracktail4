@@ -7,6 +7,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Creates and starts up the Discord4J client.
+ * This only spins up if a discord.token configuration is provided, via environment variables
+ * or application.yml.
+ */
 @Configuration
 @ConditionalOnProperty(prefix = "discord", name = "token")
 public class DiscordBootstrap {

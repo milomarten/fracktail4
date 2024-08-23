@@ -7,6 +7,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Performs logic to be done after the Discord client is spun up.
+ * Right now, this just pulls all DiscordHookSources, and calls their setup method.
+ * This is only spun up if a Discord Client exists.
+ */
 @Component
 @ConditionalOnBean(GatewayDiscordClient.class)
 public class DiscordHandler {

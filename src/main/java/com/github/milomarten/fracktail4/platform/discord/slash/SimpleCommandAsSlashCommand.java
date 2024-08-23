@@ -6,6 +6,9 @@ import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
+/**
+ * A wrapper to convert a SimpleCommand for Slash Commands.
+ */
 @RequiredArgsConstructor
 public class SimpleCommandAsSlashCommand implements SlashCommandWrapper {
     private final SimpleCommand simpleCommand;
