@@ -2,6 +2,16 @@ aws:
   access-key: AKIAWD3DXWDNWHDXXGXO
   region: US_EAST_2
 
+permissions:
+  discord:
+    rules:
+      - role: OWNER
+        key: ID
+        value: 248612704019808258
+      - role: MOD
+        key: CONTAINS_ROLE
+        value: 423978071394222091
+
 discord:
   slash:
     guildId: 423976318082744321

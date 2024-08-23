@@ -3,6 +3,8 @@ package com.github.milomarten.fracktail4.commands;
 import com.github.milomarten.fracktail4.birthday.BirthdayCritter;
 import com.github.milomarten.fracktail4.birthday.BirthdayHandler;
 import com.github.milomarten.fracktail4.birthday.BirthdayUtils;
+import com.github.milomarten.fracktail4.permissions.discord.DiscordPermissionProvider;
+import com.github.milomarten.fracktail4.permissions.discord.DiscordRole;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
@@ -11,6 +13,7 @@ import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,9 +33,7 @@ import static com.github.milomarten.fracktail4.platform.discord.utils.SlashComma
 @Slf4j
 public class BirthdaySlashCommand implements SlashCommandWrapper {
     private final BirthdayHandler handler;
-
-    @Value("${birthday.commands.mod-role}")
-    private Snowflake modsRole;
+    private final DiscordPermissionProvider permissions;
 
     @Override
     public ApplicationCommandRequest getRequest() {
@@ -413,9 +414,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
     }
 
     private boolean isNotMod(ChatInputInteractionEvent event) {
-        return !event.getInteraction().getMember()
-                .orElseThrow()
-                .getRoleIds()
-                .contains(modsRole);
+        return !permissions.getPermissionsForUser(event.getInteraction().getUser())
+                .contains(DiscordRole.MOD);
     }
 }

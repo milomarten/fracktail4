@@ -1,8 +1,11 @@
 package com.github.milomarten.fracktail4.commands;
 
+import com.github.milomarten.fracktail4.permissions.discord.DiscordPermissionProvider;
+import com.github.milomarten.fracktail4.permissions.discord.DiscordRole;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandFilter;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandFilterChain;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
+import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
@@ -10,6 +13,7 @@ import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -18,7 +22,9 @@ import java.util.*;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class BotDisableCommand implements SlashCommandWrapper, SlashCommandFilter {
+    private final DiscordPermissionProvider permissions;
     private boolean lock;
     private final Map<String, Boolean> locks = new HashMap<>();
 
@@ -56,6 +62,10 @@ public class BotDisableCommand implements SlashCommandWrapper, SlashCommandFilte
 
     @Override
     public Mono<?> handleEvent(ChatInputInteractionEvent event) {
+        if (!permissions.getPermissionsForUser(event.getInteraction().getUser()).contains(DiscordRole.OWNER)) {
+            return SlashCommands.replyEphemeral(event, "Nice try! Only my owner can do that.");
+        }
+
         var status = event.getOption("status")
                 .flatMap(ApplicationCommandInteractionOption::getValue)
                 .map(ApplicationCommandInteractionOptionValue::asBoolean)

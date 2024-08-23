@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 import reactor.core.publisher.Flux;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnBean(GatewayDiscordClient.class)
 public class BirthdayJob {
     private final BirthdayHandler handler;
     private final GatewayDiscordClient discordClient;

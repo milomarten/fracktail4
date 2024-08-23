@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.milomarten.fracktail4.permissions.discord.DiscordPermissionProvider;
+import com.github.milomarten.fracktail4.permissions.discord.DiscordRole;
 import com.github.milomarten.fracktail4.platform.discord.react.ReactMessage;
 import com.github.milomarten.fracktail4.platform.discord.react.ReactOption;
 import com.github.milomarten.fracktail4.platform.discord.react.RoleHandler;
@@ -33,6 +35,8 @@ public class RoleReactSlashCommand implements SlashCommandWrapper {
     private final RoleHandler handler;
 
     private final ObjectMapper objectMapper;
+
+    private final DiscordPermissionProvider permissions;
 
     private ReactMessage<Snowflake> oven = null;
 
@@ -155,6 +159,10 @@ public class RoleReactSlashCommand implements SlashCommandWrapper {
 
     @Override
     public Mono<?> handleEvent(ChatInputInteractionEvent event) {
+        if (!permissions.getPermissionsForUser(event.getInteraction().getUser()).contains(DiscordRole.MOD)) {
+            return SlashCommands.replyEphemeral(event, "Nice try! Only mods can use that.");
+        }
+
         var firstOption = event.getOptions().get(0).getName();
         return switch (firstOption) {
             case "view" -> view(event);
