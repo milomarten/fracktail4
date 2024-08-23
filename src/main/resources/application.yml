@@ -7,3 +7,10 @@ discord:
     guildId: 423976318082744321
     updateCommand:
       permissibleUsers: 248612704019808258
+
+birthday:
+  announcement:
+    channel: 746898862098087977
+    timezone: America/New_York
+  commands:
+    mod-role: 423978071394222091

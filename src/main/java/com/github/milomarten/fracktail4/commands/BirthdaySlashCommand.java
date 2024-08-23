@@ -9,11 +9,11 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
-import discord4j.core.object.entity.Member;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,7 +31,8 @@ import static com.github.milomarten.fracktail4.platform.discord.utils.SlashComma
 public class BirthdaySlashCommand implements SlashCommandWrapper {
     private final BirthdayHandler handler;
 
-    private static final Snowflake MODS_ROLE = Snowflake.of(423978071394222091L);
+    @Value("${birthday.commands.mod-role}")
+    private Snowflake modsRole;
 
     @Override
     public ApplicationCommandRequest getRequest() {
@@ -345,7 +346,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         .flatMap(user -> {
                             return Mono.justOrEmpty(event.getInteraction().getGuildId())
                                     .flatMap(user::asMember)
-                                    .map(BirthdaySlashCommand::getName)
+                                    .map(BirthdayUtils::getName)
                                     .switchIfEmpty(Mono.fromSupplier(user::getUsername))
                                     .flatMap(name -> followup(event, name + "'s birthday is not on the calendar!"));
                         }).thenReturn(false)
@@ -411,17 +412,10 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         });
     }
 
-    static String getName(Member member) {
-        String username = member.getUsername();
-        return member.getNickname()
-                .map(n -> n + " (AKA " + username + ")")
-                .orElse(username);
-    }
-
-    private static boolean isNotMod(ChatInputInteractionEvent event) {
+    private boolean isNotMod(ChatInputInteractionEvent event) {
         return !event.getInteraction().getMember()
                 .orElseThrow()
                 .getRoleIds()
-                .contains(MODS_ROLE);
+                .contains(modsRole);
     }
 }

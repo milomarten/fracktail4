@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.birthday;
 
+import discord4j.core.object.entity.Member;
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 
@@ -63,5 +64,12 @@ public class BirthdayUtils {
         } else {
             return String.format("%d day%s from now", period, plural);
         }
+    }
+
+    public static String getName(Member member) {
+        String username = member.getUsername();
+        return member.getNickname()
+                .map(n -> n + " (AKA " + username + ")")
+                .orElse(username);
     }
 }
