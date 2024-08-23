@@ -85,13 +85,16 @@ public class BirthdayHandler {
     }
 
     public Mono<Void> createBirthday(Snowflake critter, MonthDay day, Year year) {
-        if (this.birthdaysById.containsKey(critter)) {
-            return Mono.error(new IllegalArgumentException("Critter already has a birthday!"));
-        }
-
         var newCritter = new BirthdayCritter(critter, day, year);
-        this.birthdaysById.put(critter, newCritter);
-        this.birthdaysByDate.addBirthday(newCritter);
+
+        if (this.birthdaysById.containsKey(critter)) {
+            this.birthdaysById.put(critter, newCritter);
+            this.birthdaysByDate.removeBirthday(newCritter);
+            this.birthdaysByDate.addBirthday(newCritter);
+        } else {
+            this.birthdaysById.put(critter, newCritter);
+            this.birthdaysByDate.addBirthday(newCritter);
+        }
         return persist();
     }
 

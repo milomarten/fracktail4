@@ -13,6 +13,7 @@ import discord4j.core.object.entity.Member;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,15 +21,17 @@ import reactor.core.publisher.Mono;
 import java.time.*;
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 import static com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands.*;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class BirthdaySlashCommand implements SlashCommandWrapper {
     private final BirthdayHandler handler;
+
+    private static final Snowflake MODS_ROLE = Snowflake.of(423978071394222091L);
 
     @Override
     public ApplicationCommandRequest getRequest() {
@@ -61,6 +64,51 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                                 .minValue(1900d)
                                 .maxValue(2011d)
                                 .required(false)
+                                .build())
+                        .build())
+                .addOption(ApplicationCommandOptionData.builder()
+                        .name("force-set")
+                        .description("Add someone's birthday to the birthday calendar. Mods only!")
+                        .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+                        .addOption(ApplicationCommandOptionData.builder()
+                                .name("user")
+                                .type(ApplicationCommandOption.Type.USER.getValue())
+                                .description("User to add the birthday of")
+                                .required(true)
+                                .build())
+                        .addOption(ApplicationCommandOptionData.builder()
+                                .name("month")
+                                .type(ApplicationCommandOption.Type.STRING.getValue())
+                                .description("Month of birth")
+                                .choices(BirthdayUtils.getMonthOptions())
+                                .required(true)
+                                .build())
+                        .addOption(ApplicationCommandOptionData.builder()
+                                .name("day")
+                                .type(ApplicationCommandOption.Type.INTEGER.getValue())
+                                .description("Day of birth")
+                                .minValue(1d)
+                                .maxValue(31d)
+                                .required(true)
+                                .build())
+                        .addOption(ApplicationCommandOptionData.builder()
+                                .name("year")
+                                .type(ApplicationCommandOption.Type.INTEGER.getValue())
+                                .description("Year of birth")
+                                .minValue(1900d)
+                                .maxValue(2011d)
+                                .required(false)
+                                .build())
+                        .build())
+                .addOption(ApplicationCommandOptionData.builder()
+                        .name("delete")
+                        .description("Remove someone's birthday to the birthday calendar. Mods only!")
+                        .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+                        .addOption(ApplicationCommandOptionData.builder()
+                                .name("user")
+                                .type(ApplicationCommandOption.Type.USER.getValue())
+                                .description("User to remove the birthday of")
+                                .required(true)
                                 .build())
                         .build())
                 .addOption(ApplicationCommandOptionData.builder()
@@ -113,6 +161,8 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
         var first = event.getOptions().get(0);
         return switch (first.getName()) {
             case "set" -> set(event, first);
+            case "force-set" -> forceSet(event, first);
+            case "delete" -> delete(event, first);
             case "next" -> next(event);
             case "previous" -> previous(event);
             case "lookup" -> lookup(event, first);
@@ -148,6 +198,58 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
         return event.deferReply()
                 .then(handler.createBirthday(event.getInteraction().getUser().getId(), birthday, year.orElse(null))
                 .then(followup(event, "Added your birthday to the calendar!")))
+                .then();
+    }
+
+    private Mono<Void> forceSet(ChatInputInteractionEvent event, ApplicationCommandInteractionOption opt) {
+        if (isNotMod(event)) {
+            return replyEphemeral(event, "Nice try, but only mods can use that command.");
+        }
+
+        String month = opt.getOption("month").orElseThrow()
+                .getValue().orElseThrow()
+                .asString();
+        int day = (int) opt.getOption("day").orElseThrow()
+                .getValue().orElseThrow()
+                .asLong();
+        Optional<Year> year = opt.getOption("year")
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asLong)
+                .map(l -> Year.of(l.intValue()));
+        Snowflake userId = opt.getOption("user").orElseThrow()
+                .getValue().orElseThrow()
+                .asSnowflake();
+
+        MonthDay birthday;
+        try {
+            birthday = MonthDay.of(BirthdayUtils.parseMonth(month).orElseThrow(), day);
+        } catch (DateTimeException ex) {
+            return replyEphemeral(event,
+                    month + "/" + day + " is not a valid day! Nice try!");
+        }
+
+        return event.deferReply()
+                .then(handler.createBirthday(userId, birthday, year.orElse(null)))
+                .then(event.getInteraction().getClient()
+                        .getUserById(userId))
+                .flatMap(user -> followup(event, "Added " + user.getUsername() + "'s birthday to the calendar!"))
+                .then();
+    }
+
+    private Mono<Void> delete(ChatInputInteractionEvent event, ApplicationCommandInteractionOption opt) {
+        if (isNotMod(event)) {
+            return replyEphemeral(event, "Nice try, but only mods can use that command.");
+        }
+
+        Snowflake userId = opt.getOption("user").orElseThrow()
+                .getValue().orElseThrow()
+                .asSnowflake();
+
+        return event.deferReply()
+                .then(handler.removeBirthday(userId))
+                .then(event.getInteraction().getClient()
+                        .getUserById(userId))
+                .flatMap(user -> followup(event, "Removed " + user.getUsername() + "'s birthday from the calendar!"))
                 .then();
     }
 
@@ -276,7 +378,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         return followup(event, "There are no birthdays in the calendar for " + BirthdayUtils.getDisplayMonth(searchMonth) + "...");
                     } else {
                         var reply = list.stream()
-                                .sorted(Comparator.comparing(t -> t.celebrator.getDay()))
+                                .sorted(Comparator.comparing(t -> t.celebrator().getDay()))
                                 .map(bi -> "\t" + bi.getName() + " - " + bi.getBirthdayAsString())
                                 .collect(Collectors.joining("\n", "The birthdays for " + BirthdayUtils.getDisplayMonth(searchMonth) + " are:\n", ""));
 
@@ -303,30 +405,23 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                 critter.getCritter()
                 ))
                         .zipWith(Mono.just(critter), (member, bc) -> new BirthdayInstance(bc, member))
-                        .onErrorContinue((ex, obj) -> {});
+                        .onErrorResume(ex -> {
+                            log.error("Error getting member {}. Suppressing...", critter.getCritter(), ex);
+                            return Mono.empty();
+                        });
     }
 
-    private static String getName(Member member) {
+    static String getName(Member member) {
         String username = member.getUsername();
         return member.getNickname()
                 .map(n -> n + " (AKA " + username + ")")
                 .orElse(username);
     }
 
-    private record BirthdayInstance(BirthdayCritter celebrator, Member member) {
-        public String getBirthdayAsString() {
-            return BirthdayUtils.getDisplayBirthday(celebrator.getDay());
-        }
-
-        public String getName() {
-            return BirthdaySlashCommand.getName(this.member);
-        }
-
-        public OptionalInt getAge(Year now) {
-            int age = celebrator.getYear()
-                    .map(birthYear -> now.getValue() - birthYear.getValue())
-                    .orElse(-1);
-            return age < 0 ? OptionalInt.empty() : OptionalInt.of(age);
-        }
+    private static boolean isNotMod(ChatInputInteractionEvent event) {
+        return !event.getInteraction().getMember()
+                .orElseThrow()
+                .getRoleIds()
+                .contains(MODS_ROLE);
     }
 }

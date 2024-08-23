@@ -95,7 +95,10 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
                 return Flux.empty();
             }
         })
-        .onErrorContinue((ex, obj) -> log.error("Error thrown by command", ex))
+        .onErrorResume(ex -> {
+            log.error("Error thrown by command", ex);
+            return Mono.empty();
+        })
         .subscribe();
 
         client.on(ChatInputInteractionEvent.class).flatMap(acie -> {
@@ -116,7 +119,10 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
                 ).then();
             }
         })
-        .onErrorContinue((ex, obj) -> log.error("Error thrown by command", ex))
+        .onErrorResume(ex -> {
+            log.error("Error thrown by command", ex);
+            return Mono.empty();
+        })
         .subscribe();
     }
 
