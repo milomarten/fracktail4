@@ -8,7 +8,6 @@ import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
-import discord4j.core.event.domain.interaction.UserInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
@@ -33,23 +32,19 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
 
     private DiscordPermissionProvider permissions;
 
-    private final Map<String, SlashCommandWrapper> slashCommandLookup;
-    private final Map<String, UserCommandWrapper> userCommandLookup;
+    private final Map<String, SlashCommandWrapper> lookup;
     private final List<ApplicationCommandRequest> requests;
     private final List<SlashCommandFilter> filters;
 
     public SlashCommandRegistry(
             @Autowired(required = false) List<SlashCommandWrapper> slashCommands,
-            @Autowired(required = false) List<UserCommandWrapper> userCommands,
             @Autowired(required = false) List<SimpleCommand> simpleCommands,
             @Autowired(required = false) List<SlashCommandFilter> filters,
             DiscordPermissionProvider permissions
     ) {
-        this.slashCommandLookup = new HashMap<>();
-        this.userCommandLookup = new HashMap<>();
+        this.lookup = new HashMap<>();
         this.requests = new ArrayList<>();
         stream(slashCommands).forEach(this::addCommand);
-        stream(userCommands).forEach(this::addCommand);
         stream(simpleCommands)
                 .map(SimpleCommandAsSlashCommand::new)
                 .forEach(this::addCommand);
@@ -69,24 +64,11 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
             throw new IllegalArgumentException("Command must have a name");
         }
         this.requests.add(request);
-        if (this.slashCommandLookup.containsKey(request.name())) {
-            log.warn("Overwriting slash command {}", request.name());
+        if (this.lookup.containsKey(request.name())) {
+            log.warn("Overwriting command {}", request.name());
         }
-        slashCommandLookup.put(request.name(), command);
-        log.info("Added slash command {}", request.name());
-    }
-
-    public void addCommand(UserCommandWrapper command) {
-        var request = command.getRequest();
-        if (request.name().isEmpty()) {
-            throw new IllegalArgumentException("Command must have a name");
-        }
-        this.requests.add(request);
-        if (this.userCommandLookup.containsKey(request.name())) {
-            log.warn("Overwriting user command {}", request.name());
-        }
-        userCommandLookup.put(request.name(), command);
-        log.info("Added user command {}", request.name());
+        lookup.put(request.name(), command);
+        log.info("Added command {}", request.name());
     }
 
     @Override
@@ -98,14 +80,14 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
                 return Flux.empty();
             }
             String command = message.getContent();
-            if ("!updateGuildCommands".equals(command)) {
+            if ("!updateGuildSlashCommands".equals(command)) {
                 return getId(client)
                         .flatMapMany(id -> client.getRestClient().getApplicationService()
                                 .bulkOverwriteGuildApplicationCommand(id, guildId.asLong(), requests)
                         )
                         .count()
                         .flatMap(count -> reply(message, "Updated " + count + " commands in the guild"));
-            } else if ("!updateGlobalCommands".equals(command)){
+            } else if ("!updateGlobalSlashCommands".equals(command)){
                 return getId(client)
                         .flatMapMany(id -> client.getRestClient().getApplicationService()
                                 .bulkOverwriteGlobalApplicationCommand(id, requests)
@@ -124,32 +106,14 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
 
         client.on(ChatInputInteractionEvent.class).flatMap(acie -> {
             var name = acie.getCommandName();
-            if (this.slashCommandLookup.containsKey(name)) {
+            if (this.lookup.containsKey(name)) {
                 var chain = new SlashCommandFilterChain(this.filters);
                 return chain.callNext(acie)
                         .flatMap(canUse -> {
-                            if (canUse) { return this.slashCommandLookup.get(name).handleEvent(acie); }
+                            if (canUse) { return this.lookup.get(name).handleEvent(acie); }
                             else { return SlashCommands.replyEphemeral(acie, "That command can't be used now.");}
                         })
                         .then();
-            } else {
-                return acie.reply(InteractionApplicationCommandCallbackSpec.builder()
-                        .content("Unknown command " + name + ". Please contact the admin.")
-                        .ephemeral(true)
-                        .build()
-                ).then();
-            }
-        })
-        .onErrorResume(ex -> {
-            log.error("Error thrown by command", ex);
-            return Mono.empty();
-        })
-        .subscribe();
-
-        client.on(UserInteractionEvent.class).flatMap(acie -> {
-            var name = acie.getCommandName();
-            if (this.userCommandLookup.containsKey(name)) {
-                return this.userCommandLookup.get(name).handleEvent(acie);
             } else {
                 return acie.reply(InteractionApplicationCommandCallbackSpec.builder()
                         .content("Unknown command " + name + ". Please contact the admin.")
