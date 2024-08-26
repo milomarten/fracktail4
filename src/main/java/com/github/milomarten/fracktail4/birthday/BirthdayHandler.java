@@ -5,6 +5,7 @@ import com.github.milomarten.fracktail4.persistence.Persistence;
 import discord4j.common.util.Snowflake;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class BirthdayHandler {
     private static final TypeReference<List<BirthdayCritter>> BIRTHDAY_TYPE = new TypeReference<List<BirthdayCritter>>() {};
     public static final String BIRTHDAYS_KEY = "birthdays";
@@ -29,6 +31,7 @@ public class BirthdayHandler {
     private void load() {
         var birthdays = persistence.retrieve(BIRTHDAYS_KEY, BIRTHDAY_TYPE).block();
         if (birthdays != null) {
+            log.info("Pulled {} birthdays from persistence", birthdays.size());
             this.birthdaysById = new HashMap<>(birthdays.stream()
                     .collect(Collectors.toMap(BirthdayCritter::getCritter, b -> b)));
         } else {
