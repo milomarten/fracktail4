@@ -147,6 +147,13 @@ public class BirthdayCalendar {
         return i;
     }
 
+    public record NotNowBirthdayCritter(BirthdayCritter celebrator, LocalDate when) {
+        public static NotNowBirthdayCritter from(BirthdayCritter critter, int year) {
+            var when = critter.getDay().atYear(year);
+            return new NotNowBirthdayCritter(critter, when);
+        }
+    }
+
     public record NotNowBirthdayCritters(List<BirthdayCritter> celebrators, LocalDate when) {
         public static NotNowBirthdayCritters from(List<BirthdayCritter> critters, int year) {
             var when = critters.get(0).getDay().atYear(year);

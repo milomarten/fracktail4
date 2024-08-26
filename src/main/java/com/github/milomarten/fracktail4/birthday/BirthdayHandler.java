@@ -50,6 +50,16 @@ public class BirthdayHandler {
         return Optional.ofNullable(this.birthdaysById.get(user));
     }
 
+    public Optional<BirthdayCalendar.NotNowBirthdayCritter> getNextBirthday(Snowflake user) {
+        var now = LocalDate.now();
+        return getBirthday(user)
+                .map(bc -> {
+                    var day = bc.getDay();
+                    var deltaYear = day.isBefore(MonthDay.from(now)) ? 1 : 0;
+                    return BirthdayCalendar.NotNowBirthdayCritter.from(bc, now.getYear() + deltaYear);
+                });
+    }
+
     public List<BirthdayCritter> getBirthdaysOn(LocalDate day) {
         return birthdaysByDate.getBirthdaysOn(day);
     }
