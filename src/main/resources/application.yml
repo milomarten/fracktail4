@@ -13,7 +13,7 @@ discord:
     rules:
       - role: OWNER
         key: ID
-        value: ${discord.ownerId}
+        value: 248612704019808258
       - role: MOD
         key: CONTAINS_ROLE
         value: 423978071394222091
@@ -22,4 +22,4 @@ discord:
 birthday:
   announcement:
     channel: 746898862098087977
-    timezone: America/New_York
+    timezone: 'America/New_York'
