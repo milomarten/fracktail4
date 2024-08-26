@@ -19,6 +19,6 @@ public class LoggingHandler implements DiscordHookSource {
                 log.info("Recieved event: {}", event.getClass());
                 return Mono.empty();
             }
-        });
+        }).subscribe();
     }
 }
