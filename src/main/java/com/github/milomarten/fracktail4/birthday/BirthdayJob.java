@@ -42,10 +42,9 @@ public class BirthdayJob {
                 .cast(TextChannel.class)
                 .blockOptional()
                 .orElseThrow();
-        log.info("Birthday announcement channel: {}", this.announcementChannel.getMention());
     }
 
-    @Scheduled(cron = "@midnight", zone = "America/New_York")
+    @Scheduled(cron = "@midnight", zone = "${birthday.announcement.timezone}")
     public void announceBirthday() {
         var today = LocalDate.now(homeTimezone);
         var thisYear = Year.from(today);

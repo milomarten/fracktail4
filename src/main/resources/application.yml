@@ -2,10 +2,6 @@ aws:
   access-key: AKIAWD3DXWDNWHDXXGXO
   region: US_EAST_2
 
-logging:
-  level:
-    root: DEBUG
-
 discord:
   homeGuildId: 423976318082744321
   ownerId: 248612704019808258
@@ -13,7 +9,7 @@ discord:
     rules:
       - role: OWNER
         key: ID
-        value: 248612704019808258
+        value: ${discord.ownerId}
       - role: MOD
         key: CONTAINS_ROLE
         value: 423978071394222091
@@ -22,4 +18,4 @@ discord:
 birthday:
   announcement:
     channel: 746898862098087977
-    timezone: 'America/New_York'
+    timezone: America/New_York
