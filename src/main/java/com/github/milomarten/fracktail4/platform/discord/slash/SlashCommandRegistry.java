@@ -40,7 +40,7 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
 
     public SlashCommandRegistry(
             @Autowired(required = false) List<SlashCommandWrapper> slashCommands,
-//            @Autowired(required = false) List<UserCommandWrapper> userCommands,
+            @Autowired(required = false) List<UserCommandWrapper> userCommands,
             @Autowired(required = false) List<SimpleCommand> simpleCommands,
             @Autowired(required = false) List<SlashCommandFilter> filters,
             DiscordPermissionProvider permissions
@@ -49,7 +49,7 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         this.userCommandLookup = new HashMap<>();
         this.requests = new ArrayList<>();
         stream(slashCommands).forEach(this::addCommand);
-//        stream(userCommands).forEach(this::addCommand);
+        stream(userCommands).forEach(this::addCommand);
         stream(simpleCommands)
                 .map(SimpleCommandAsSlashCommand::new)
                 .forEach(this::addCommand);
@@ -146,23 +146,23 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         })
         .subscribe();
 
-//        client.on(UserInteractionEvent.class).flatMap(acie -> {
-//            var name = acie.getCommandName();
-//            if (this.userCommandLookup.containsKey(name)) {
-//                return this.userCommandLookup.get(name).handleEvent(acie);
-//            } else {
-//                return acie.reply(InteractionApplicationCommandCallbackSpec.builder()
-//                        .content("Unknown command " + name + ". Please contact the admin.")
-//                        .ephemeral(true)
-//                        .build()
-//                ).then();
-//            }
-//        })
-//        .onErrorResume(ex -> {
-//            log.error("Error thrown by command", ex);
-//            return Mono.empty();
-//        })
-//        .subscribe();
+        client.on(UserInteractionEvent.class).flatMap(acie -> {
+            var name = acie.getCommandName();
+            if (this.userCommandLookup.containsKey(name)) {
+                return this.userCommandLookup.get(name).handleEvent(acie);
+            } else {
+                return acie.reply(InteractionApplicationCommandCallbackSpec.builder()
+                        .content("Unknown command " + name + ". Please contact the admin.")
+                        .ephemeral(true)
+                        .build()
+                ).then();
+            }
+        })
+        .onErrorResume(ex -> {
+            log.error("Error thrown by command", ex);
+            return Mono.empty();
+        })
+        .subscribe();
     }
 
     private Mono<Long> getId(GatewayDiscordClient client) {

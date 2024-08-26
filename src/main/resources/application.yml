@@ -2,6 +2,10 @@ aws:
   access-key: AKIAWD3DXWDNWHDXXGXO
   region: US_EAST_2
 
+logging:
+  level:
+    root: DEBUG
+
 discord:
   homeGuildId: 423976318082744321
   ownerId: 248612704019808258
