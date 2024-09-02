@@ -4,8 +4,11 @@ import com.github.milomarten.fracktail4.commands.BirthdayInstance;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.TextChannel;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 import reactor.core.publisher.Flux;
@@ -20,15 +23,29 @@ import java.util.stream.Collectors;
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(value = "discord.birthday.enabled", havingValue = "true")
 public class BirthdayJob {
     private final BirthdayHandler handler;
     private final GatewayDiscordClient discordClient;
 
-    private static final Snowflake HOME_SERVER = Snowflake.of(423976318082744321L);
-    private static final Snowflake ANNOUNCEMENT_CHANNEL = Snowflake.of(746898862098087977L);
+    @Value("${discord.birthday.announcementChannelId}")
+    private Snowflake announcementChannelId;
+    private TextChannel announcementChannel;
 
     private static final String HOME_TIMEZONE_RAW = "America/New_York";
     private static final ZoneId HOME_TIMEZONE = ZoneId.of(HOME_TIMEZONE_RAW);
+
+    @PostConstruct
+    private void setUp() {
+        var aChannelMaybe = discordClient.getChannelById(announcementChannelId)
+                .cast(TextChannel.class)
+                .blockOptional();
+        if (aChannelMaybe.isPresent()) {
+            this.announcementChannel = aChannelMaybe.get();
+        } else {
+            log.error("Couldn't pull text channel {}", announcementChannelId);
+        }
+    }
 
     @Scheduled(cron = "@midnight", zone = HOME_TIMEZONE_RAW)
     public void announceBirthday() {
@@ -37,7 +54,7 @@ public class BirthdayJob {
 
         Flux.fromIterable(birthdaysToday)
                 .flatMap(birthday -> {
-                    return discordClient.getMemberById(HOME_SERVER, birthday.getCritter())
+                    return discordClient.getMemberById(this.announcementChannel.getGuildId(), birthday.getCritter())
                             .onErrorResume(ex -> {
                                 log.error("Error getting member", ex);
                                 return Mono.empty();
@@ -60,10 +77,7 @@ public class BirthdayJob {
                                     "\uD83C\uDF89 It's Birthday Time! Happy Birthday to ",
                                     ""));
                 })
-                .flatMap(str -> discordClient.getChannelById(ANNOUNCEMENT_CHANNEL)
-                        .cast(TextChannel.class)
-                        .flatMap(c -> c.createMessage(str))
-                )
+                .flatMap(str -> announcementChannel.createMessage(str))
                 .subscribe(null, ex -> log.error("Error sending birthday message", ex));
     }
 }

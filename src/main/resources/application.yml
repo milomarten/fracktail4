@@ -5,3 +5,6 @@ aws:
 discord:
   ownerId: 248612704019808258
   modRoleId: 423978071394222091
+  birthday:
+    enabled: true
+    announcementChannelId: 746898862098087977
