@@ -3,6 +3,7 @@ package com.github.milomarten.fracktail4.commands;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandFilter;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandFilterChain;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
+import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
@@ -67,17 +68,11 @@ public class BotDisableCommand implements SlashCommandWrapper, SlashCommandFilte
         if (command.isEmpty()) {
             this.lock = status;
             log.info("Bot is now {}", status ? "locked" : "unlocked");
-            return event.reply(InteractionApplicationCommandCallbackSpec.builder()
-                    .content("Bot status has been set to " + (status ? "locked" : "unlocked"))
-                    .ephemeral(true)
-                    .build());
+            return SlashCommands.replyEphemeral(event, "Bot status has been set to " + (status ? "locked" : "unlocked"));
         } else {
             this.locks.put(command.get(), status);
             log.info("Command {} is now {}", command.get(), status ? "locked" : "unlocked");
-            return event.reply(InteractionApplicationCommandCallbackSpec.builder()
-                    .content(command.get() + " status has been set to " + (status ? "locked" : "unlocked"))
-                    .ephemeral(true)
-                    .build());
+            return SlashCommands.replyEphemeral(event, command.get() + " status has been set to " + (status ? "locked" : "unlocked"));
         }
     }
 }
