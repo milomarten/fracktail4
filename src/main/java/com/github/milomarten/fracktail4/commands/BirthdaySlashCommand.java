@@ -3,6 +3,8 @@ package com.github.milomarten.fracktail4.commands;
 import com.github.milomarten.fracktail4.birthday.BirthdayCritter;
 import com.github.milomarten.fracktail4.birthday.BirthdayHandler;
 import com.github.milomarten.fracktail4.birthday.BirthdayUtils;
+import com.github.milomarten.fracktail4.config.FracktailRoles;
+import com.github.milomarten.fracktail4.permissions.PermissionsProvider;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
@@ -10,6 +12,7 @@ import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +33,7 @@ import static com.github.milomarten.fracktail4.platform.discord.utils.SlashComma
 @Slf4j
 public class BirthdaySlashCommand implements SlashCommandWrapper {
     private final BirthdayHandler handler;
-
-    private static final Snowflake MODS_ROLE = Snowflake.of(423978071394222091L);
+    private final PermissionsProvider<User, FracktailRoles> permissionsProvider;
 
     @Override
     public ApplicationCommandRequest getRequest() {
@@ -418,10 +420,10 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                 .orElse(username);
     }
 
-    private static boolean isNotMod(ChatInputInteractionEvent event) {
-        return !event.getInteraction().getMember()
-                .orElseThrow()
-                .getRoleIds()
-                .contains(MODS_ROLE);
+    private boolean isNotMod(ChatInputInteractionEvent event) {
+        return event.getInteraction().getMember()
+                .map(permissionsProvider::getRoles)
+                .orElseGet(() -> permissionsProvider.getRoles(event.getInteraction().getUser()))
+                .doesNotHaveRole(FracktailRoles.MOD);
     }
 }

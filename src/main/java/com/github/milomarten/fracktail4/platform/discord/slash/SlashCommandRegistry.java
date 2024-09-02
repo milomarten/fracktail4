@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.platform.discord.slash;
 
 import com.github.milomarten.fracktail4.base.SimpleCommand;
+import com.github.milomarten.fracktail4.config.FracktailRoles;
+import com.github.milomarten.fracktail4.permissions.PermissionsProvider;
 import com.github.milomarten.fracktail4.platform.discord.DiscordHookSource;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.common.util.Snowflake;
@@ -9,6 +11,7 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.interaction.UserInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.ApplicationCommandRequest;
@@ -26,11 +29,7 @@ import java.util.stream.Stream;
 @Component
 @Slf4j
 public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcessor {
-    @Value("${discord.slash.guildId}")
-    private Snowflake guildId;
-
-    @Value("${discord.slash.updateCommand.permissibleUsers}")
-    private Set<Long> updateCommandUsers;
+    private final PermissionsProvider<User, FracktailRoles> permissionsProvider;
 
     private final Map<String, SlashCommandWrapper> slashCommandLookup;
     private final Map<String, UserCommandWrapper> userCommandLookup;
@@ -41,7 +40,8 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
             @Autowired(required = false) List<SlashCommandWrapper> slashCommands,
             @Autowired(required = false) List<UserCommandWrapper> userCommands,
             @Autowired(required = false) List<SimpleCommand> simpleCommands,
-            @Autowired(required = false) List<SlashCommandFilter> filters
+            @Autowired(required = false) List<SlashCommandFilter> filters,
+            PermissionsProvider<User, FracktailRoles> permissionsProvider
     ) {
         this.slashCommandLookup = new HashMap<>();
         this.userCommandLookup = new HashMap<>();
@@ -53,6 +53,7 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
                 .forEach(this::addCommand);
 
         this.filters = Objects.requireNonNullElseGet(filters, List::of);
+        this.permissionsProvider = permissionsProvider;
     }
 
     private static <T> Stream<T> stream(List<T> list) {
@@ -91,18 +92,32 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         client.on(MessageCreateEvent.class).flatMap(mce -> {
             var message = mce.getMessage();
             var author = message.getAuthor();
-            if (author.isEmpty() || !updateCommandUsers.contains(author.get().getId().asLong())) {
+            if (author.isEmpty() || permissionsProvider.getRoles(author.get()).doesNotHaveRole(FracktailRoles.OWNER)) {
                 return Flux.empty();
             }
             String command = message.getContent();
-            if ("!updateGuidSlashCommands".equals(command)) {
+            if (command.startsWith("!updateGuildCommands")) {
+                Optional<Long> guildId = mce.getGuildId()
+                        .map(Snowflake::asLong)
+                        .or(() -> {
+                            var split = command.split(" ", 2);
+                            if (split.length < 2) {
+                                return Optional.empty();
+                            } else {
+                                return Optional.of(split[1])
+                                        .map(Long::parseLong);
+                            }
+                        });
+                if (guildId.isEmpty()) {
+                    return reply(message, "Since you're in a DM, you have to specify the Guild ID to do that.");
+                }
                 return getId(client)
                         .flatMapMany(id -> client.getRestClient().getApplicationService()
-                                .bulkOverwriteGuildApplicationCommand(id, guildId.asLong(), requests)
+                                .bulkOverwriteGuildApplicationCommand(id, guildId.get(), requests)
                         )
                         .count()
                         .flatMap(count -> reply(message, "Updated " + count + " commands in the guild"));
-            } else if ("!updateGlobalSlashCommands".equals(command)){
+            } else if ("!updateGlobalCommands".equals(command)){
                 return getId(client)
                         .flatMapMany(id -> client.getRestClient().getApplicationService()
                                 .bulkOverwriteGlobalApplicationCommand(id, requests)
