@@ -31,6 +31,7 @@ dependencies {
 
 	implementation 'org.apache.commons:commons-collections4:4.4'
 	implementation 'org.mnode.ical4j:ical4j:4.0.3'
+	implementation 'org.mnode.ical4j:ical4j-extensions:2.0.0-rc5'
 
 	compileOnly 'org.projectlombok:lombok'
 

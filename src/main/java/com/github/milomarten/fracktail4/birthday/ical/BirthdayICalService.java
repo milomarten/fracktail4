@@ -4,13 +4,18 @@ import com.github.milomarten.fracktail4.birthday.BirthdayHandler;
 import discord4j.core.GatewayDiscordClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.fortuna.ical4j.extensions.model.property.WrCalDesc;
+import net.fortuna.ical4j.extensions.model.property.WrCalName;
 import net.fortuna.ical4j.model.Calendar;
+import net.fortuna.ical4j.model.ParameterList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.*;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
+
+import java.time.Duration;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -33,6 +38,10 @@ public class BirthdayICalService {
                             .withProdId("-//Milo Marten//Fracktail 4.0//EN")
                             .withDefaults()
                             .getFluentTarget();
+
+                    calendar.add(new WrCalName(new ParameterList(), "Fracktail Birthdays"));
+                    calendar.add(new WrCalDesc(new ParameterList(), "Birthdays, as generated from Fracktail in Milo's Saloon."));
+                    calendar.add(new RefreshInterval(new ParameterList(), Duration.ofHours(12)));
 
                     celebrators.stream()
                             .<VEvent>map(celebrator -> {
