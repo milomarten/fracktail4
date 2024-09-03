@@ -30,6 +30,7 @@ dependencies {
 	implementation "com.discord4j:discord4j-core:3.2.6"
 
 	implementation 'org.apache.commons:commons-collections4:4.4'
+	implementation 'org.mnode.ical4j:ical4j:4.0.3'
 
 	compileOnly 'org.projectlombok:lombok'
 

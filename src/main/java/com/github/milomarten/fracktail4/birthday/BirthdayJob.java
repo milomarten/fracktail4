@@ -32,8 +32,8 @@ public class BirthdayJob {
     private Snowflake announcementChannelId;
     private TextChannel announcementChannel;
 
-    private static final String HOME_TIMEZONE_RAW = "America/New_York";
-    private static final ZoneId HOME_TIMEZONE = ZoneId.of(HOME_TIMEZONE_RAW);
+    public static final String HOME_TIMEZONE_RAW = "America/New_York";
+    public static final ZoneId HOME_TIMEZONE = ZoneId.of(HOME_TIMEZONE_RAW);
 
     @PostConstruct
     private void setUp() {

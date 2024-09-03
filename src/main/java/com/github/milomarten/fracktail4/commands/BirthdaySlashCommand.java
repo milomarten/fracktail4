@@ -3,6 +3,7 @@ package com.github.milomarten.fracktail4.commands;
 import com.github.milomarten.fracktail4.birthday.BirthdayCritter;
 import com.github.milomarten.fracktail4.birthday.BirthdayHandler;
 import com.github.milomarten.fracktail4.birthday.BirthdayUtils;
+import com.github.milomarten.fracktail4.birthday.ical.BirthdayICalCacheJob;
 import com.github.milomarten.fracktail4.config.FracktailRoles;
 import com.github.milomarten.fracktail4.permissions.PermissionsProvider;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
@@ -33,6 +34,7 @@ import static com.github.milomarten.fracktail4.platform.discord.utils.SlashComma
 @Slf4j
 public class BirthdaySlashCommand implements SlashCommandWrapper {
     private final BirthdayHandler handler;
+    private final BirthdayICalCacheJob cacheJob;
     private final PermissionsProvider<User, FracktailRoles> permissionsProvider;
 
     @Override
@@ -197,8 +199,10 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                     month + "/" + day + " is not a valid day! Nice try!");
         }
 
+        Snowflake userId = event.getInteraction().getUser().getId();
         return event.deferReply()
-                .then(handler.createBirthday(event.getInteraction().getUser().getId(), birthday, year.orElse(null))
+                .then(handler.createBirthday(userId, birthday, year.orElse(null))
+                .then(Mono.fromRunnable(() -> this.onUpdate(userId)))
                 .then(followup(event, "Added your birthday to the calendar!")))
                 .then();
     }
@@ -232,6 +236,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
         return event.deferReply()
                 .then(handler.createBirthday(userId, birthday, year.orElse(null)))
+                .then(Mono.fromRunnable(() -> this.onUpdate(userId)))
                 .then(event.getInteraction().getClient()
                         .getUserById(userId))
                 .flatMap(user -> followup(event, "Added " + user.getUsername() + "'s birthday to the calendar!"))
@@ -249,6 +254,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
         return event.deferReply()
                 .then(handler.removeBirthday(userId))
+                .then(Mono.fromRunnable(() -> this.onUpdate(userId)))
                 .then(event.getInteraction().getClient()
                         .getUserById(userId))
                 .flatMap(user -> followup(event, "Removed " + user.getUsername() + "'s birthday from the calendar!"))
@@ -425,5 +431,10 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                 .map(permissionsProvider::getRoles)
                 .orElseGet(() -> permissionsProvider.getRoles(event.getInteraction().getUser()))
                 .doesNotHaveRole(FracktailRoles.MOD);
+    }
+
+    private void onUpdate(Snowflake userId) {
+        // todo: Make this more refined?
+        this.cacheJob.updateCalendar();
     }
 }
