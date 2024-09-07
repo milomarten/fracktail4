@@ -1,10 +1,7 @@
 package com.github.milomarten.fracktail4.birthday;
 
 import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
-import com.github.milomarten.fracktail4.birthday.v2.UserBirthdayEventInstance;
-import discord4j.common.util.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.IteratorUtils;
 
 import java.time.LocalDate;
 import java.time.Month;
