@@ -1,8 +1,6 @@
 package com.github.milomarten.fracktail4.commands;
 
-import com.github.milomarten.fracktail4.birthday.BirthdayCritter;
 import com.github.milomarten.fracktail4.birthday.BirthdayHandler;
-import com.github.milomarten.fracktail4.birthday.BirthdayInstance;
 import com.github.milomarten.fracktail4.birthday.BirthdayUtils;
 import com.github.milomarten.fracktail4.birthday.ical.BirthdayICalCacheJob;
 import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
@@ -14,7 +12,6 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
-import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;

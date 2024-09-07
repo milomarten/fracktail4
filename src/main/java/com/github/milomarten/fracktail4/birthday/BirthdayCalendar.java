@@ -4,14 +4,12 @@ import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
 import com.github.milomarten.fracktail4.birthday.v2.UserBirthdayEventInstance;
 import discord4j.common.util.Snowflake;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.IteratorUtils;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.MonthDay;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class BirthdayCalendar<T extends BirthdayEventInstance> {
@@ -147,6 +145,13 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
         i -= 1;
         if (i < 0) { i += this.holder.length; }
         return i;
+    }
+
+    public List<BirthdayEventInstance> getBirthdays() {
+        return Arrays.stream(this.holder)
+                .filter(Objects::nonNull)
+                .flatMap(l -> l.stream())
+                .toList();
     }
 
     public record NotNowBirthdayCritters(List<BirthdayEventInstance> celebrators, LocalDate when) {

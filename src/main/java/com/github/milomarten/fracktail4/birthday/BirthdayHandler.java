@@ -2,6 +2,7 @@ package com.github.milomarten.fracktail4.birthday;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
+import com.github.milomarten.fracktail4.birthday.v2.HardCodedBirthdayEventInstance;
 import com.github.milomarten.fracktail4.birthday.v2.UserBirthdayEventInstance;
 import com.github.milomarten.fracktail4.persistence.Persistence;
 import discord4j.common.util.Snowflake;
@@ -45,6 +46,17 @@ public class BirthdayHandler {
         birthdaysById.forEach((id, bc) -> {
             birthdaysByDate.addBirthday(bc);
         });
+
+        // Load static birthdays!
+        birthdaysByDate.addBirthday(new HardCodedBirthdayEventInstance(
+                MonthDay.of(Month.APRIL, 2), null,
+                "Mom Marten",
+                Set.of(Snowflake.of(423976318082744321L))));
+
+        birthdaysByDate.addBirthday(new HardCodedBirthdayEventInstance(
+                MonthDay.of(Month.MARCH, 6), null,
+                "Dad Marten",
+                Set.of(Snowflake.of(423976318082744321L))));
     }
 
     private Mono<Void> persist() {
@@ -82,9 +94,7 @@ public class BirthdayHandler {
     }
 
     public List<BirthdayEventInstance> getBirthdays() {
-        List<BirthdayEventInstance> birthdays = new ArrayList<>(birthdaysById.values());
-        birthdays.sort(Comparator.comparing(BirthdayEventInstance::getDayOfCelebration));
-        return birthdays;
+        return birthdaysByDate.getBirthdays();
     }
 
     public boolean hasBirthday(Snowflake critter) {
