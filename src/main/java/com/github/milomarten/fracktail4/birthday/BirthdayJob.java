@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.birthday;
 
-import com.github.milomarten.fracktail4.commands.BirthdayInstance;
+import com.github.milomarten.fracktail4.commands.BirthdaySlashCommand;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.TextChannel;
@@ -53,25 +53,19 @@ public class BirthdayJob {
         var birthdaysToday = handler.getBirthdaysOn(today);
 
         Flux.fromIterable(birthdaysToday)
-                .flatMap(birthday -> {
-                    return discordClient.getMemberById(this.announcementChannel.getGuildId(), birthday.getCritter())
-                            .onErrorResume(ex -> {
-                                log.error("Error getting member", ex);
-                                return Mono.empty();
-                            })
-                            .map(member -> new BirthdayInstance(birthday, member));
-                })
+                .filterWhen(bei -> bei.shouldDisplayForGuild(this.announcementChannel.getGuildId()))
+                .flatMap(BirthdaySlashCommand::resolve)
                 .collectList()
                 .filter(Predicate.not(List::isEmpty))
                 .map(birthdays -> {
                     return birthdays.stream()
                             .map(birthday -> {
-                                var ageOptionally = birthday.celebrator()
-                                        .getYear()
+                                var ageOptionally = birthday.getT1()
+                                        .getStartYear()
                                         .map(year -> String.valueOf(today.getYear() - year.getValue()))
                                         .map(s -> "[" + s + "]")
                                         .orElse("");
-                                return birthday.getName() + " " + ageOptionally;
+                                return birthday.getT2() + " " + ageOptionally;
                             })
                             .collect(Collectors.joining(", ",
                                     "\uD83C\uDF89 It's Birthday Time! Happy Birthday to ",
