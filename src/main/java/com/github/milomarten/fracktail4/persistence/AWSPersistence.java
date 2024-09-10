@@ -13,7 +13,6 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnBean(AmazonS3.class)
 public class AWSPersistence implements Persistence {
     private static final String BUCKET_NAME = "fracktail-persistence";
 

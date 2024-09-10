@@ -10,9 +10,7 @@ import reactor.core.publisher.Mono;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
 @RequiredArgsConstructor
-@ConditionalOnMissingBean(Persistence.class)
 public class HashmapPersistence implements Persistence {
     private final Map<String, String> store = new HashMap<>();
     private final ObjectMapper om;

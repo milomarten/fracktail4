@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnProperty(prefix = "aws", name = "access-key")
 public class AWSBootstrap {
     @Bean
     public AmazonS3 amazonS3(
