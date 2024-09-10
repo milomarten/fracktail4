@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.birthday.ical;
 
 import com.github.milomarten.fracktail4.birthday.BirthdayHandler;
+import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
 import com.github.milomarten.fracktail4.commands.BirthdaySlashCommand;
 import discord4j.core.GatewayDiscordClient;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class BirthdayICalService {
 
     public Mono<Calendar> createCalendar() {
         return Flux.fromIterable(birthdayHandler.getBirthdays())
-                .flatMap(BirthdaySlashCommand::resolve)
+                .flatMap(BirthdayEventInstance::resolve)
                 .collectList()
                 .map(celebrators -> {
                     var calendar = new Calendar()

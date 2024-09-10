@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.birthday;
 
+import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
 import com.github.milomarten.fracktail4.commands.BirthdaySlashCommand;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -54,7 +55,7 @@ public class BirthdayJob {
 
         Flux.fromIterable(birthdaysToday)
                 .filterWhen(bei -> bei.shouldDisplayForGuild(this.announcementChannel.getGuildId()))
-                .flatMap(BirthdaySlashCommand::resolve)
+                .flatMap(BirthdayEventInstance::resolve)
                 .collectList()
                 .filter(Predicate.not(List::isEmpty))
                 .map(birthdays -> {

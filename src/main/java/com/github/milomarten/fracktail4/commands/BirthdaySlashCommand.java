@@ -20,8 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 import java.time.*;
 import java.util.Comparator;
@@ -264,20 +262,30 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
     private Mono<?> next(ChatInputInteractionEvent event) {
         var now = LocalDate.now();
-        var nextBirthdaysMaybe = handler.getNextBirthdays(now);
+        return event.deferReply()
+                .then(next(event, now, now));
+    }
+
+    private Mono<?> next(ChatInputInteractionEvent event, LocalDate searchPoint, LocalDate firstSearchPoint) {
+        // If our search has crossed an entire year, there is no point continuing on.
+        var timeBetweenSearchPoints = Period.between(firstSearchPoint, searchPoint);
+        if (timeBetweenSearchPoints.getYears() >= 1) {
+            return replyEphemeral(event, "There are no birthdays in the calendar...");
+        }
+        var nextBirthdaysMaybe = handler.getNextBirthdays(searchPoint);
         if (nextBirthdaysMaybe.isEmpty()) {
             return replyEphemeral(event, "There are no birthdays in the calendar...");
         }
         var nextBirthdays = nextBirthdaysMaybe.get();
         var nextBirthdayCritters = nextBirthdays.celebrators();
-        return event.deferReply()
-                .thenMany(Flux.fromIterable(nextBirthdayCritters))
+        return Flux.fromIterable(nextBirthdayCritters)
                 .filterWhen(bei -> bei.shouldDisplayForGuild(event.getInteraction().getGuildId().orElse(null)))
-                .flatMap(BirthdaySlashCommand::resolve)
+                .flatMap(BirthdayEventInstance::resolve)
                 .collectList()
                 .flatMap(birthdays -> {
                     if (birthdays.isEmpty()) {
-                        return replyEphemeral(event, "There are no birthdays in the calendar...");
+                        // Recursively call for next birthdays, starting at the day of the last retrieved birthdays
+                        return next(event, nextBirthdays.when(), firstSearchPoint);
                     } else {
                         var dateOfBirthdays = birthdays.get(0).getT1().getDayOfCelebration();
 
@@ -295,21 +303,29 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
     private Mono<?> previous(ChatInputInteractionEvent event) {
         var now = LocalDate.now();
-        var previousBirthdaysMaybe = handler.getPreviousBirthdays(now);
+        return event.deferReply()
+                .then(previous(event, now, now));
+    }
+
+    private Mono<?> previous(ChatInputInteractionEvent event, LocalDate searchPoint, LocalDate firstSearchPoint) {
+        var timeBetweenSearchPoints = Period.between(firstSearchPoint, searchPoint);
+        if (timeBetweenSearchPoints.getYears() <= -1) {
+            return replyEphemeral(event, "There are no birthdays in the calendar...");
+        }
+        var previousBirthdaysMaybe = handler.getPreviousBirthdays(searchPoint);
         if (previousBirthdaysMaybe.isEmpty()) {
             return replyEphemeral(event, "There are no birthdays in the calendar...");
         }
         var previousBirthdays = previousBirthdaysMaybe.get();
         var previousBirthdayCritters = previousBirthdays.celebrators();
-        return event.deferReply()
-                .thenMany(Flux.fromIterable(previousBirthdayCritters))
+        return Flux.fromIterable(previousBirthdayCritters)
                 .filterWhen(bei -> bei.shouldDisplayForGuild(event.getInteraction().getGuildId().orElse(null)))
-                .flatMap(BirthdaySlashCommand::resolve)
+                .flatMap(BirthdayEventInstance::resolve)
                 .collectList()
                 .flatMap(birthdays -> {
                     if (birthdays.isEmpty()) {
                         // Recursively try birthdays and purging non-member birthdays
-                        return replyEphemeral(event, "There are no birthdays in the calendar...");
+                        return previous(event, previousBirthdays.when(), firstSearchPoint);
                     } else {
                         var dateOfBirthdays = birthdays.get(0).getT1().getDayOfCelebration();
 
@@ -348,7 +364,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
         return event.deferReply()
                 .then(Mono.justOrEmpty(birthdayMaybe))
                 .filterWhen(bei -> bei.shouldDisplayForGuild(event.getInteraction().getGuildId().orElse(null)))
-                .flatMap(BirthdaySlashCommand::resolve)
+                .flatMap(BirthdayEventInstance::resolve)
                 .flatMap(e -> followup(event, e.getT2() + "'s birthday is on " + BirthdayUtils.getDisplayBirthday(e.getT1().getDayOfCelebration()))
                         .thenReturn(true))
                 .switchIfEmpty(userMono
@@ -377,7 +393,7 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
         return event.deferReply()
                 .thenMany(Flux.fromIterable(birthdaysInMonth))
                 .filterWhen(bei -> bei.shouldDisplayForGuild(event.getInteraction().getGuildId().orElse(null)))
-                .flatMap(BirthdaySlashCommand::resolve)
+                .flatMap(BirthdayEventInstance::resolve)
                 .collectList()
                 .flatMap(list -> {
                     if (list.isEmpty()) {
@@ -403,11 +419,6 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
                         .collect(Collectors.joining(", "))
                 );
         return replyEphemeral(event, response);
-    }
-
-    public static Mono<Tuple2<BirthdayEventInstance, String>> resolve(BirthdayEventInstance instance) {
-        return instance.getName()
-                .map(name -> Tuples.of(instance, name));
     }
 
     private boolean isNotMod(ChatInputInteractionEvent event) {
