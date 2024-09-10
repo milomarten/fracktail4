@@ -1,8 +1,12 @@
 package com.github.milomarten.fracktail4.birthday;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
+import com.github.milomarten.fracktail4.birthday.v2.HardCodedBirthdayEventInstance;
+import com.github.milomarten.fracktail4.birthday.v2.UserBirthdayEventInstance;
 import com.github.milomarten.fracktail4.persistence.Persistence;
 import discord4j.common.util.Snowflake;
+import discord4j.core.GatewayDiscordClient;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,43 +26,62 @@ public class BirthdayHandler {
     public static final String BIRTHDAYS_KEY = "birthdays";
 
     private final Persistence persistence;
-    Map<Snowflake, BirthdayCritter> birthdaysById;
-    BirthdayCalendar birthdaysByDate;
+    private final GatewayDiscordClient discordClient;
+
+    Map<Snowflake, BirthdayEventInstance> birthdaysById;
+    BirthdayCalendar<BirthdayEventInstance> birthdaysByDate;
 
     @PostConstruct
     private void load() {
         var birthdays = persistence.retrieve(BIRTHDAYS_KEY, BIRTHDAY_TYPE).block();
         if (birthdays != null) {
             this.birthdaysById = new HashMap<>(birthdays.stream()
-                    .collect(Collectors.toMap(BirthdayCritter::getCritter, b -> b)));
+                    .map(bc -> bc.toEvent(discordClient))
+                    .collect(Collectors.toMap(UserBirthdayEventInstance::userId, b -> b)));
         } else {
             this.birthdaysById = new HashMap<>();
         }
 
-        birthdaysByDate = new BirthdayCalendar();
+        birthdaysByDate = new BirthdayCalendar<>();
         birthdaysById.forEach((id, bc) -> {
             birthdaysByDate.addBirthday(bc);
         });
+
+        // Load static birthdays!
+        birthdaysByDate.addBirthday(new HardCodedBirthdayEventInstance(
+                MonthDay.of(Month.APRIL, 2), null,
+                "Mom Marten",
+                Set.of(Snowflake.of(423976318082744321L))));
+
+        birthdaysByDate.addBirthday(new HardCodedBirthdayEventInstance(
+                MonthDay.of(Month.MARCH, 6), null,
+                "Dad Marten",
+                Set.of(Snowflake.of(423976318082744321L))));
     }
 
     private Mono<Void> persist() {
-        return this.persistence.store(BIRTHDAYS_KEY, this.birthdaysById.values());
+        var persistObj = this.birthdaysById.values()
+                .stream()
+                .filter(obj -> obj instanceof UserBirthdayEventInstance)
+                .map(bei -> ((UserBirthdayEventInstance) bei).asCritter())
+                .toList();
+        return this.persistence.store(BIRTHDAYS_KEY, persistObj);
     }
 
 
-    public Optional<BirthdayCritter> getBirthday(Snowflake user) {
+    public Optional<BirthdayEventInstance> getBirthday(Snowflake user) {
         return Optional.ofNullable(this.birthdaysById.get(user));
     }
 
-    public List<BirthdayCritter> getBirthdaysOn(LocalDate day) {
+    public List<BirthdayEventInstance> getBirthdaysOn(LocalDate day) {
         return birthdaysByDate.getBirthdaysOn(day);
     }
 
-    public List<BirthdayCritter> getBirthdaysOn(MonthDay day) {
+    public List<BirthdayEventInstance> getBirthdaysOn(MonthDay day) {
         return birthdaysByDate.getBirthdaysOn(day);
     }
 
-    public List<BirthdayCritter> getBirthdaysOn(Month month) {
+    public List<BirthdayEventInstance> getBirthdaysOn(Month month) {
         return birthdaysByDate.getBirthdaysOn(month);
     }
 
@@ -70,10 +93,8 @@ public class BirthdayHandler {
         return birthdaysByDate.getPreviousBirthday(start);
     }
 
-    public List<BirthdayCritter> getBirthdays() {
-        List<BirthdayCritter> birthdays = new ArrayList<>(birthdaysById.values());
-        birthdays.sort(Comparator.comparing(BirthdayCritter::getDay));
-        return birthdays;
+    public List<BirthdayEventInstance> getBirthdays() {
+        return birthdaysByDate.getBirthdays();
     }
 
     public boolean hasBirthday(Snowflake critter) {
@@ -85,7 +106,7 @@ public class BirthdayHandler {
     }
 
     public Mono<Void> createBirthday(Snowflake critter, MonthDay day, Year year) {
-        var newCritter = new BirthdayCritter(critter, day, year);
+        var newCritter = new BirthdayCritter(critter, day, year).toEvent(discordClient);
 
         if (this.birthdaysById.containsKey(critter)) {
             this.birthdaysById.put(critter, newCritter);
@@ -97,22 +118,22 @@ public class BirthdayHandler {
         }
         return persist();
     }
-
-    public Mono<Void> addYear(Snowflake critter, Year year) {
-        if (this.birthdaysById.containsKey(critter)) {
-            this.birthdaysById.get(critter).setYear(year);
-            return persist();
-        }
-        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
-    }
-
-    public Mono<Void> removeYear(Snowflake critter) {
-        if (this.birthdaysById.containsKey(critter)) {
-            this.birthdaysById.get(critter).setYear(null);
-            return persist();
-        }
-        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
-    }
+//
+//    public Mono<Void> addYear(Snowflake critter, Year year) {
+//        if (this.birthdaysById.containsKey(critter)) {
+//            this.birthdaysById.get(critter).setYear(year);
+//            return persist();
+//        }
+//        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
+//    }
+//
+//    public Mono<Void> removeYear(Snowflake critter) {
+//        if (this.birthdaysById.containsKey(critter)) {
+//            this.birthdaysById.get(critter).setYear(null);
+//            return persist();
+//        }
+//        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
+//    }
 
     public Mono<Void> removeBirthday(Snowflake critter) {
         if (this.birthdaysById.containsKey(critter)) {

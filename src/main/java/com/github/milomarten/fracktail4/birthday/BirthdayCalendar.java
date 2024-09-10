@@ -1,18 +1,15 @@
 package com.github.milomarten.fracktail4.birthday;
 
-import discord4j.common.util.Snowflake;
+import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.MonthDay;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
 
-public class BirthdayCalendar {
+public class BirthdayCalendar<T extends BirthdayEventInstance> {
     private final List[] holder;
     private int size = 0;
 
@@ -44,8 +41,8 @@ public class BirthdayCalendar {
         return MonthDay.of(moy, dom);
     }
 
-    public void addBirthday(BirthdayCritter critter) {
-        var idx = getIndexForMonthDay(critter.getDay());
+    public void addBirthday(T critter) {
+        var idx = getIndexForMonthDay(critter.getDayOfCelebration());
         var ctr = this.holder[idx];
         if (ctr == null) {
             var newArray = new ArrayList<>();
@@ -57,14 +54,14 @@ public class BirthdayCalendar {
         size++;
     }
 
-    public boolean removeBirthday(BirthdayCritter critter) {
-        var idx = getIndexForMonthDay(critter.getDay());
+    public boolean removeBirthday(T critter) {
+        var idx = getIndexForMonthDay(critter.getDayOfCelebration());
         var ctr = this.holder[idx];
         if (ctr == null) {
             return false;
         } else {
             int currentCtrSize = ctr.size();
-            var found = ctr.removeIf(i -> ((BirthdayCritter)i).getCritter().equals(critter.getCritter()));
+            var found = ctr.remove(critter);
             if (found) {
                 this.size -= (currentCtrSize - ctr.size());
             }
@@ -72,7 +69,7 @@ public class BirthdayCalendar {
         }
     }
 
-    public List<BirthdayCritter> getBirthdaysOn(LocalDate origin) {
+    public List<T> getBirthdaysOn(LocalDate origin) {
         var idx = getIndexForLocalDate(origin);
         var ctr = this.holder[idx];
         if (CollectionUtils.isEmpty(ctr)) {
@@ -82,7 +79,7 @@ public class BirthdayCalendar {
         }
     }
 
-    public List<BirthdayCritter> getBirthdaysOn(MonthDay origin) {
+    public List<T> getBirthdaysOn(MonthDay origin) {
         var idx = getIndexForMonthDay(origin);
         var ctr = this.holder[idx];
         if (CollectionUtils.isEmpty(ctr)) {
@@ -92,7 +89,7 @@ public class BirthdayCalendar {
         }
     }
 
-    public List<BirthdayCritter> getBirthdaysOn(Month month) {
+    public List<T> getBirthdaysOn(Month month) {
         int lowerEnd = getIndexForMonthDay(month, 1);
         int upperEnd = getIndexForMonthDay(month, month.length(true));
 
@@ -147,9 +144,16 @@ public class BirthdayCalendar {
         return i;
     }
 
-    public record NotNowBirthdayCritters(List<BirthdayCritter> celebrators, LocalDate when) {
-        public static NotNowBirthdayCritters from(List<BirthdayCritter> critters, int year) {
-            var when = critters.get(0).getDay().atYear(year);
+    public List<BirthdayEventInstance> getBirthdays() {
+        return Arrays.stream(this.holder)
+                .filter(Objects::nonNull)
+                .flatMap(l -> l.stream())
+                .toList();
+    }
+
+    public record NotNowBirthdayCritters(List<BirthdayEventInstance> celebrators, LocalDate when) {
+        public static NotNowBirthdayCritters from(List<BirthdayEventInstance> critters, int year) {
+            var when = critters.get(0).getDayOfCelebration().atYear(year);
             var whos = new ArrayList<>(critters);
             return new NotNowBirthdayCritters(whos, when);
         }

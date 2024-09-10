@@ -34,7 +34,7 @@ public class BirthdayUserCommand implements UserCommandWrapper {
             return SlashCommands.replyEphemeral(event, fStr);
         } else {
             var birthday = birthdayMaybe.get();
-            String dayOf = BirthdayUtils.getDisplayBirthday(birthday.getDay());
+            String dayOf = BirthdayUtils.getDisplayBirthday(birthday.getDayOfCelebration());
             String fStr = String.format("%s' birthday is on %s!", targetName, dayOf);
             return SlashCommands.replyEphemeral(event, fStr);
         }

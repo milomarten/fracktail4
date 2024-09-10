@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.birthday.ical;
 
 import com.github.milomarten.fracktail4.birthday.BirthdayHandler;
+import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
+import com.github.milomarten.fracktail4.commands.BirthdaySlashCommand;
 import discord4j.core.GatewayDiscordClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,12 +28,7 @@ public class BirthdayICalService {
 
     public Mono<Calendar> createCalendar() {
         return Flux.fromIterable(birthdayHandler.getBirthdays())
-                .flatMap(bc -> client.getUserById(bc.getCritter())
-                        .map(user -> Tuples.of(bc, user.getUsername())))
-                .onErrorResume(ex -> {
-                    log.error("Error pulling user. Ignoring...", ex);
-                    return Mono.empty();
-                })
+                .flatMap(BirthdayEventInstance::resolve)
                 .collectList()
                 .map(celebrators -> {
                     var calendar = new Calendar()
@@ -45,7 +42,7 @@ public class BirthdayICalService {
 
                     celebrators.stream()
                             .<VEvent>map(celebrator -> {
-                                var dateOfCelebration = celebrator.getT1().getDay();
+                                var dateOfCelebration = celebrator.getT1().getDayOfCelebration();
                                 var username = celebrator.getT2();
                                 return new VEvent()
                                         .add(new DtStart<>(dateOfCelebration.atYear(2023)))
