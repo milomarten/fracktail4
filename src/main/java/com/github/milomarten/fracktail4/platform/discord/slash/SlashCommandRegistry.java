@@ -1,9 +1,14 @@
 package com.github.milomarten.fracktail4.platform.discord.slash;
 
 import com.github.milomarten.fracktail4.base.SimpleCommand;
+import com.github.milomarten.fracktail4.base.SimpleNoParameterAsyncCommand;
+import com.github.milomarten.fracktail4.base.SimpleNoParameterCommand;
 import com.github.milomarten.fracktail4.config.FracktailRoles;
 import com.github.milomarten.fracktail4.permissions.PermissionsProvider;
 import com.github.milomarten.fracktail4.platform.discord.DiscordHookSource;
+import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleCommandAsSlashCommand;
+import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleNoParameterAsyncCommandAsSlashCommand;
+import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleNoParameterCommandAsSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -16,8 +21,8 @@ import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -39,7 +44,6 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
     public SlashCommandRegistry(
             @Autowired(required = false) List<SlashCommandWrapper> slashCommands,
             @Autowired(required = false) List<UserCommandWrapper> userCommands,
-            @Autowired(required = false) List<SimpleCommand> simpleCommands,
             @Autowired(required = false) List<SlashCommandFilter> filters,
             PermissionsProvider<User, FracktailRoles> permissionsProvider
     ) {
@@ -48,9 +52,9 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         this.requests = new ArrayList<>();
         stream(slashCommands).forEach(this::addCommand);
         stream(userCommands).forEach(this::addCommand);
-        stream(simpleCommands)
-                .map(SimpleCommandAsSlashCommand::new)
-                .forEach(this::addCommand);
+//        stream(simpleCommands)
+//                .map(SimpleCommandAsSlashCommand::new)
+//                .forEach(this::addCommand);
 
         this.filters = Objects.requireNonNullElseGet(filters, List::of);
         this.permissionsProvider = permissionsProvider;
@@ -85,6 +89,19 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         }
         userCommandLookup.put(request.name(), command);
         log.info("Added user command {}", request.name());
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof SimpleCommand cmd) {
+            addCommand(new SimpleCommandAsSlashCommand(cmd));
+        } else if (bean instanceof SimpleNoParameterCommand cmd) {
+            addCommand(new SimpleNoParameterCommandAsSlashCommand(cmd));
+        } else if (bean instanceof SimpleNoParameterAsyncCommand cmd) {
+            addCommand(new SimpleNoParameterAsyncCommandAsSlashCommand(cmd));
+        }
+
+        return bean;
     }
 
     @Override

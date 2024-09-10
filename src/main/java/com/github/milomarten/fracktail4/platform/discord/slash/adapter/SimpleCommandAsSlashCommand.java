@@ -1,6 +1,7 @@
-package com.github.milomarten.fracktail4.platform.discord.slash;
+package com.github.milomarten.fracktail4.platform.discord.slash.adapter;
 
 import com.github.milomarten.fracktail4.base.SimpleCommand;
+import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.RequiredArgsConstructor;
