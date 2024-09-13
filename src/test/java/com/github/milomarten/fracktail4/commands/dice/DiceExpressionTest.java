@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
+import com.github.milomarten.fracktail4.commands.dice.term.DiceExpression;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -7,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.random.RandomGenerator;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -209,8 +211,21 @@ class DiceExpressionTest {
         assertEquals(BigDecimal.valueOf(18), response.value()); // 8 + 9 + (reroll 100 1's) 1
     }
 
-    private int mockRolls(Integer value, Integer... more) {
-        when(random.nextInt(anyInt())).thenReturn(value, more);
+    @Test
+    public void testNegativeNumberOfDice() {
+        mockRolls(8, 9, 1);
+        var dice = DiceExpression.builder()
+                .numberOfSides(10)
+                .numberOfDice(-3)
+                .randomSource(random)
+                .build();
+
+        var response = dice.evaluate();
+        assertEquals(-1, response.value().signum());
+    }
+
+    private int mockRolls(int value, int... more) {
+        when(random.nextInt(anyInt())).thenReturn(value - 1, IntStream.of(more).mapToObj(i -> i - 1).toArray(Integer[]::new));
         return more.length + 1;
     }
 }

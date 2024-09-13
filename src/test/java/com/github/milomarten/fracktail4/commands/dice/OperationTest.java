@@ -1,10 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
+import com.github.milomarten.fracktail4.commands.dice.term.*;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -83,6 +81,14 @@ class OperationTest {
         var result = roll.evaluate();
 
         assertEquals(20, result.valueAsInt());
+    }
+
+    @Test
+    public void testCeiling() {
+        var stack = createStack(HardCodedTerm.of(5.4));
+        var ceilinged = Operation.CEIL.evaluate(stack);
+
+        assertEquals(6, ceilinged.evaluate().valueAsInt());
     }
 
     private static Deque<Term> createStack(Term... items) {

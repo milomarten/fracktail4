@@ -1,8 +1,10 @@
-package com.github.milomarten.fracktail4.commands.dice;
+package com.github.milomarten.fracktail4.commands.dice.term;
 
+import com.github.milomarten.fracktail4.commands.dice.DiceExpressionEvaluation;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
@@ -10,6 +12,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
+import static com.github.milomarten.fracktail4.commands.dice.Utils.checkPositive;
+import static com.github.milomarten.fracktail4.commands.dice.Utils.checkPositiveAndLessThan;
 
 /**
  * Represents an expression for how to roll, reroll, discard, and total dice.
@@ -20,6 +25,11 @@ import java.util.stream.Stream;
  * 4. Drop lowest dice, if specified
  * 5. Keep highest/lowest dice, if specified
  * 6. Add results depending on totaling strategy
+ * For safety, you cannot roll more than 64 dice at once, and the max number of faces is 1000.
+ * All other parameters are fine, although must be positive.
+ * number of dice can be negative, although
+ * this solely indicates that the final result should be negative. For example, -3d4 will
+ * roll three dice, and negate the final result.
  */
 @Builder
 @Data
@@ -53,7 +63,7 @@ public class DiceExpression implements Term {
      * Dice below this value are discarded and rerolled.
      * By default, rerollAt is `Integer.MIN_VALUE`, so no dice are rerolled.
      */
-    @Builder.Default int rerollAt = Integer.MIN_VALUE;
+    @Builder.Default int rerollAt = 0;
     /**
      * Controls whether rerolls should occur "infinitely" or not.
      * If true, rerolls will continue to happen until a ceiling of 100 tries.
@@ -87,8 +97,14 @@ public class DiceExpression implements Term {
 
     @Override
     public DiceExpressionEvaluation evaluate() throws DiceExpressionSyntaxError {
+        // Flip an error if this dice expression is too high.
+        validate();
+
+        var negateAtTheEnd = numberOfDice < 0;
+        var normalizedNumberOfDice = Math.abs(numberOfDice);
+
         // 1. Roll Dice
-        var results = new Results(doNTimes(numberOfDice, this::roll));
+        var results = new Results(doNTimes(normalizedNumberOfDice, this::roll));
         // a - Reroll low ones
         for (int i = 0; i < 100; i++) {
             var rerolls = results.discountLowerThan(this.rerollAt);
@@ -121,7 +137,11 @@ public class DiceExpression implements Term {
             }
         }
 
-        return totalingStrategy.compile(results);
+        var finalResults = totalingStrategy.compile(results);
+        if (negateAtTheEnd) {
+            finalResults = finalResults.map(BigDecimal::negate, s -> "-" + s);
+        }
+        return finalResults;
     }
 
     private int roll() {
@@ -136,6 +156,16 @@ public class DiceExpression implements Term {
     private static <T> List<T> doNTimes(int number, Supplier<T> action) {
         if (number == 0) return List.of();
         return IntStream.range(0, number).mapToObj(i -> action.get()).toList();
+    }
+
+    private void validate() {
+        checkPositiveAndLessThan(Math.abs(numberOfDice),64, "Number Of Dice");
+        checkPositiveAndLessThan(numberOfSides, 1000, "Number of Sides");
+        checkPositive(numberToDrop, "Number to Drop");
+        checkPositive(numberToKeep, "Number to Keep");
+        checkPositive(rerollAt, "Reroll At");
+        checkPositive(explodeAt, "Explode At");
+        this.totalingStrategy.validate();
     }
 
     @Data

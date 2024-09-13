@@ -1,30 +1,58 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
+import com.github.milomarten.fracktail4.commands.dice.term.DiceExpressionSyntaxError;
+import com.github.milomarten.fracktail4.commands.dice.term.Operation;
+import com.github.milomarten.fracktail4.commands.dice.term.Term;
+import lombok.Getter;
+
 import java.util.Deque;
 import java.util.LinkedList;
 
+/**
+ * A step-by-step evaluator to turn tokenized infix notation into an expression result.
+ * This uses the normal shunting-yard algorithm to handle the work. Each operation pushed
+ * will mutate the terms stack, however, so this is a one-time use evaluator.
+ */
 public class DiceExpressionEvaluator {
     private final Deque<Term> terms = new LinkedList<>();
     private final Deque<Operation> operators = new LinkedList<>();
 
-    private boolean operatorLast = true; // Sentinel so simple "d20" works
+    /**
+     * Check if this evaluator is expecting a term or an operator
+     * If `true`, a term is expected. Otherwise, an operator is expected.
+     * This is useful for deciding if positive/negative should be parsed, vs addition/subtraction.
+     */
+    @Getter private boolean expectingTerm = true; // Sentinel so simple "d20" works
 
-    public void pushTerm(Term term) {
+    /**
+     * Add a term to the stack.
+     * @param term The term to add.
+     * @throws DiceExpressionSyntaxError Pushed two terms in a row
+     */
+    public void push(Term term) {
+        if (!expectingTerm) {
+            throw new DiceExpressionSyntaxError("Was not expecting term " + term);
+        }
         this.terms.push(term);
-        operatorLast = false;
+        expectingTerm = false;
     }
 
-    public void pushOperator(Operation operator) {
-        if (operator == Operation.DICE && operatorLast) {
-            // Add the implicit 1.
-            this.terms.push(HardCodedTerm.of(1));
+    /**
+     * Add an operator to the stack.
+     * This may mutate the term stack, depending on the combination
+     * of operators present on the stack already, as well as the incoming one.
+     * @param operator The operator to apply.
+     * @throws DiceExpressionSyntaxError Pushed two operators in a row, or some operator
+     * in the stack threw it.
+     */
+    public void push(Operation operator) {
+        if (expectingTerm && operator != Operation.LEFT_PARENTHESIS) {
+            this.terms.push(operator.getImplicitLeftTerm());
         }
 
         if (operator == Operation.LEFT_PARENTHESIS) {
-            operatorLast = true;
             operators.push(Operation.LEFT_PARENTHESIS);
         } else if (operator == Operation.RIGHT_PARENTHESIS) {
-            operatorLast = false;
             Operation underneath;
             while (!operators.isEmpty() &&
                     operators.peek() != Operation.LEFT_PARENTHESIS) {
@@ -37,7 +65,6 @@ public class DiceExpressionEvaluator {
             }
             operators.pop();
         } else {
-            operatorLast = true;
             Operation underneath;
             while (!operators.isEmpty() &&
                     operators.peek() != Operation.LEFT_PARENTHESIS &&
@@ -48,8 +75,16 @@ public class DiceExpressionEvaluator {
             }
             operators.push(operator);
         }
+
+        expectingTerm = operator.expectTermAfter();
     }
 
+    /**
+     * Indicate that the evaluation should finish.
+     * All operators remaining on the stack and popped one by one and applied.
+     * By the end, the term stack MUST be 1 element, or a DiceExpressionSyntaxError will be thrown.
+     * @return The final evaluation.
+     */
     public DiceExpressionEvaluation finish() {
         while (!operators.isEmpty()) {
             Operation op = operators.pop();

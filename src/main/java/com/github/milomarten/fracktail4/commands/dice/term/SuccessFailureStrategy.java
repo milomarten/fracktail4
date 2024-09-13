@@ -1,7 +1,8 @@
-package com.github.milomarten.fracktail4.commands.dice;
+package com.github.milomarten.fracktail4.commands.dice.term;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import com.github.milomarten.fracktail4.commands.dice.DiceExpressionEvaluation;
+import com.github.milomarten.fracktail4.commands.dice.Utils;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.StringJoiner;
@@ -14,29 +15,12 @@ import java.util.StringJoiner;
  * A failure threshold can also be specified. If the face value is less than or equal to the
  * failure threshold, these act as subtracting one success each.
  */
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
+@Getter
+@Setter
 public class SuccessFailureStrategy implements DiceTotalingStrategy {
-    private int successThreshold;
-    private int failureThreshold;
-
-    /**
-     * Create a strategy with a success threshold and no failure threshold.
-     * @param threshold The number that counts as a success
-     * @return The strategy.
-     */
-    public static SuccessFailureStrategy onSuccess(int threshold) {
-        return new SuccessFailureStrategy(threshold, Integer.MIN_VALUE);
-    }
-
-    /**
-     * Create a strategy with a success threshold and failure threshold.
-     * @param successThreshold The number that counts as a success
-     * @param failureThreshold The number that counts as a failure
-     * @return The strategy.
-     */
-    public static SuccessFailureStrategy onSuccessFailure(int successThreshold, int failureThreshold) {
-        return new SuccessFailureStrategy(successThreshold, failureThreshold);
-    }
+    private int successThreshold = Integer.MAX_VALUE;
+    private int failureThreshold = 0;
 
     @Override
     public DiceExpressionEvaluation compile(DiceExpression.Results results) {
@@ -60,5 +44,11 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
                 .mapToInt(i -> i)
                 .sum();
         return new DiceExpressionEvaluation(BigDecimal.valueOf(total), expr.toString());
+    }
+
+    @Override
+    public void validate() {
+        Utils.checkPositive(this.successThreshold, "Success threshold");
+        Utils.checkPositive(this.failureThreshold, "Failure threshold");
     }
 }
