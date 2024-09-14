@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -95,9 +96,10 @@ class OperationTest {
         return new LinkedList<>(Arrays.asList(items));
     }
 
-    private Random mockDiceRolls(Integer dice1, Integer...others) {
+    private Random mockDiceRolls(int dice1, int...others) {
         var random = Mockito.mock(Random.class);
-        when(random.nextInt(anyInt())).thenReturn(dice1, others);
+        when(random.nextInt(anyInt())).thenReturn(dice1 - 1,
+                IntStream.of(others).mapToObj(i -> i - 1).toArray(Integer[]::new));
         return random;
     }
 }
