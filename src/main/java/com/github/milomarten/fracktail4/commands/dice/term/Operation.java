@@ -56,22 +56,63 @@ public enum Operation {
      * Multiply two terms.
      */
     MULTIPLY("*", 8) {
+        private static final MathContext MC = MathContext.DECIMAL128;
+
         @Override
         public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
             return evaluateTwoParameterFunc(termStack,
                     "multiplicand", "multiplier",
-                    (one, two) -> one.multiply(two, MC));
+                    (one, two) -> {
+                        preValidate(one, two);
+                        return one.multiply(two, MC);
+                    });
+        }
+
+        private void preValidate(BigDecimal one, BigDecimal two) {
+            var digitCountOne = one.signum() == 0 ? 1 : one.precision() - one.scale();
+            var digitCountTwo = one.signum() == 0 ? 1 : two.precision() - two.scale();
+
+            if (digitCountOne + digitCountTwo > 18) {
+                throw new ExpressionSyntaxError("Multiplying large values. Numbers shouldn't exceed 18 digits.");
+            }
         }
     },
     /**
      * Divide two terms.
      */
     DIVIDE("/", 8) {
+        private static final MathContext MC = MathContext.DECIMAL128;
+
         @Override
         public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
             return evaluateTwoParameterFunc(termStack,
                     "dividend", "divisor",
-                    (one, two) -> one.divide(two, MC));
+                    (one, two) -> {
+                        preValidate(one, two);
+                        return one.divide(two, MC);
+                    });
+        }
+
+        private void preValidate(BigDecimal one, BigDecimal two) {
+            var digitCountOne = precisionScore(one);
+            var digitCountTwo = precisionScore(two);
+
+            if (digitCountOne - digitCountTwo > 18) {
+                throw new ExpressionSyntaxError("Dividing large values. Numbers shouldn't exceed 18 digits.");
+            }
+        }
+
+        private int precisionScore(BigDecimal bd) {
+            if (bd.signum() == 0) {
+                return 1;
+            } else {
+                var digitsToTheLeft = bd.precision() - bd.scale();
+                if (digitsToTheLeft == 0) {
+                    return -bd.scale();
+                } else {
+                    return digitsToTheLeft;
+                }
+            }
         }
     },
     /**
@@ -301,7 +342,6 @@ public enum Operation {
         }
     }
     ;
-    private static final MathContext MC = new MathContext(4, RoundingMode.HALF_EVEN);
 
     private final String symbol;
     private final int priority;

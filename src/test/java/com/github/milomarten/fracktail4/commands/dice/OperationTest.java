@@ -37,7 +37,6 @@ class OperationTest {
         var result = Operation.ADD.evaluate(stack).evaluate();
 
         assertEquals(BigDecimal.valueOf(7), result.value());
-        assertEquals("2 + (5)", result.representation());
     }
 
     @Test

@@ -44,6 +44,7 @@ public class StringDiceExpressionEvaluator {
     private BigDecimal tryParseNumberFromIterator(CharacterIterator iter) {
         StringBuilder sb = new StringBuilder();
         sb.append(iter.current());
+
         while (iter.next() != CharacterIterator.DONE &&
                 (isNumber(iter.current()) || isNumberRelatedCharacter(iter.current()))) {
             sb.append(iter.current());

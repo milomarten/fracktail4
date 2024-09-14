@@ -35,6 +35,12 @@ public class DiceSlashCommand implements SlashCommandWrapper {
                         .type(ApplicationCommandOption.Type.STRING.getValue())
                         .maxLength(240)
                         .build())
+                .addOption(ApplicationCommandOptionData.builder()
+                        .name("visible")
+                        .description("Whether this role should be visible to all")
+                        .required(false)
+                        .type(ApplicationCommandOption.Type.BOOLEAN.getValue())
+                        .build())
                 .build();
     }
 
@@ -50,13 +56,17 @@ public class DiceSlashCommand implements SlashCommandWrapper {
         var commentOpt = event.getOption("comment")
                 .flatMap(a -> a.getValue())
                 .map(a -> a.asString());
+        var silent = event.getOption("visible")
+                .flatMap(a -> a.getValue())
+                .map(a -> a.asBoolean())
+                .orElse(false);
         try {
             var result = evaluator.evaluate(expression);
             String str = String.format("%s = %s", result.representation(), result.value().toPlainString());
 
-            return event.reply(commentOpt.map(comment -> comment + "\n" + str).orElse(str));
+            return event.reply(commentOpt.map(comment -> comment + "\n" + str).orElse(str)).withEphemeral(silent);
         } catch (ExpressionSyntaxError ex) {
-            return event.reply(ex.getMessage());
+            return SlashCommands.replyEphemeral(event, ex.getMessage());
         }
     }
 

@@ -23,7 +23,7 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
 
     @Override
     public TermEvaluationResult compile(DiceExpression.Results results) {
-        var expr = new StringJoiner(" + ", "(", ")");
+        var expr = new StringJoiner(" + ", "\uD83C\uDFB2(", ")");
         var total = results.getAllResults()
                 .<Integer>mapMulti((result, consumer) -> {
                     var value = result.getValue();
