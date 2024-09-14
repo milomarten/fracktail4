@@ -1,19 +1,16 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
-import com.github.milomarten.fracktail4.commands.dice.DiceExpressionEvaluation;
-
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 
 /**
  * A basic term that has a constant value and expression
- * @param value The value of the term
+ * @param value The value of the term0
  * @param expression The expression to describe the term
  */
-public record HardCodedTerm(BigDecimal value, String expression) implements Term {
+public record RegularTerm(BigDecimal value, String expression) implements Term {
     @Override
-    public DiceExpressionEvaluation evaluate() throws DiceExpressionSyntaxError {
-        return new DiceExpressionEvaluation(value, expression);
+    public TermEvaluationResult evaluate() throws ExpressionSyntaxError {
+        return new TermEvaluationResult(value, expression);
     }
 
     /**
@@ -22,9 +19,9 @@ public record HardCodedTerm(BigDecimal value, String expression) implements Term
      * @param value The double to wrap.
      * @return The term holding that double.
      */
-    public static HardCodedTerm of(double value) {
+    public static RegularTerm of(double value) {
         var bd = BigDecimal.valueOf(value);
-        return new HardCodedTerm(bd, bd.toPlainString());
+        return new RegularTerm(bd, bd.toPlainString());
     }
 
     /**
@@ -32,8 +29,8 @@ public record HardCodedTerm(BigDecimal value, String expression) implements Term
      * @param value The int to wrap.
      * @return The term holding the int.
      */
-    public static HardCodedTerm of(int value) {
-        return new HardCodedTerm(BigDecimal.valueOf(value), Integer.toString(value));
+    public static RegularTerm of(int value) {
+        return new RegularTerm(BigDecimal.valueOf(value), Integer.toString(value));
     }
 
     /**
@@ -42,7 +39,7 @@ public record HardCodedTerm(BigDecimal value, String expression) implements Term
      * @param value The BigDecimal to wrap.
      * @return The term holding the BigDecimal.
      */
-    public static HardCodedTerm of(BigDecimal value) {
-        return new HardCodedTerm(value, value.toPlainString());
+    public static RegularTerm of(BigDecimal value) {
+        return new RegularTerm(value, value.toPlainString());
     }
 }

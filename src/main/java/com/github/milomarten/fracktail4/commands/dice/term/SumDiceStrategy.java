@@ -1,7 +1,5 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
-import com.github.milomarten.fracktail4.commands.dice.DiceExpressionEvaluation;
-
 import java.math.BigDecimal;
 import java.util.StringJoiner;
 
@@ -12,7 +10,7 @@ public enum SumDiceStrategy implements DiceTotalingStrategy {
     INSTANCE;
 
     @Override
-    public DiceExpressionEvaluation compile(DiceExpression.Results results) {
+    public TermEvaluationResult compile(DiceExpression.Results results) {
         var expr = new StringJoiner(" + ", "(", ")");
         var sum = results.getAllResults()
                 .<Integer>mapMulti((result, consumer) -> {
@@ -25,6 +23,6 @@ public enum SumDiceStrategy implements DiceTotalingStrategy {
                 })
                 .mapToInt(i -> i)
                 .sum();
-        return new DiceExpressionEvaluation(BigDecimal.valueOf(sum), expr.toString());
+        return new TermEvaluationResult(BigDecimal.valueOf(sum), expr.toString());
     }
 }

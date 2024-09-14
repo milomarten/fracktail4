@@ -1,6 +1,5 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
-import com.github.milomarten.fracktail4.commands.dice.DiceExpressionEvaluation;
 import lombok.Builder;
 import lombok.Data;
 
@@ -96,7 +95,7 @@ public class DiceExpression implements Term {
     @Builder.Default RandomGenerator randomSource = new Random();
 
     @Override
-    public DiceExpressionEvaluation evaluate() throws DiceExpressionSyntaxError {
+    public TermEvaluationResult evaluate() throws ExpressionSyntaxError {
         // Flip an error if this dice expression is too high.
         validate();
 
@@ -159,7 +158,7 @@ public class DiceExpression implements Term {
     }
 
     private void validate() {
-        checkPositiveAndLessThan(Math.abs(numberOfDice),64, "Number Of Dice");
+        checkPositiveAndLessThan(Math.abs(numberOfDice),32, "Number Of Dice");
         checkPositiveAndLessThan(numberOfSides, 1000, "Number of Sides");
         checkPositive(numberToDrop, "Number to Drop");
         checkPositive(numberToKeep, "Number to Keep");

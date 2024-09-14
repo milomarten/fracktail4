@@ -1,6 +1,5 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
-import com.github.milomarten.fracktail4.commands.dice.DiceExpressionEvaluation;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
 import lombok.*;
 
@@ -23,7 +22,7 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
     private int failureThreshold = 0;
 
     @Override
-    public DiceExpressionEvaluation compile(DiceExpression.Results results) {
+    public TermEvaluationResult compile(DiceExpression.Results results) {
         var expr = new StringJoiner(" + ", "(", ")");
         var total = results.getAllResults()
                 .<Integer>mapMulti((result, consumer) -> {
@@ -43,7 +42,7 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
                 })
                 .mapToInt(i -> i)
                 .sum();
-        return new DiceExpressionEvaluation(BigDecimal.valueOf(total), expr.toString());
+        return new TermEvaluationResult(BigDecimal.valueOf(total), expr.toString());
     }
 
     @Override

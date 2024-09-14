@@ -1,8 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.DiceExpressionSyntaxError;
+import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
 import com.github.milomarten.fracktail4.commands.dice.term.Operation;
 import com.github.milomarten.fracktail4.commands.dice.term.Term;
+import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.Getter;
 
 import java.util.Deque;
@@ -27,11 +28,11 @@ public class DiceExpressionEvaluator {
     /**
      * Add a term to the stack.
      * @param term The term to add.
-     * @throws DiceExpressionSyntaxError Pushed two terms in a row
+     * @throws ExpressionSyntaxError Pushed two terms in a row
      */
     public void push(Term term) {
         if (!expectingTerm) {
-            throw new DiceExpressionSyntaxError("Was not expecting term " + term);
+            throw new ExpressionSyntaxError("Was not expecting term " + term);
         }
         this.terms.push(term);
         expectingTerm = false;
@@ -42,7 +43,7 @@ public class DiceExpressionEvaluator {
      * This may mutate the term stack, depending on the combination
      * of operators present on the stack already, as well as the incoming one.
      * @param operator The operator to apply.
-     * @throws DiceExpressionSyntaxError Pushed two operators in a row, or some operator
+     * @throws ExpressionSyntaxError Pushed two operators in a row, or some operator
      * in the stack threw it.
      */
     public void push(Operation operator) {
@@ -61,7 +62,7 @@ public class DiceExpressionEvaluator {
                 terms.push(result);
             }
             if (operators.peek() != Operation.LEFT_PARENTHESIS) {
-                throw new DiceExpressionSyntaxError("Mismatched parenthesis");
+                throw new ExpressionSyntaxError("Mismatched parenthesis");
             }
             operators.pop();
         } else {
@@ -85,7 +86,7 @@ public class DiceExpressionEvaluator {
      * By the end, the term stack MUST be 1 element, or a DiceExpressionSyntaxError will be thrown.
      * @return The final evaluation.
      */
-    public DiceExpressionEvaluation finish() {
+    public TermEvaluationResult finish() {
         while (!operators.isEmpty()) {
             Operation op = operators.pop();
             var result = op.evaluate(terms);
@@ -93,7 +94,7 @@ public class DiceExpressionEvaluator {
         }
 
         if (terms.size() != 1) {
-            throw new DiceExpressionSyntaxError("Mismatched operations");
+            throw new ExpressionSyntaxError("Mismatched operations");
         }
 
         return terms.pop().evaluate();

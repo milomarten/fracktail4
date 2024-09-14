@@ -18,7 +18,7 @@ class OperationTest {
 
     @Test
     public void testAddConstants() {
-        var stack = createStack(HardCodedTerm.of(5), HardCodedTerm.of(2));
+        var stack = createStack(RegularTerm.of(5), RegularTerm.of(2));
         var result = Operation.ADD.evaluate(stack).evaluate();
 
         assertEquals(BigDecimal.valueOf(7), result.value());
@@ -32,7 +32,7 @@ class OperationTest {
                 .numberOfDice(1)
                 .randomSource(mockDiceRolls(5))
                 .build();
-        var stack = createStack(roll, HardCodedTerm.of(2));
+        var stack = createStack(roll, RegularTerm.of(2));
         var result = Operation.ADD.evaluate(stack).evaluate();
 
         assertEquals(BigDecimal.valueOf(7), result.value());
@@ -41,7 +41,7 @@ class OperationTest {
 
     @Test
     public void testSubtractConstants() {
-        var stack = createStack(HardCodedTerm.of(5), HardCodedTerm.of(2));
+        var stack = createStack(RegularTerm.of(5), RegularTerm.of(2));
         var result = Operation.SUBTRACT.evaluate(stack).evaluate();
 
         assertEquals(BigDecimal.valueOf(-3), result.value());
@@ -50,7 +50,7 @@ class OperationTest {
 
     @Test
     public void testMultiplyConstants() {
-        var stack = createStack(HardCodedTerm.of(5), HardCodedTerm.of(2));
+        var stack = createStack(RegularTerm.of(5), RegularTerm.of(2));
         var result = Operation.MULTIPLY.evaluate(stack).evaluate();
 
         assertEquals(BigDecimal.valueOf(10), result.value());
@@ -59,7 +59,7 @@ class OperationTest {
 
     @Test
     public void testDivideConstants() {
-        var stack = createStack(HardCodedTerm.of(5), HardCodedTerm.of(2));
+        var stack = createStack(RegularTerm.of(5), RegularTerm.of(2));
         var result = Operation.DIVIDE.evaluate(stack).evaluate();
 
         assertEquals(BigDecimal.valueOf(0.4), result.value());
@@ -68,14 +68,14 @@ class OperationTest {
 
     @Test
     public void testDivideByZero() {
-        var stack = createStack(HardCodedTerm.of(0), HardCodedTerm.of(2));
+        var stack = createStack(RegularTerm.of(0), RegularTerm.of(2));
 
-        assertThrows(DiceExpressionSyntaxError.class, () -> Operation.DIVIDE.evaluate(stack));
+        assertThrows(ExpressionSyntaxError.class, () -> Operation.DIVIDE.evaluate(stack));
     }
 
     @Test
     public void testDiceOperator() {
-        var stack = createStack(HardCodedTerm.of(20), HardCodedTerm.of(2));
+        var stack = createStack(RegularTerm.of(20), RegularTerm.of(2));
         var roll = (DiceExpression) Operation.DICE.evaluate(stack);
         roll.setRandomSource(mockDiceRolls(8, 12));
         var result = roll.evaluate();
@@ -85,7 +85,7 @@ class OperationTest {
 
     @Test
     public void testCeiling() {
-        var stack = createStack(HardCodedTerm.of(5.4));
+        var stack = createStack(RegularTerm.of(5.4));
         var ceilinged = Operation.CEIL.evaluate(stack);
 
         assertEquals(6, ceilinged.evaluate().valueAsInt());
