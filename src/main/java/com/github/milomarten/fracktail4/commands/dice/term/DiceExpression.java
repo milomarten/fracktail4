@@ -62,7 +62,7 @@ public class DiceExpression implements Term {
      * Dice below this value are discarded and rerolled.
      * By default, rerollAt is `Integer.MIN_VALUE`, so no dice are rerolled.
      */
-    @Builder.Default int rerollAt = 0;
+    @Builder.Default int rerollAt = -1;
     /**
      * Controls whether rerolls should occur "infinitely" or not.
      * If true, rerolls will continue to happen until a ceiling of 100 tries.
