@@ -13,7 +13,7 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static com.github.milomarten.fracktail4.commands.dice.Utils.checkPositive;
-import static com.github.milomarten.fracktail4.commands.dice.Utils.checkPositiveAndLessThan;
+import static com.github.milomarten.fracktail4.commands.dice.Utils.checkRange;
 
 /**
  * Represents an expression for how to roll, reroll, discard, and total dice.
@@ -144,6 +144,7 @@ public class DiceExpression implements Term {
     }
 
     private int roll() {
+        if (numberOfSides == 0) { return 0; }
         return randomSource.nextInt(numberOfSides) + 1;
     }
 
@@ -158,8 +159,8 @@ public class DiceExpression implements Term {
     }
 
     private void validate() {
-        checkPositiveAndLessThan(Math.abs(numberOfDice),32, "Number Of Dice");
-        checkPositiveAndLessThan(numberOfSides, 1000, "Number of Sides");
+        checkRange(Math.abs(numberOfDice),0, 32, "Number Of Dice");
+        checkRange(numberOfSides, 0, 1000, "Number of Sides");
         checkPositive(numberToDrop, "Number to Drop");
         checkPositive(numberToKeep, "Number to Keep");
         checkPositive(rerollAt, "Reroll At");

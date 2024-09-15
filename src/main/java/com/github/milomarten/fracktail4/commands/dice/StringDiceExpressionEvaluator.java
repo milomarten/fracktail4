@@ -38,7 +38,7 @@ public class StringDiceExpressionEvaluator {
     }
 
     private boolean isNumberRelatedCharacter(char c) {
-        return c == '.' || c == '+' || c == '-';
+        return c == '.';
     }
 
     private BigDecimal tryParseNumberFromIterator(CharacterIterator iter) {

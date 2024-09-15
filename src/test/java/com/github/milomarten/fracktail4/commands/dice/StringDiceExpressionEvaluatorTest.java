@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -80,5 +81,23 @@ class StringDiceExpressionEvaluatorTest {
     })
     public void testComplexExpressions(String expression) {
         assertDoesNotThrow(() -> System.out.println(eval.evaluate(expression)));
+    }
+
+    @Test
+    @DisplayName("(2*d20)/(2d20)+7d4+3")
+    public void graphaTestOne() {
+        assertDoesNotThrow(() -> {
+            var e = eval.evaluate("(2*d20)/(2d20)+7d4+3");
+
+            assertTrue(e.valueAsInt() >= 3);
+        });
+    }
+
+    @Test
+    @DisplayName("d0.5")
+    public void graphaTestTwo() {
+        assertDoesNotThrow(() -> {
+            var e = eval.evaluate("d0.5");
+        });
     }
 }

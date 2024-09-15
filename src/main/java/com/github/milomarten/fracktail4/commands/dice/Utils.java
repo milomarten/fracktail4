@@ -5,9 +5,9 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class Utils {
-    public static void checkPositiveAndLessThan(int value, int high, String field) {
-        if (value < 0 || value > high) {
-            throw new ExpressionSyntaxError("Field " + field + " must be in range 0" + " - " + high);
+    public static void checkRange(int value, int low, int high, String field) {
+        if (value < low || value > high) {
+            throw new ExpressionSyntaxError("Field " + field + " must be in range " + low + " - " + high);
         }
     }
 
