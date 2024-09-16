@@ -44,10 +44,4 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
                 .sum();
         return new TermEvaluationResult(BigDecimal.valueOf(total), expr.toString());
     }
-
-    @Override
-    public void validate() {
-        Utils.checkPositive(this.successThreshold, "Success threshold");
-        Utils.checkPositive(this.failureThreshold, "Failure threshold");
-    }
 }

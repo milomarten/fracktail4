@@ -1,5 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
+import com.github.milomarten.fracktail4.commands.dice.Utils;
+
 import java.math.BigDecimal;
 
 /**
@@ -21,7 +23,7 @@ public record RegularTerm(BigDecimal value, String expression) implements Term {
      */
     public static RegularTerm of(double value) {
         var bd = BigDecimal.valueOf(value);
-        return new RegularTerm(bd, bd.toPlainString());
+        return new RegularTerm(bd, Utils.outputBigDecimal(bd));
     }
 
     /**
@@ -40,6 +42,6 @@ public record RegularTerm(BigDecimal value, String expression) implements Term {
      * @return The term holding the BigDecimal.
      */
     public static RegularTerm of(BigDecimal value) {
-        return new RegularTerm(value, value.toPlainString());
+        return new RegularTerm(value, Utils.outputBigDecimal(value));
     }
 }

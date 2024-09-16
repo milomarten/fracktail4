@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.github.milomarten.fracktail4.commands.dice.StringDiceExpressionEvaluator;
+import com.github.milomarten.fracktail4.commands.dice.Utils;
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
@@ -62,7 +63,7 @@ public class DiceSlashCommand implements SlashCommandWrapper {
                 .orElse(false);
         try {
             var result = evaluator.evaluate(expression);
-            String str = String.format("%s = %s", result.representation(), result.value().toPlainString());
+            String str = String.format("%s = %s", result.representation(), Utils.outputBigDecimal(result.value()));
 
             return event.reply(commentOpt.map(comment -> comment + "\n" + str).orElse(str)).withEphemeral(silent);
         } catch (ExpressionSyntaxError ex) {

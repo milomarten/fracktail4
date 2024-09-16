@@ -163,8 +163,6 @@ public class DiceExpression implements Term {
         checkRange(numberOfSides, 0, 1000, "Number of Sides");
         checkPositive(numberToDrop, "Number to Drop");
         checkPositive(numberToKeep, "Number to Keep");
-        checkPositive(rerollAt, "Reroll At");
-        checkPositive(explodeAt, "Explode At");
         this.totalingStrategy.validate();
     }
 
