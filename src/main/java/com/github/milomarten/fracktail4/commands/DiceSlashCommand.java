@@ -60,7 +60,7 @@ public class DiceSlashCommand implements SlashCommandWrapper {
         var visible = event.getOption("visible")
                 .flatMap(a -> a.getValue())
                 .map(a -> a.asBoolean())
-                .orElse(false);
+                .orElse(true);
         try {
             var result = evaluator.evaluate(expression);
             String str = String.format("```ansi\n%s = %s\n```", result.representation(), Utils.outputBigDecimal(result.value()));
