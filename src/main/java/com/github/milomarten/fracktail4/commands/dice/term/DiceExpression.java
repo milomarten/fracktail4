@@ -143,9 +143,16 @@ public class DiceExpression implements Term {
         return finalResults;
     }
 
-    private int roll() {
-        if (numberOfSides == 0) { return 0; }
-        return randomSource.nextInt(numberOfSides) + 1;
+    private Result roll() {
+        if (numberOfSides == 0) { return new Result(0); }
+        var roll = randomSource.nextInt(numberOfSides) + 1;
+        var result = new Result(roll);
+        if (roll == 1) {
+            result.setStatus(Status.CRITICAL_FAIL);
+        } else if (roll == numberOfSides) {
+            result.setStatus(Status.CRITICAL_SUCCESS);
+        }
+        return result;
     }
 
     private static void doNTimes(long number, Runnable action) {
@@ -170,17 +177,22 @@ public class DiceExpression implements Term {
     public static class Result {
         private final int value;
         private boolean discounted;
+        private Status status = Status.NEUTRAL;
+
+        public String toString() {
+            return status.format(this.value);
+        }
     }
 
     public static class Results {
         private final List<Result> results;
         private int lengthNotDiscounted;
 
-        public Results(List<Integer> results) {
-            this.results = results.stream()
-                    .map(Result::new)
-                    .collect(Collectors.toCollection(ArrayList::new));
-            this.lengthNotDiscounted = results.size();
+        public Results(List<Result> results) {
+            this.results = results;
+            this.lengthNotDiscounted = (int) results.stream()
+                    .filter(r -> !r.discounted)
+                    .count();
         }
 
         public Stream<Result> getAllResults() {
@@ -242,8 +254,8 @@ public class DiceExpression implements Term {
          * Add a new roll to this result
          * @param roll The roll to add
          */
-        public void addResult(int roll) {
-            this.results.add(new Result(roll));
+        public void addResult(Result roll) {
+            this.results.add(roll);
             this.lengthNotDiscounted++;
         }
     }

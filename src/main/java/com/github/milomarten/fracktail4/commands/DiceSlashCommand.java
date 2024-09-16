@@ -57,15 +57,16 @@ public class DiceSlashCommand implements SlashCommandWrapper {
         var commentOpt = event.getOption("comment")
                 .flatMap(a -> a.getValue())
                 .map(a -> a.asString());
-        var silent = event.getOption("visible")
+        var visible = event.getOption("visible")
                 .flatMap(a -> a.getValue())
                 .map(a -> a.asBoolean())
                 .orElse(false);
         try {
             var result = evaluator.evaluate(expression);
-            String str = String.format("%s = %s", result.representation(), Utils.outputBigDecimal(result.value()));
+            String str = String.format("```ansi\n%s = %s\n```", result.representation(), Utils.outputBigDecimal(result.value()));
 
-            return event.reply(commentOpt.map(comment -> comment + "\n" + str).orElse(str)).withEphemeral(silent);
+            return event.reply(commentOpt.map(comment -> comment + "\n" + str).orElse(str))
+                    .withEphemeral(!visible);
         } catch (ExpressionSyntaxError ex) {
             return SlashCommands.replyEphemeral(event, ex.getMessage());
         }

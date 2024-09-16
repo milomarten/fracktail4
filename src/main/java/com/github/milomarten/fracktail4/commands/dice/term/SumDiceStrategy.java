@@ -15,9 +15,9 @@ public enum SumDiceStrategy implements DiceTotalingStrategy {
         var sum = results.getAllResults()
                 .<Integer>mapMulti((result, consumer) -> {
                     if (result.isDiscounted()) {
-                        expr.add("~~" + result.getValue() + "~~");
+                        expr.add("~~" + result + "~~");
                     } else {
-                        expr.add("" + result.getValue());
+                        expr.add(result.toString());
                         consumer.accept(result.getValue());
                     }
                 })

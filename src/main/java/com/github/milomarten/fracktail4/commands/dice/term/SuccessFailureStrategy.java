@@ -28,15 +28,15 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
                 .<Integer>mapMulti((result, consumer) -> {
                     var value = result.getValue();
                     if (result.isDiscounted()) {
-                        expr.add("~~" + value + "~~");
+                        expr.add("~~" + result + "~~");
                     } else if (value >= successThreshold) {
-                        expr.add("1 [" + value + "]");
+                        expr.add("1 [" + result + "]");
                         consumer.accept(1);
                     } else if (value <= failureThreshold) {
-                        expr.add("-1 [" + value + "]");
+                        expr.add("-1 [" + result + "]");
                         consumer.accept(-1);
                     } else {
-                        expr.add("0 [" + value + "]");
+                        expr.add("0 [" + result + "]");
                         consumer.accept(0);
                     }
                 })
