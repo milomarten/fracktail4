@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
+import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
 import lombok.*;
 
@@ -22,21 +23,24 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
     private int failureThreshold = 0;
 
     @Override
-    public TermEvaluationResult compile(DiceExpression.Results results) {
+    public TermEvaluationResult compile(DiceExpression.Results results, DiceEvaluatorOptions options) {
         var expr = new StringJoiner(" + ", "\uD83C\uDFB2(", ")");
         var total = results.getAllResults()
                 .<Integer>mapMulti((result, consumer) -> {
                     var value = result.getValue();
+                    String rollText = result.toString(options);
                     if (result.isDiscounted()) {
-                        expr.add("~~" + result + "~~");
+                        expr.add("~~" + rollText + "~~");
                     } else if (value >= successThreshold) {
-                        expr.add("1 [" + result + "]");
+                        String resolvedText = Utils.outputDiceRoll(1, Status.CRITICAL_SUCCESS, options);
+                        expr.add(resolvedText + " [" + rollText + "]");
                         consumer.accept(1);
                     } else if (value <= failureThreshold) {
-                        expr.add("-1 [" + result + "]");
+                        String resolvedText = Utils.outputDiceRoll(-1, Status.CRITICAL_FAIL, options);
+                        expr.add(resolvedText + " [" + rollText + "]");
                         consumer.accept(-1);
                     } else {
-                        expr.add("0 [" + result + "]");
+                        expr.add("0 [" + rollText + "]");
                         consumer.accept(0);
                     }
                 })

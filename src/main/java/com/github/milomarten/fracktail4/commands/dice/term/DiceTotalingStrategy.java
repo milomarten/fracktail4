@@ -1,5 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
+import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+
 /**
  * Describes a way to turn multiple dice rolls into one final result
  */
@@ -9,7 +11,7 @@ public interface DiceTotalingStrategy {
      * @param results The results to compile
      * @return The final results
      */
-    TermEvaluationResult compile(DiceExpression.Results results);
+    TermEvaluationResult compile(DiceExpression.Results results, DiceEvaluatorOptions options);
 
     /**
      * Validate this strategy.

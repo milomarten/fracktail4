@@ -5,6 +5,7 @@ import com.github.milomarten.fracktail4.commands.dice.term.Operation;
 import com.github.milomarten.fracktail4.commands.dice.term.Term;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -14,9 +15,11 @@ import java.util.LinkedList;
  * This uses the normal shunting-yard algorithm to handle the work. Each operation pushed
  * will mutate the terms stack, however, so this is a one-time use evaluator.
  */
+@RequiredArgsConstructor
 public class DiceExpressionEvaluator {
     private final Deque<Term> terms = new LinkedList<>();
     private final Deque<Operation> operators = new LinkedList<>();
+    private final DiceEvaluatorOptions options;
 
     /**
      * Check if this evaluator is expecting a term or an operator
@@ -58,7 +61,7 @@ public class DiceExpressionEvaluator {
             while (!operators.isEmpty() &&
                     operators.peek() != Operation.LEFT_PARENTHESIS) {
                 underneath = operators.pop();
-                var result = underneath.evaluate(terms);
+                var result = underneath.evaluate(terms, this.options);
                 terms.push(result);
             }
             if (operators.peek() != Operation.LEFT_PARENTHESIS) {
@@ -71,7 +74,7 @@ public class DiceExpressionEvaluator {
                     operators.peek() != Operation.LEFT_PARENTHESIS &&
                     operators.peek().getPriority() <= operator.getPriority()) {
                 underneath = operators.pop();
-                var result = underneath.evaluate(terms);
+                var result = underneath.evaluate(terms, this.options);
                 terms.push(result);
             }
             operators.push(operator);
@@ -89,7 +92,7 @@ public class DiceExpressionEvaluator {
     public TermEvaluationResult finish() {
         while (!operators.isEmpty()) {
             Operation op = operators.pop();
-            var result = op.evaluate(terms);
+            var result = op.evaluate(terms, this.options);
             terms.push(result);
         }
 
@@ -97,6 +100,6 @@ public class DiceExpressionEvaluator {
             throw new ExpressionSyntaxError("Mismatched operations");
         }
 
-        return terms.pop().evaluate();
+        return terms.pop().evaluate(this.options);
     }
 }

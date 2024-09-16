@@ -13,7 +13,11 @@ import java.text.StringCharacterIterator;
 @Component
 public class StringDiceExpressionEvaluator {
     public TermEvaluationResult evaluate(String expression) throws ExpressionSyntaxError {
-        var evaluator = new DiceExpressionEvaluator();
+        return evaluate(expression, DiceEvaluatorOptions.builder().build());
+    }
+
+    public TermEvaluationResult evaluate(String expression, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+        var evaluator = new DiceExpressionEvaluator(options);
         var iterator = new StringCharacterIterator(expression);
 
         for(char c = iterator.first(); c != CharacterIterator.DONE; ) {

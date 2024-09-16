@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
+import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -39,8 +40,8 @@ public enum Operation {
      */
     ADD("+", 10){
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, "addend", "addend", BigDecimal::add);
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateTwoParameterFunc(termStack, options, "addend", "addend", BigDecimal::add);
         }
     },
     /**
@@ -48,8 +49,8 @@ public enum Operation {
      */
     SUBTRACT("-", 10) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, "minuend", "subtrahend", BigDecimal::subtract);
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateTwoParameterFunc(termStack, options, "minuend", "subtrahend", BigDecimal::subtract);
         }
     },
     /**
@@ -59,8 +60,8 @@ public enum Operation {
         private static final MathContext MC = MathContext.DECIMAL128;
 
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack,
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateTwoParameterFunc(termStack, options,
                     "multiplicand", "multiplier",
                     (one, two) -> {
                         preValidate(one, two);
@@ -84,8 +85,8 @@ public enum Operation {
         private static final MathContext MC = MathContext.DECIMAL128;
 
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack,
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateTwoParameterFunc(termStack, options,
                     "dividend", "divisor",
                     (one, two) -> {
                         preValidate(one, two);
@@ -121,7 +122,7 @@ public enum Operation {
      */
     LEFT_PARENTHESIS("([", 0) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             throw new ExpressionSyntaxError("Unexpectedly encountered a left parenthesis");
         }
     },
@@ -131,7 +132,7 @@ public enum Operation {
      */
     RIGHT_PARENTHESIS(")]", 0) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             throw new ExpressionSyntaxError("Unexpectedly encountered a right parenthesis");
         }
 
@@ -152,9 +153,9 @@ public enum Operation {
         private static final Term ONE = new RegularTerm(BigDecimal.ONE, "");
 
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            var numberOfSides = Operation.pull(termStack, "number of sides").evaluate();
-            var numberOfDice = Operation.pull(termStack, "number of dice").evaluate();
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            var numberOfSides = Operation.pull(termStack, "number of sides").evaluate(options);
+            var numberOfDice = Operation.pull(termStack, "number of dice").evaluate(options);
             return DiceExpression.builder()
                     .numberOfSides(numberOfSides.valueAsInt())
                     .numberOfDice(numberOfDice.valueAsInt())
@@ -171,8 +172,8 @@ public enum Operation {
      */
     DROP("x", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Drop", DiceExpression::setNumberToDrop);
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Drop", DiceExpression::setNumberToDrop);
         }
     },
     /**
@@ -180,8 +181,8 @@ public enum Operation {
      */
     KEEP("k", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Keep", (expr, i) -> {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Keep", (expr, i) -> {
                 expr.setNumberToKeep(i);
                 expr.setKeepLowest(false);
             });
@@ -192,8 +193,8 @@ public enum Operation {
      */
     KEEP_LOWEST("l", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Keep Lowest", (expr, i) -> {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Keep Lowest", (expr, i) -> {
                 expr.setNumberToKeep(i);
                 expr.setKeepLowest(true);
             });
@@ -204,8 +205,8 @@ public enum Operation {
      */
     REROLL("r", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Reroll", (expr, i) -> {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Reroll", (expr, i) -> {
                 expr.setRerollAt(i);
                 expr.setInfiniteReroll(false);
             });
@@ -216,8 +217,8 @@ public enum Operation {
      */
     REROLL_INFINITE("R", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Reroll Infinite", (expr, i) -> {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Reroll Infinite", (expr, i) -> {
                 expr.setRerollAt(i);
                 expr.setInfiniteReroll(true);
             });
@@ -228,8 +229,8 @@ public enum Operation {
      */
     EXPLODE("e", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Explode", (expr, i) -> {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Explode", (expr, i) -> {
                 expr.setExplodeAt(i);
                 expr.setInfiniteExplode(false);
             });
@@ -240,8 +241,8 @@ public enum Operation {
      */
     EXPLODE_INFINITE("E", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Explode Infinite", (expr, i) -> {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Explode Infinite", (expr, i) -> {
                 expr.setExplodeAt(i);
                 expr.setInfiniteReroll(true);
             });
@@ -256,8 +257,8 @@ public enum Operation {
      */
     SUCCESS_AT("s", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Success At", (expr, i) -> {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Success At", (expr, i) -> {
                 if (expr.getTotalingStrategy() instanceof SuccessFailureStrategy sfs) {
                     sfs.setSuccessThreshold(i);
                 } else {
@@ -279,8 +280,8 @@ public enum Operation {
      */
     FAILURE_AT("f", 4) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, "Success At", (expr, i) -> {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateDiceIntegerFunc(termStack, options, "Success At", (expr, i) -> {
                 if (expr.getTotalingStrategy() instanceof SuccessFailureStrategy sfs) {
                     sfs.setFailureThreshold(i);
                 } else {
@@ -298,9 +299,9 @@ public enum Operation {
      */
     CEIL("^", 6) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             var term = Operation.pull(termStack, "Term to ceil");
-            var evaluated = term.evaluate();
+            var evaluated = term.evaluate(options);
             var ceiling = evaluated.value().setScale(0, RoundingMode.CEILING);
 
             return new RegularTerm(ceiling, "^" + evaluated.representation());
@@ -316,8 +317,8 @@ public enum Operation {
      */
     CAP_LOW("<", 6) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, "value", "cap",
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateTwoParameterFunc(termStack, options, "value", "cap",
                     (number, cap) -> {
                         if (number.compareTo(cap) < 0) {
                             return cap;
@@ -331,8 +332,8 @@ public enum Operation {
      */
     CAP_HIGH(">", 6) {
         @Override
-        public Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, "value", "cap",
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateTwoParameterFunc(termStack, options, "value", "cap",
                     (number, cap) -> {
                         if (number.compareTo(cap) > 0) {
                             return cap;
@@ -352,7 +353,7 @@ public enum Operation {
      * @return A term which is the result of this operator acting on the stack
      * @throws ExpressionSyntaxError The operator encountered a stack it could not handle.
      */
-    public abstract Term evaluate(Deque<Term> termStack) throws ExpressionSyntaxError;
+    public abstract Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options);
 
     /**
      * Get the implicit left term of this operation.
@@ -376,9 +377,9 @@ public enum Operation {
         return stack.pop();
     }
 
-    protected Term evaluateTwoParameterFunc(Deque<Term> stack, String firstTerm, String secondTerm, BinaryOperator<BigDecimal> operator) {
-        var two = Operation.pull(stack, secondTerm).evaluate();
-        var one = Operation.pull(stack, firstTerm).evaluate();
+    protected Term evaluateTwoParameterFunc(Deque<Term> stack, DiceEvaluatorOptions options, String firstTerm, String secondTerm, BinaryOperator<BigDecimal> operator) {
+        var two = Operation.pull(stack, secondTerm).evaluate(options);
+        var one = Operation.pull(stack, firstTerm).evaluate(options);
 
         try {
             return new RegularTerm(
@@ -390,8 +391,8 @@ public enum Operation {
         }
     }
 
-    protected Term evaluateDiceIntegerFunc(Deque<Term> stack, String term, BiConsumer<DiceExpression, Integer> func) {
-        var two = Operation.pull(stack, term).evaluate();
+    protected Term evaluateDiceIntegerFunc(Deque<Term> stack, DiceEvaluatorOptions options, String term, BiConsumer<DiceExpression, Integer> func) {
+        var two = Operation.pull(stack, term).evaluate(options);
         var one = Operation.pull(stack, "Dice");
 
         if (one instanceof DiceExpression dice) {

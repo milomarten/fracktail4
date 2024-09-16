@@ -16,11 +16,12 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 class OperationTest {
+    private static final DiceEvaluatorOptions OPTS = DiceEvaluatorOptions.builder().build();
 
     @Test
     public void testAddConstants() {
         var stack = createStack(RegularTerm.of(5), RegularTerm.of(2));
-        var result = Operation.ADD.evaluate(stack).evaluate();
+        var result = Operation.ADD.evaluate(stack, OPTS).evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(7), result.value());
         assertEquals("2 + 5", result.representation());
@@ -34,7 +35,7 @@ class OperationTest {
                 .randomSource(mockDiceRolls(5))
                 .build();
         var stack = createStack(roll, RegularTerm.of(2));
-        var result = Operation.ADD.evaluate(stack).evaluate();
+        var result = Operation.ADD.evaluate(stack, OPTS).evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(7), result.value());
     }
@@ -42,7 +43,7 @@ class OperationTest {
     @Test
     public void testSubtractConstants() {
         var stack = createStack(RegularTerm.of(5), RegularTerm.of(2));
-        var result = Operation.SUBTRACT.evaluate(stack).evaluate();
+        var result = Operation.SUBTRACT.evaluate(stack, OPTS).evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(-3), result.value());
         assertEquals("2 - 5", result.representation());
@@ -51,7 +52,7 @@ class OperationTest {
     @Test
     public void testMultiplyConstants() {
         var stack = createStack(RegularTerm.of(5), RegularTerm.of(2));
-        var result = Operation.MULTIPLY.evaluate(stack).evaluate();
+        var result = Operation.MULTIPLY.evaluate(stack, OPTS).evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(10), result.value());
         assertEquals("2 * 5", result.representation());
@@ -60,7 +61,7 @@ class OperationTest {
     @Test
     public void testDivideConstants() {
         var stack = createStack(RegularTerm.of(5), RegularTerm.of(2));
-        var result = Operation.DIVIDE.evaluate(stack).evaluate();
+        var result = Operation.DIVIDE.evaluate(stack, OPTS).evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(0.4), result.value());
         assertEquals("2 / 5", result.representation());
@@ -70,15 +71,15 @@ class OperationTest {
     public void testDivideByZero() {
         var stack = createStack(RegularTerm.of(0), RegularTerm.of(2));
 
-        assertThrows(ExpressionSyntaxError.class, () -> Operation.DIVIDE.evaluate(stack));
+        assertThrows(ExpressionSyntaxError.class, () -> Operation.DIVIDE.evaluate(stack, OPTS));
     }
 
     @Test
     public void testDiceOperator() {
         var stack = createStack(RegularTerm.of(20), RegularTerm.of(2));
-        var roll = (DiceExpression) Operation.DICE.evaluate(stack);
+        var roll = (DiceExpression) Operation.DICE.evaluate(stack, OPTS);
         roll.setRandomSource(mockDiceRolls(8, 12));
-        var result = roll.evaluate();
+        var result = roll.evaluate(OPTS);
 
         assertEquals(20, result.valueAsInt());
     }
@@ -86,9 +87,9 @@ class OperationTest {
     @Test
     public void testCeiling() {
         var stack = createStack(RegularTerm.of(5.4));
-        var ceilinged = Operation.CEIL.evaluate(stack);
+        var ceilinged = Operation.CEIL.evaluate(stack, OPTS);
 
-        assertEquals(6, ceilinged.evaluate().valueAsInt());
+        assertEquals(6, ceilinged.evaluate(OPTS).valueAsInt());
     }
 
     private static Deque<Term> createStack(Term... items) {

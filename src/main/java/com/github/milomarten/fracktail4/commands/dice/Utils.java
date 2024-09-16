@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
+import com.github.milomarten.fracktail4.commands.dice.term.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import lombok.experimental.UtilityClass;
 
 import java.math.BigDecimal;
@@ -23,11 +25,18 @@ public class Utils {
     }
 
     public static String outputBigDecimal(BigDecimal bd) {
-        if (bd.scale() > 4) {
-            return bd.setScale(4, RoundingMode.HALF_EVEN)
+        if (bd.scale() > MAX_SCALE) {
+            return bd.setScale(MAX_SCALE, RoundingMode.HALF_EVEN)
                     .stripTrailingZeros()
                     .toPlainString();
         }
         return bd.toPlainString();
+    }
+
+    public static String outputDiceRoll(int value, Status status, DiceEvaluatorOptions options) {
+        return switch (options.getOutputType()) {
+            case PLAIN -> String.valueOf(value);
+            case ANSI -> status.format(value);
+        };
     }
 }

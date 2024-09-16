@@ -1,7 +1,11 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
+import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.Utils;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -95,7 +99,7 @@ public class DiceExpression implements Term {
     @Builder.Default RandomGenerator randomSource = new Random();
 
     @Override
-    public TermEvaluationResult evaluate() throws ExpressionSyntaxError {
+    public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
         // Flip an error if this dice expression is too high.
         validate();
 
@@ -136,7 +140,7 @@ public class DiceExpression implements Term {
             }
         }
 
-        var finalResults = totalingStrategy.compile(results);
+        var finalResults = totalingStrategy.compile(results, options);
         if (negateAtTheEnd) {
             finalResults = finalResults.map(BigDecimal::negate, s -> "-" + s);
         }
@@ -174,13 +178,26 @@ public class DiceExpression implements Term {
     }
 
     @Data
+    @RequiredArgsConstructor
+    @AllArgsConstructor
     public static class Result {
         private final int value;
         private boolean discounted;
         private Status status = Status.NEUTRAL;
 
-        public String toString() {
+        public String toPlainString() {
+            return String.valueOf(value);
+        }
+
+        public String toAnsiString() {
             return status.format(this.value);
+        }
+
+        public String toString(DiceEvaluatorOptions options) {
+            return switch (options.getOutputType()) {
+                case PLAIN -> this.toPlainString();
+                case ANSI -> this.toAnsiString();
+            };
         }
     }
 

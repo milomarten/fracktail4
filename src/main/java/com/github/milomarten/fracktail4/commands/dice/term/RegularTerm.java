@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
+import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
 
 import java.math.BigDecimal;
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
  */
 public record RegularTerm(BigDecimal value, String expression) implements Term {
     @Override
-    public TermEvaluationResult evaluate() throws ExpressionSyntaxError {
+    public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
         return new TermEvaluationResult(value, expression);
     }
 

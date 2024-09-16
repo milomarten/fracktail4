@@ -19,6 +19,8 @@ class DiceExpressionTest {
     @Mock
     private RandomGenerator random;
 
+    private static final DiceEvaluatorOptions OPTS = DiceEvaluatorOptions.builder().build();
+
     @Test
     public void testNormalD20() {
         mockRolls(20);
@@ -26,7 +28,7 @@ class DiceExpressionTest {
                 .numberOfSides(20)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(20), response.value());
     }
@@ -38,7 +40,7 @@ class DiceExpressionTest {
                 .numberOfDice(mockRolls(18, 12, 9))
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(39), response.value());
     }
@@ -51,7 +53,7 @@ class DiceExpressionTest {
                 .numberToDrop(1)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(30), response.value());
     }
@@ -64,7 +66,7 @@ class DiceExpressionTest {
                 .numberToDrop(100)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.ZERO, response.value());
     }
@@ -77,7 +79,7 @@ class DiceExpressionTest {
                 .numberToKeep(2)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(30), response.value());
     }
@@ -90,7 +92,7 @@ class DiceExpressionTest {
                 .numberToKeep(100)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(39), response.value());
     }
@@ -104,7 +106,7 @@ class DiceExpressionTest {
                 .keepLowest(true)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(21), response.value());
     }
@@ -118,7 +120,7 @@ class DiceExpressionTest {
                 .keepLowest(true)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(39), response.value());
     }
@@ -132,7 +134,7 @@ class DiceExpressionTest {
                 .explodeAt(10)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(36), response.value());
     }
@@ -147,7 +149,7 @@ class DiceExpressionTest {
                 .infiniteExplode(true)
                 .randomSource(random)
                 .build();
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
 
         assertEquals(BigDecimal.valueOf(56), response.value());
     }
@@ -163,7 +165,7 @@ class DiceExpressionTest {
                 .randomSource(random)
                 .build();
 
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
         assertEquals(BigDecimal.valueOf(1027), response.value()); // 8 + 9 + 10, plus 100 rerolls of a 10.
     }
 
@@ -177,7 +179,7 @@ class DiceExpressionTest {
                 .randomSource(random)
                 .build();
 
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
         assertEquals(BigDecimal.valueOf(25), response.value());
     }
 
@@ -192,7 +194,7 @@ class DiceExpressionTest {
                 .randomSource(random)
                 .build();
 
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
         assertEquals(BigDecimal.valueOf(25), response.value());
     }
 
@@ -207,7 +209,7 @@ class DiceExpressionTest {
                 .randomSource(random)
                 .build();
 
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
         assertEquals(BigDecimal.valueOf(18), response.value()); // 8 + 9 + (reroll 100 1's) 1
     }
 
@@ -220,7 +222,7 @@ class DiceExpressionTest {
                 .randomSource(random)
                 .build();
 
-        var response = dice.evaluate();
+        var response = dice.evaluate(OPTS);
         assertEquals(-1, response.value().signum());
     }
 
