@@ -189,7 +189,7 @@ public class DiceExpression implements Term {
         private int lengthNotDiscounted;
 
         public Results(List<Result> results) {
-            this.results = results;
+            this.results = new ArrayList<>(results);
             this.lengthNotDiscounted = (int) results.stream()
                     .filter(r -> !r.discounted)
                     .count();
