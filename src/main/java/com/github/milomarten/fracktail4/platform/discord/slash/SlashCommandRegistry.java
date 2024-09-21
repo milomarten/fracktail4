@@ -1,17 +1,17 @@
 package com.github.milomarten.fracktail4.platform.discord.slash;
 
-import com.github.milomarten.fracktail4.base.SimpleCommand;
-import com.github.milomarten.fracktail4.base.SimpleNoParameterAsyncCommand;
-import com.github.milomarten.fracktail4.base.SimpleNoParameterCommand;
+import com.github.milomarten.fracktail4.base.*;
 import com.github.milomarten.fracktail4.config.FracktailRoles;
 import com.github.milomarten.fracktail4.permissions.PermissionsProvider;
 import com.github.milomarten.fracktail4.platform.discord.DiscordHookSource;
+import com.github.milomarten.fracktail4.platform.discord.slash.adapter.DiscordCommandOutputFinalizer;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleCommandAsSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleNoParameterAsyncCommandAsSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleNoParameterCommandAsSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.event.domain.interaction.ApplicationCommandInteractionEvent;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.event.domain.interaction.UserInteractionEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -40,12 +40,14 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
     private final Map<String, UserCommandWrapper> userCommandLookup;
     private final List<ApplicationCommandRequest> requests;
     private final List<SlashCommandFilter> filters;
+    private final DiscordCommandOutputFinalizer finalizer;
 
     public SlashCommandRegistry(
             @Autowired(required = false) List<SlashCommandWrapper> slashCommands,
             @Autowired(required = false) List<UserCommandWrapper> userCommands,
             @Autowired(required = false) List<SlashCommandFilter> filters,
-            PermissionsProvider<User, FracktailRoles> permissionsProvider
+            PermissionsProvider<User, FracktailRoles> permissionsProvider,
+            DiscordCommandOutputFinalizer commandFinalizer
     ) {
         this.slashCommandLookup = new HashMap<>();
         this.userCommandLookup = new HashMap<>();
@@ -58,6 +60,7 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
 
         this.filters = Objects.requireNonNullElseGet(filters, List::of);
         this.permissionsProvider = permissionsProvider;
+        this.finalizer = commandFinalizer;
     }
 
     private static <T> Stream<T> stream(List<T> list) {
@@ -94,14 +97,19 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof SimpleCommand cmd) {
-            addCommand(new SimpleCommandAsSlashCommand(cmd));
+            addCommand(new SimpleCommandAsSlashCommand(cmd, getFinalizerForBean(cmd)));
         } else if (bean instanceof SimpleNoParameterCommand cmd) {
-            addCommand(new SimpleNoParameterCommandAsSlashCommand(cmd));
+            addCommand(new SimpleNoParameterCommandAsSlashCommand(cmd, getFinalizerForBean(cmd)));
         } else if (bean instanceof SimpleNoParameterAsyncCommand cmd) {
-            addCommand(new SimpleNoParameterAsyncCommandAsSlashCommand(cmd));
+            addCommand(new SimpleNoParameterAsyncCommandAsSlashCommand(cmd, getFinalizerForBean(cmd)));
         }
 
         return bean;
+    }
+
+    private CommandOutputFinalizer<ApplicationCommandInteractionEvent> getFinalizerForBean(Object bean) {
+        return bean instanceof Translate ?
+                this.finalizer : CommandOutputFinalizer.getDefault();
     }
 
     @Override
