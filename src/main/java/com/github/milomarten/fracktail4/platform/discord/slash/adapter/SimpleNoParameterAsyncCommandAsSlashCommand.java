@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @AllArgsConstructor
 public class SimpleNoParameterAsyncCommandAsSlashCommand implements SlashCommandWrapper {
     private final SimpleNoParameterAsyncCommand wrapper;
-    private CommandOutputFinalizer<? super ChatInputInteractionEvent> finalizer = CommandOutputFinalizer.getDefault();
+    private CommandOutputFinalizer<? super ChatInputInteractionEvent, String> finalizer = CommandOutputFinalizer.getDefault();
 
     @Override
     public ApplicationCommandRequest getRequest() {

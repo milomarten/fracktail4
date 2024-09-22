@@ -10,7 +10,7 @@ import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
-public class DiscordCommandOutputFinalizer implements CommandOutputFinalizer<ApplicationCommandInteractionEvent> {
+public class DiscordCommandOutputFinalizer implements CommandOutputFinalizer<ApplicationCommandInteractionEvent, String> {
     private final MessageSource translations;
 
     @Override

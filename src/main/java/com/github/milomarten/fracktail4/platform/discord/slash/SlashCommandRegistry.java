@@ -107,7 +107,7 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         return bean;
     }
 
-    private CommandOutputFinalizer<ApplicationCommandInteractionEvent> getFinalizerForBean(Object bean) {
+    private CommandOutputFinalizer<ApplicationCommandInteractionEvent, String> getFinalizerForBean(Object bean) {
         return bean instanceof Translate ?
                 this.finalizer : CommandOutputFinalizer.getDefault();
     }

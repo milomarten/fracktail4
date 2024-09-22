@@ -1,9 +1,9 @@
 package com.github.milomarten.fracktail4.base;
 
-public interface CommandOutputFinalizer<EVENT> {
-    String mapResponse(EVENT event, String response);
+public interface CommandOutputFinalizer<EVENT, INPUT> {
+    String mapResponse(EVENT event, INPUT response);
 
-    static <T> CommandOutputFinalizer<T> getDefault() {
+    static <T, I> CommandOutputFinalizer<T, String> getDefault() {
         return (event, response) -> response;
     }
 }
