@@ -20,6 +20,7 @@ import discord4j.core.object.entity.User;
 import discord4j.core.spec.InteractionApplicationCommandCallbackSpec;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,30 +35,23 @@ import java.util.stream.Stream;
 @Component
 @Slf4j
 public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcessor {
-    private final PermissionsProvider<User, FracktailRoles> permissionsProvider;
-
     private final Map<String, SlashCommandWrapper> slashCommandLookup;
     private final Map<String, UserCommandWrapper> userCommandLookup;
-    private final List<ApplicationCommandRequest> requests;
+    @Getter private final List<ApplicationCommandRequest> requests;
     private final List<SlashCommandFilter> filters;
 
     public SlashCommandRegistry(
             @Autowired(required = false) List<SlashCommandWrapper> slashCommands,
             @Autowired(required = false) List<UserCommandWrapper> userCommands,
-            @Autowired(required = false) List<SlashCommandFilter> filters,
-            PermissionsProvider<User, FracktailRoles> permissionsProvider
+            @Autowired(required = false) List<SlashCommandFilter> filters
     ) {
         this.slashCommandLookup = new HashMap<>();
         this.userCommandLookup = new HashMap<>();
         this.requests = new ArrayList<>();
         stream(slashCommands).forEach(this::addCommand);
         stream(userCommands).forEach(this::addCommand);
-//        stream(simpleCommands)
-//                .map(SimpleCommandAsSlashCommand::new)
-//                .forEach(this::addCommand);
 
         this.filters = Objects.requireNonNullElseGet(filters, List::of);
-        this.permissionsProvider = permissionsProvider;
     }
 
     private static <T> Stream<T> stream(List<T> list) {
@@ -91,6 +85,10 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         log.info("Added user command {}", request.name());
     }
 
+    public Optional<SlashCommandWrapper> getSlashCommand(String name) {
+        return Optional.ofNullable(this.slashCommandLookup.get(name));
+    }
+
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof SimpleCommand cmd) {
@@ -106,51 +104,6 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
 
     @Override
     public void addDiscordHook(GatewayDiscordClient client) {
-        client.on(MessageCreateEvent.class).flatMap(mce -> {
-            var message = mce.getMessage();
-            var author = message.getAuthor();
-            if (author.isEmpty() || permissionsProvider.getRoles(author.get()).doesNotHaveRole(FracktailRoles.OWNER)) {
-                return Flux.empty();
-            }
-            String command = message.getContent();
-            if (command.startsWith("!updateGuildCommands")) {
-                Optional<Long> guildId = mce.getGuildId()
-                        .map(Snowflake::asLong)
-                        .or(() -> {
-                            var split = command.split(" ", 2);
-                            if (split.length < 2) {
-                                return Optional.empty();
-                            } else {
-                                return Optional.of(split[1])
-                                        .map(Long::parseLong);
-                            }
-                        });
-                if (guildId.isEmpty()) {
-                    return reply(message, "Since you're in a DM, you have to specify the Guild ID to do that.");
-                }
-                return getId(client)
-                        .flatMapMany(id -> client.getRestClient().getApplicationService()
-                                .bulkOverwriteGuildApplicationCommand(id, guildId.get(), requests)
-                        )
-                        .count()
-                        .flatMap(count -> reply(message, "Updated " + count + " commands in the guild"));
-            } else if ("!updateGlobalCommands".equals(command)){
-                return getId(client)
-                        .flatMapMany(id -> client.getRestClient().getApplicationService()
-                                .bulkOverwriteGlobalApplicationCommand(id, requests)
-                        )
-                        .count()
-                        .flatMap(count -> reply(message, "Updated " + count + " commands globally. Remember it may take a bit!"));
-            } else {
-                return Flux.empty();
-            }
-        })
-        .onErrorResume(ex -> {
-            log.error("Error thrown by command", ex);
-            return Mono.empty();
-        })
-        .subscribe();
-
         client.on(ChatInputInteractionEvent.class).flatMap(acie -> {
             var name = acie.getCommandName();
             if (this.slashCommandLookup.containsKey(name)) {
@@ -192,18 +145,5 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
             return Mono.empty();
         })
         .subscribe();
-    }
-
-    private Mono<Long> getId(GatewayDiscordClient client) {
-        return client.getRestClient().getApplicationId();
-    }
-
-    private Mono<Void> reply(Message message, String response) {
-        return message.getChannel()
-                .flatMap(mc -> mc.createMessage(MessageCreateSpec.builder()
-                                .content(response)
-                                .messageReference(message.getId())
-                        .build()))
-                .then();
     }
 }
