@@ -45,9 +45,11 @@ public class RoleHandler extends AbstractReactHandler<Snowflake> implements Pers
     public Mono<Void> load() {
         return this.persistence.retrieve("role-reacts", ROLE_REACT_TYPE)
                 .doOnSuccess(reacts -> {
-                    log.info("Loaded {} existing role reacts from persistence", reacts.size());
-                    this.getRoleReactMessages().clear();
-                    this.getRoleReactMessages().addAll(reacts);
+                    if (reacts != null) {
+                        log.info("Loaded {} existing role reacts from persistence", reacts.size());
+                        this.getRoleReactMessages().clear();
+                        this.getRoleReactMessages().addAll(reacts);
+                    }
                 })
                 .then();
     }

@@ -22,4 +22,21 @@ public record TermEvaluationResult(BigDecimal value, String representation) {
     public TermEvaluationResult map(UnaryOperator<BigDecimal> mapValue, UnaryOperator<String> mapRep) {
         return new TermEvaluationResult(mapValue.apply(this.value), mapRep.apply(this.representation));
     }
+
+    int getDigitCount() {
+        return value.signum() == 0 ? 1 : value.precision() - value.scale();
+    }
+
+    int precisionScore() {
+        if (value.signum() == 0) {
+            return 1;
+        } else {
+            var digitsToTheLeft = value.precision() - value.scale();
+            if (digitsToTheLeft == 0) {
+                return -value.scale();
+            } else {
+                return digitsToTheLeft;
+            }
+        }
+    }
 }

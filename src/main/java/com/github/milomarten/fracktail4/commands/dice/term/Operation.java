@@ -6,12 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Deque;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
 
 /**
  * Describes all the operations supported by the bot.
@@ -41,7 +37,7 @@ public enum Operation {
     ADD("+", 10){
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, options, "addend", "addend", BigDecimal::add);
+            return evaluateTwoParameterFunc(termStack, options, "addend", "addend", Term::add);
         }
     },
     /**
@@ -50,70 +46,27 @@ public enum Operation {
     SUBTRACT("-", 10) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, options, "minuend", "subtrahend", BigDecimal::subtract);
+            return evaluateTwoParameterFunc(termStack, options, "minuend", "subtrahend", Term::subtract);
         }
     },
     /**
      * Multiply two terms.
      */
     MULTIPLY("*", 8) {
-        private static final MathContext MC = MathContext.DECIMAL128;
-
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             return evaluateTwoParameterFunc(termStack, options,
-                    "multiplicand", "multiplier",
-                    (one, two) -> {
-                        preValidate(one, two);
-                        return one.multiply(two, MC);
-                    });
-        }
-
-        private void preValidate(BigDecimal one, BigDecimal two) {
-            var digitCountOne = one.signum() == 0 ? 1 : one.precision() - one.scale();
-            var digitCountTwo = one.signum() == 0 ? 1 : two.precision() - two.scale();
-
-            if (digitCountOne + digitCountTwo > 18) {
-                throw new ExpressionSyntaxError("Multiplying large values. Numbers shouldn't exceed 18 digits.");
-            }
+                    "multiplicand", "multiplier", Term::multiply);
         }
     },
     /**
      * Divide two terms.
      */
     DIVIDE("/", 8) {
-        private static final MathContext MC = MathContext.DECIMAL128;
-
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             return evaluateTwoParameterFunc(termStack, options,
-                    "dividend", "divisor",
-                    (one, two) -> {
-                        preValidate(one, two);
-                        return one.divide(two, MC);
-                    });
-        }
-
-        private void preValidate(BigDecimal one, BigDecimal two) {
-            var digitCountOne = precisionScore(one);
-            var digitCountTwo = precisionScore(two);
-
-            if (digitCountOne - digitCountTwo > 18) {
-                throw new ExpressionSyntaxError("Dividing large values. Numbers shouldn't exceed 18 digits.");
-            }
-        }
-
-        private int precisionScore(BigDecimal bd) {
-            if (bd.signum() == 0) {
-                return 1;
-            } else {
-                var digitsToTheLeft = bd.precision() - bd.scale();
-                if (digitsToTheLeft == 0) {
-                    return -bd.scale();
-                } else {
-                    return digitsToTheLeft;
-                }
-            }
+                    "dividend", "divisor", Term::divide);
         }
     },
     /**
@@ -150,16 +103,14 @@ public enum Operation {
     DICE("d", 4) {
         // This special ONE makes the parsing logic easier, without showing an unexpected 1,
         // when "d" is used with no left term.
-        private static final Term ONE = new RegularTerm(BigDecimal.ONE, "");
+        private static final Term ONE = new AccumulationTerm(BigDecimal.ONE, "");
 
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            var numberOfSides = Operation.pull(termStack, "number of sides").evaluate(options);
-            var numberOfDice = Operation.pull(termStack, "number of dice").evaluate(options);
-            return DiceExpression.builder()
-                    .numberOfSides(numberOfSides.valueAsInt())
-                    .numberOfDice(numberOfDice.valueAsInt())
-                    .build();
+            var numberOfSides = Operation.pull(termStack, "number of sides");
+            var numberOfDice = Operation.pull(termStack, "number of dice");
+
+            return numberOfDice.dice(numberOfSides, options);
         }
 
         @Override
@@ -173,7 +124,7 @@ public enum Operation {
     DROP("x", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Drop", DiceExpression::setNumberToDrop);
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Drop", Term::drop);
         }
     },
     /**
@@ -182,10 +133,7 @@ public enum Operation {
     KEEP("k", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Keep", (expr, i) -> {
-                expr.setNumberToKeep(i);
-                expr.setKeepLowest(false);
-            });
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Keep", Term::keep);
         }
     },
     /**
@@ -194,10 +142,7 @@ public enum Operation {
     KEEP_LOWEST("l", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Keep Lowest", (expr, i) -> {
-                expr.setNumberToKeep(i);
-                expr.setKeepLowest(true);
-            });
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Keep", Term::keepLow);
         }
     },
     /**
@@ -206,10 +151,7 @@ public enum Operation {
     REROLL("r", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Reroll", (expr, i) -> {
-                expr.setRerollAt(i);
-                expr.setInfiniteReroll(false);
-            });
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Reroll", (a, b, opt) -> a.reroll(b, false, opt));
         }
     },
     /**
@@ -218,10 +160,7 @@ public enum Operation {
     REROLL_INFINITE("R", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Reroll Infinite", (expr, i) -> {
-                expr.setRerollAt(i);
-                expr.setInfiniteReroll(true);
-            });
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Reroll", (a, b, opt) -> a.reroll(b, true, opt));
         }
     },
     /**
@@ -230,10 +169,8 @@ public enum Operation {
     EXPLODE("e", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Explode", (expr, i) -> {
-                expr.setExplodeAt(i);
-                expr.setInfiniteExplode(false);
-            });
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Explode", (a, b, opt) -> a.explode(b, false, opt));
+
         }
     },
     /**
@@ -242,10 +179,7 @@ public enum Operation {
     EXPLODE_INFINITE("E", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Explode Infinite", (expr, i) -> {
-                expr.setExplodeAt(i);
-                expr.setInfiniteReroll(true);
-            });
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Explode", (a, b, opt) -> a.reroll(b, true, opt));
         }
     },
     /**
@@ -258,15 +192,7 @@ public enum Operation {
     SUCCESS_AT("s", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Success At", (expr, i) -> {
-                if (expr.getTotalingStrategy() instanceof SuccessFailureStrategy sfs) {
-                    sfs.setSuccessThreshold(i);
-                } else {
-                    var sfs = new SuccessFailureStrategy();
-                    sfs.setSuccessThreshold(i);
-                    expr.setTotalingStrategy(sfs);
-                }
-            });
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Success At", Term::success);
         }
     },
     /**
@@ -281,15 +207,7 @@ public enum Operation {
     FAILURE_AT("f", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateDiceIntegerFunc(termStack, options, "Success At", (expr, i) -> {
-                if (expr.getTotalingStrategy() instanceof SuccessFailureStrategy sfs) {
-                    sfs.setFailureThreshold(i);
-                } else {
-                    var sfs = new SuccessFailureStrategy();
-                    sfs.setFailureThreshold(i);
-                    expr.setTotalingStrategy(sfs);
-                }
-            });
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Fail At", Term::success);
         }
     },
     // Special commands
@@ -301,10 +219,7 @@ public enum Operation {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             var term = Operation.pull(termStack, "Term to ceil");
-            var evaluated = term.evaluate(options);
-            var ceiling = evaluated.value().setScale(0, RoundingMode.CEILING);
-
-            return new RegularTerm(ceiling, "^" + evaluated.representation());
+            return term.ceil(options);
         }
 
         @Override
@@ -318,13 +233,7 @@ public enum Operation {
     CAP_LOW("<", 6) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, options, "value", "cap",
-                    (number, cap) -> {
-                        if (number.compareTo(cap) < 0) {
-                            return cap;
-                        }
-                        return number;
-                    });
+            return evaluateTwoParameterFunc(termStack, options, "value", "cap", Term::capLow);
         }
     },
     /**
@@ -333,13 +242,7 @@ public enum Operation {
     CAP_HIGH(">", 6) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, options, "value", "cap",
-                    (number, cap) -> {
-                        if (number.compareTo(cap) > 0) {
-                            return cap;
-                        }
-                        return number;
-                    });
+            return evaluateTwoParameterFunc(termStack, options, "value", "cap", Term::capHigh);
         }
     }
     ;
@@ -377,29 +280,10 @@ public enum Operation {
         return stack.pop();
     }
 
-    protected Term evaluateTwoParameterFunc(Deque<Term> stack, DiceEvaluatorOptions options, String firstTerm, String secondTerm, BinaryOperator<BigDecimal> operator) {
-        var two = Operation.pull(stack, secondTerm).evaluate(options);
-        var one = Operation.pull(stack, firstTerm).evaluate(options);
-
-        try {
-            return new RegularTerm(
-                    operator.apply(one.value(), two.value()),
-                    one.representation() + " " + this.symbol + " " + two.representation()
-            );
-        } catch (ArithmeticException ex) {
-            throw new ExpressionSyntaxError(ex.getMessage());
-        }
-    }
-
-    protected Term evaluateDiceIntegerFunc(Deque<Term> stack, DiceEvaluatorOptions options, String term, BiConsumer<DiceExpression, Integer> func) {
-        var two = Operation.pull(stack, term).evaluate(options);
-        var one = Operation.pull(stack, "Dice");
-
-        if (one instanceof DiceExpression dice) {
-            func.accept(dice, two.valueAsInt());
-            return one;
-        }
-        throw new ExpressionSyntaxError(term + " can only be used on dice expressions");
+    protected Term evaluateTwoParameterFunc(Deque<Term> stack, DiceEvaluatorOptions options, String firstTerm, String secondTerm, TermOperator operator) {
+        var two = Operation.pull(stack, secondTerm);
+        var one = Operation.pull(stack, firstTerm);
+        return operator.compute(one, two, options);
     }
 
     public static Operation findOperation(char symbol) throws ExpressionSyntaxError {

@@ -2,10 +2,7 @@ package com.github.milomarten.fracktail4.commands.dnd;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.DiceExpressionEvaluator;
-import com.github.milomarten.fracktail4.commands.dice.term.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.term.Operation;
-import com.github.milomarten.fracktail4.commands.dice.term.RegularTerm;
-import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
+import com.github.milomarten.fracktail4.commands.dice.term.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -113,7 +110,7 @@ public class BattleRoll {
                     .numberOfDice(numDice)
                     .numberOfSides(diceFaces)
                     .build();
-            var bonus = RegularTerm.of(this.bonus);
+            var bonus = ConstantTerm.of(this.bonus);
 
             var eval = new DiceExpressionEvaluator(opts);
             eval.push(dice);

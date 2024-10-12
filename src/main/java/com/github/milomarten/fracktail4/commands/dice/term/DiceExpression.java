@@ -1,7 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.Utils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +10,6 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -275,5 +273,68 @@ public class DiceExpression implements Term {
             this.results.add(roll);
             this.lengthNotDiscounted++;
         }
+    }
+
+    @Override
+    public Term drop(Term qty, DiceEvaluatorOptions options) {
+        var qtyEval = qty.evaluate(options);
+        this.setNumberToDrop(qtyEval.valueAsInt());
+        return this;
+    }
+
+    @Override
+    public Term keep(Term qty, DiceEvaluatorOptions options) {
+        var keepEval = qty.evaluate(options);
+        this.setNumberToKeep(keepEval.valueAsInt());
+        this.setKeepLowest(false);
+        return this;
+    }
+
+    @Override
+    public Term keepLow(Term qty, DiceEvaluatorOptions options) {
+        var keepEval = qty.evaluate(options);
+        this.setNumberToKeep(keepEval.valueAsInt());
+        this.setKeepLowest(true);
+        return this;
+    }
+
+    @Override
+    public Term reroll(Term at, boolean infinite, DiceEvaluatorOptions options) {
+        var rerollEval = at.evaluate(options);
+        this.setRerollAt(rerollEval.valueAsInt());
+        this.setInfiniteReroll(infinite);
+        return this;
+    }
+
+    @Override
+    public Term explode(Term at, boolean infinite, DiceEvaluatorOptions options) {
+        var explodeEval = at.evaluate(options);
+        this.setExplodeAt(explodeEval.valueAsInt());
+        this.setInfiniteExplode(infinite);
+        return this;
+    }
+
+    @Override
+    public Term success(Term at, DiceEvaluatorOptions options) {
+        if (totalingStrategy instanceof SuccessFailureStrategy sfs) {
+            sfs.setSuccessThreshold(at.evaluate(options).valueAsInt());
+        } else {
+            var sfs = new SuccessFailureStrategy();
+            sfs.setSuccessThreshold(at.evaluate(options).valueAsInt());
+            this.totalingStrategy = sfs;
+        }
+        return this;
+    }
+
+    @Override
+    public Term failure(Term at, DiceEvaluatorOptions options) {
+        if (totalingStrategy instanceof SuccessFailureStrategy sfs) {
+            sfs.setFailureThreshold(at.evaluate(options).valueAsInt());
+        } else {
+            var sfs = new SuccessFailureStrategy();
+            sfs.setFailureThreshold(at.evaluate(options).valueAsInt());
+            this.totalingStrategy = sfs;
+        }
+        return this;
     }
 }

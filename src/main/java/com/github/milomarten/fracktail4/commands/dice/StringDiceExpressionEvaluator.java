@@ -1,9 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
-import com.github.milomarten.fracktail4.commands.dice.term.Operation;
-import com.github.milomarten.fracktail4.commands.dice.term.RegularTerm;
-import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
+import com.github.milomarten.fracktail4.commands.dice.term.*;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -25,7 +22,7 @@ public class StringDiceExpressionEvaluator {
                 c = iterator.next(); // Drop it
             } else if (isNumber(c) || ((c == '+' || c == '-') && evaluator.isExpectingTerm())) {
                 var value = tryParseNumberFromIterator(iterator);
-                evaluator.push(RegularTerm.of(value));
+                evaluator.push(ConstantTerm.of(value));
                 c = iterator.current();
             } else {
                 var operator = Operation.findOperation(c);

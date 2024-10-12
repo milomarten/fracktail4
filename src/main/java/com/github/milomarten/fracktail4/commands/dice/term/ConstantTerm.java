@@ -5,26 +5,15 @@ import com.github.milomarten.fracktail4.commands.dice.Utils;
 
 import java.math.BigDecimal;
 
-/**
- * A basic term that has a constant value and expression
- * @param value The value of the term0
- * @param expression The expression to describe the term
- */
-public record RegularTerm(BigDecimal value, String expression) implements Term {
-    @Override
-    public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-        return new TermEvaluationResult(value, expression);
-    }
-
+public record ConstantTerm(BigDecimal bd) implements Term {
     /**
      * Create a term from a double.
      * The expression is the value of the double, eliminating all trailing zeroes.
      * @param value The double to wrap.
      * @return The term holding that double.
      */
-    public static RegularTerm of(double value) {
-        var bd = BigDecimal.valueOf(value);
-        return new RegularTerm(bd, Utils.outputBigDecimal(bd));
+    public static ConstantTerm of(double value) {
+        return new ConstantTerm(BigDecimal.valueOf(value));
     }
 
     /**
@@ -32,8 +21,8 @@ public record RegularTerm(BigDecimal value, String expression) implements Term {
      * @param value The int to wrap.
      * @return The term holding the int.
      */
-    public static RegularTerm of(int value) {
-        return new RegularTerm(BigDecimal.valueOf(value), Integer.toString(value));
+    public static ConstantTerm of(int value) {
+        return new ConstantTerm(BigDecimal.valueOf(value));
     }
 
     /**
@@ -42,7 +31,12 @@ public record RegularTerm(BigDecimal value, String expression) implements Term {
      * @param value The BigDecimal to wrap.
      * @return The term holding the BigDecimal.
      */
-    public static RegularTerm of(BigDecimal value) {
-        return new RegularTerm(value, Utils.outputBigDecimal(value));
+    public static ConstantTerm of(BigDecimal value) {
+        return new ConstantTerm(value);
+    }
+
+    @Override
+    public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+        return new TermEvaluationResult(this.bd, Utils.outputBigDecimal(this.bd));
     }
 }
