@@ -205,6 +205,7 @@ public class AmtrakCommand implements SlashCommandWrapper {
                     return lineOne + "\n" + lineTwo + "\n" + lineThree;
                 })
                 .defaultIfEmpty("Unable to find that station, sorry.")
+                .onErrorResume(e -> Mono.just("Unable to find that station, sorry."))
                 .flatMap(event::createFollowup);
     }
 
