@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.amtrak;
 
+import com.github.milomarten.fracktail4.amtrak.models.Station;
 import com.github.milomarten.fracktail4.amtrak.models.Train;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
@@ -34,11 +35,39 @@ public class AmtrakCommand implements SlashCommandWrapper {
                         .name("lookup")
                         .description("Lookup Amtrak or VIA info")
                         .type(ApplicationCommandOption.Type.SUB_COMMAND_GROUP.getValue())
-//                        .addOption(ApplicationCommandOptionData.builder()
-//                                .name("station")
-//                                .description("Lookup an Amtrak or VIA station")
-//                                .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
-//                                .build())
+                        .addOption(ApplicationCommandOptionData.builder()
+                                .name("station")
+                                .description("Lookup an Amtrak or VIA station. VIA-only stations only have codes and names.")
+                                .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+                                .addOption(ApplicationCommandOptionData.builder()
+                                        .name("code")
+                                        .description("3- or 4-letter Station Code")
+                                        .type(ApplicationCommandOption.Type.STRING.getValue())
+                                        .minLength(3).maxLength(4)
+                                        .build())
+                                .addOption(ApplicationCommandOptionData.builder()
+                                        .name("name")
+                                        .description("Station Name. Must be exact, aside from case")
+                                        .type(ApplicationCommandOption.Type.STRING.getValue())
+                                        .build())
+                                .addOption(ApplicationCommandOptionData.builder()
+                                        .name("city")
+                                        .description("Name of the station's city. Must be exact, aside from case")
+                                        .type(ApplicationCommandOption.Type.STRING.getValue())
+                                        .build())
+                                .addOption(ApplicationCommandOptionData.builder()
+                                        .name("state")
+                                        .description("2-Letter state code")
+                                        .type(ApplicationCommandOption.Type.STRING.getValue())
+                                        .minLength(2).maxLength(2)
+                                        .build())
+                                .addOption(ApplicationCommandOptionData.builder()
+                                        .name("zip")
+                                        .description("5-digit zip code")
+                                        .type(ApplicationCommandOption.Type.STRING.getValue())
+                                        .minLength(5).maxLength(5)
+                                        .build())
+                                .build())
                         .addOption(ApplicationCommandOptionData.builder()
                                 .name("train")
                                 .description("Lookup an Amtrak or VIA train")
@@ -80,6 +109,7 @@ public class AmtrakCommand implements SlashCommandWrapper {
         var second = param.getOptions().get(0).getName();
         return switch (second) {
             case "train" -> handleTrainLookup(event, param.getOption(second).get());
+            case "station" -> handleStationLookup(event, param.getOption(second).get());
             default -> SlashCommands.replyEphemeral(event, "Need to provide subcommand station/train");
         };
     }
@@ -113,5 +143,45 @@ public class AmtrakCommand implements SlashCommandWrapper {
                     return preface + ".\nThe train numbers are:\n" + numbersOAndD;
                 })
                 .flatMap(msg -> SlashCommands.followup(event, msg));
+    }
+
+    private Mono<?> handleStationLookup(ChatInputInteractionEvent event, ApplicationCommandInteractionOption parameters) {
+        var code = parameters.getOption("code").flatMap(a -> a.getValue()).map(a -> a.asString());
+        var name = parameters.getOption("name").flatMap(a -> a.getValue()).map(a -> a.asString());
+        var city = parameters.getOption("city").flatMap(a -> a.getValue()).map(a -> a.asString());
+        var state = parameters.getOption("state").flatMap(a -> a.getValue()).map(a -> a.asString());
+        var zip = parameters.getOption("zip").flatMap(a -> a.getValue()).map(a -> a.asString());
+
+        Mono<Station> station;
+        if (code.isPresent()) {
+            // Code is the most precise, and should be used with preference.
+            station = lookup.stationByCode(code.get());
+        } else if (name.isPresent()) {
+            station = lookup.stationByName(name.get());
+        } else if (zip.isPresent()) {
+            station = lookup.stationByZip(zip.get());
+        } else if (city.isPresent() && state.isPresent()) {
+            station = lookup.stationByCityState(city.get(), state.get());
+        } else if (city.isPresent()) {
+            station = lookup.stationByCity(city.get());
+        } else if (state.isPresent()) {
+            return SlashCommands.replyEphemeral(event, "State code isn't enough. Please send a city name, too.");
+        } else {
+            return SlashCommands.replyEphemeral(event, "Some criteria must be passed in order to search.");
+        }
+
+        return event.deferReply()
+                .then(station)
+                .map(s -> {
+                    // Toronto Union - TWO
+                    // Address, City, State, Zip
+                    // N upcoming trains
+                    String lineOne = String.format("%s - %s", s.getName(), s.getCode());
+                    String lineTwo = s.getAddressLine();
+                    String lineThree = String.format("This station has %d upcoming train(s).", s.getTrains().size());
+                    return lineOne + "\n" + lineTwo + "\n" + lineThree;
+                })
+                .defaultIfEmpty("Unable to find that station, sorry.")
+                .flatMap(event::createFollowup);
     }
 }
