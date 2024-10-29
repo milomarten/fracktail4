@@ -262,6 +262,8 @@ public class AmtrakCommand implements SlashCommandWrapper {
 
                     return lineOne + "\n" + lineTwo + "\n" + lineThree;
                 })
+                .switchIfEmpty(Mono.just("Sorry, I don't know that train."))
+                .onErrorResume(e -> Mono.just("Sorry, I don't know that train."))
                 .flatMap(event::createFollowup);
     }
 }
