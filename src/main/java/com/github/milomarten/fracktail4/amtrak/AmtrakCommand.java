@@ -245,22 +245,24 @@ public class AmtrakCommand implements SlashCommandWrapper {
                                 firstStation.getName(), FORMATTER.format(firstStation.getDeparture()),
                                 finalStation.getName(), FORMATTER.format(finalStation.getScheduledArrival())
                         );
+
+                        var upcomingStation = t.getUpcomingStation();
+                        String lineThree = String.format("It is currently approaching %s, as of %s. %s(all times are local time)",
+                                t.getEventName(), FORMATTER.format(t.getUpdatedAt()
+                                        .withZoneSameInstant(t.getEventTimezone().toZoneId())),
+                                upcomingStation == null ? "" :
+                                        "It's scheduled to arrive there on " + FORMATTER.format(upcomingStation.getScheduledArrival()) + ". "
+                        );
+
+                        return lineOne + "\n" + lineTwo + "\n" + lineThree;
                     } else {
-                        lineTwo = String.format("It left %s on %s, and arrived at its final destination of %s on %s.",
+                        lineTwo = String.format("It left %s on %s, and arrived at its final destination of %s on %s (all times are local time).",
                                 firstStation.getName(), FORMATTER.format(firstStation.getDeparture()),
                                 finalStation.getName(), FORMATTER.format(finalStation.getArrival())
                         );
+
+                        return lineOne + "\n" + lineTwo;
                     }
-
-                    var upcomingStation = t.getUpcomingStation();
-                    String lineThree = String.format("It is currently approaching %s, as of %s. %s(all times are local time)",
-                            t.getEventName(), FORMATTER.format(t.getUpdatedAt()
-                                    .withZoneSameInstant(t.getEventTimezone().toZoneId())),
-                            upcomingStation == null ? "" :
-                                    "It's scheduled to arrive there on " + FORMATTER.format(upcomingStation.getScheduledArrival()) + ". "
-                    );
-
-                    return lineOne + "\n" + lineTwo + "\n" + lineThree;
                 })
                 .switchIfEmpty(Mono.just("Sorry, I don't know that train."))
                 .onErrorResume(e -> Mono.just("Sorry, I don't know that train."))
