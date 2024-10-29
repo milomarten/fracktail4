@@ -1,19 +1,25 @@
 package com.github.milomarten.fracktail4.amtrak;
 
+import com.github.milomarten.fracktail4.amtrak.models.RouteStatus;
 import com.github.milomarten.fracktail4.amtrak.models.Station;
 import com.github.milomarten.fracktail4.amtrak.models.Train;
+import com.github.milomarten.fracktail4.amtrak.models.TrainId;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
-import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.commons.lang3.time.DurationUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,6 +29,8 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class AmtrakCommand implements SlashCommandWrapper {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM dd 'at' hh:mm a");
+
     private final AmtrakLookup lookup;
     private final AmtrakGateway gateway;
 
@@ -69,12 +77,23 @@ public class AmtrakCommand implements SlashCommandWrapper {
                                         .build())
                                 .build())
                         .addOption(ApplicationCommandOptionData.builder()
+                                .name("route")
+                                .description("Lookup an Amtrak or VIA route")
+                                .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
+                                .addOption(ApplicationCommandOptionData.builder()
+                                        .name("route-name")
+                                        .description("The name of the rail line")
+                                        .type(ApplicationCommandOption.Type.STRING.getValue())
+                                        .required(true)
+                                        .build())
+                                .build())
+                        .addOption(ApplicationCommandOptionData.builder()
                                 .name("train")
                                 .description("Lookup an Amtrak or VIA train")
                                 .type(ApplicationCommandOption.Type.SUB_COMMAND.getValue())
                                 .addOption(ApplicationCommandOptionData.builder()
-                                        .name("train-name")
-                                        .description("The name of the rail line")
+                                        .name("train-number")
+                                        .description("The code identifying this train")
                                         .type(ApplicationCommandOption.Type.STRING.getValue())
                                         .required(true)
                                         .build())
@@ -108,18 +127,19 @@ public class AmtrakCommand implements SlashCommandWrapper {
     private Mono<?> handleLookup(ChatInputInteractionEvent event, ApplicationCommandInteractionOption param) {
         var second = param.getOptions().get(0).getName();
         return switch (second) {
-            case "train" -> handleTrainLookup(event, param.getOption(second).get());
+            case "route" -> handleRouteLookup(event, param.getOption(second).get());
             case "station" -> handleStationLookup(event, param.getOption(second).get());
+            case "train" -> handleTrainLookup(event, param.getOption(second).get());
             default -> SlashCommands.replyEphemeral(event, "Need to provide subcommand station/train");
         };
     }
 
-    private Mono<?> handleTrainLookup(ChatInputInteractionEvent event, ApplicationCommandInteractionOption param) {
-        var name = param.getOption("train-name")
+    private Mono<?> handleRouteLookup(ChatInputInteractionEvent event, ApplicationCommandInteractionOption param) {
+        var name = param.getOption("route-name")
                 .flatMap(a -> a.getValue())
                 .map(a -> a.asString());
         if (name.isEmpty()) {
-            return SlashCommands.replyEphemeral(event, "Train name is required");
+            return SlashCommands.replyEphemeral(event, "Route name is required");
         }
 
         return event.deferReply()
@@ -127,7 +147,7 @@ public class AmtrakCommand implements SlashCommandWrapper {
                 .collectList()
                 .map(listOfTrains -> {
                     if (listOfTrains.isEmpty()) {
-                        return "I can't find a train with that name.";
+                        return "I can't find a route with that name.";
                     }
                     var friendlyName = listOfTrains.get(0).getRouteName();
 
@@ -182,6 +202,59 @@ public class AmtrakCommand implements SlashCommandWrapper {
                     return lineOne + "\n" + lineTwo + "\n" + lineThree;
                 })
                 .defaultIfEmpty("Unable to find that station, sorry.")
+                .flatMap(event::createFollowup);
+    }
+
+    private Mono<?> handleTrainLookup(ChatInputInteractionEvent event, ApplicationCommandInteractionOption param) {
+        var number = param.getOption("train-number")
+                .flatMap(a -> a.getValue())
+                .map(a -> a.asString());
+        var dom = param.getOption("day-of-month")
+                .flatMap(a -> a.getValue())
+                .map(a -> a.asLong());
+        if (number.isEmpty()) {
+            return SlashCommands.replyEphemeral(event, "Route name is required");
+        }
+
+        Mono<Train> train;
+        if (dom.isPresent()) {
+            train = gateway.getTrain(new TrainId(number.get(), dom.get().intValue()));
+        } else {
+            train = gateway.getTrains(number.get()).next();
+        }
+        return event.deferReply()
+                .then(train)
+                .map(t -> {
+                    // Train <code> is the <heading> <train name>
+                    // It left <station> at <time>, and arrived at its final destination <station> at <time>
+                    // OR It left <station> at <time>, and will arrive at its final destination <station> at <time>
+                    // It is currently in <station>, as of <update time>
+                    var lineOne = String.format("%s Train %s is the %s, heading %s.", t.getProvider(), t.getTrainNum(), t.getRouteName(), t.getHeading());
+                    var firstStation = CollectionUtils.firstElement(t.getStations());
+                    var finalStation = CollectionUtils.lastElement(t.getStations());
+                    if (firstStation == null || finalStation == null) {
+                        return lineOne + "\n" + "The route is empty, I can't provide any more information.";
+                    }
+
+                    String lineTwo;
+                    if (finalStation.getStatus() == RouteStatus.ENROUTE || finalStation.getStatus() == RouteStatus.UNKNOWN) {
+                        lineTwo = String.format("It left %s on %s, and is scheduled to arrive at its final destination of %s on %s.",
+                                firstStation.getName(), FORMATTER.format(firstStation.getDeparture()),
+                                finalStation.getName(), FORMATTER.format(finalStation.getScheduledArrival())
+                        );
+                    } else {
+                        lineTwo = String.format("It left %s on %s, and arrived at its final destination of %s on %s.",
+                                firstStation.getName(), FORMATTER.format(firstStation.getDeparture()),
+                                finalStation.getName(), FORMATTER.format(finalStation.getArrival())
+                        );
+                    }
+
+                    String lineThree = String.format("It is currently approaching %s, as of %s. (all times are local time)",
+                            t.getEventName(), FORMATTER.format(t.getUpdatedAt()
+                                    .withZoneSameInstant(t.getEventTimezone().toZoneId())));
+
+                    return lineOne + "\n" + lineTwo + "\n" + lineThree;
+                })
                 .flatMap(event::createFollowup);
     }
 }

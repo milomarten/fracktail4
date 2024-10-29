@@ -55,6 +55,14 @@ public class AmtrakGateway {
                 .mapNotNull(m -> m.isEmpty() ? null : m.get(0));
     }
 
+    public Flux<Train> getTrains(String id) {
+        return amtrakWebClient.get()
+                .uri(u -> u.path("/trains/{id}").build(id))
+                .exchangeToMono(cr -> cr.bodyToMono(TRAIN_LIST))
+                .flatMapIterable(m -> m.values())
+                .flatMapIterable(m -> m);
+    }
+
     public Mono<StaleStatus> getStaleStatus() {
         return amtrakWebClient.get()
                 .uri("/stale")
