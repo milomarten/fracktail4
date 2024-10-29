@@ -6,5 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public enum TrainProvider {
     @JsonProperty("Amtrak") AMTRAK,
     @JsonProperty("Via") VIA,
+    @JsonProperty("Brightline") BRIGHTLINE,
     @JsonEnumDefaultValue UNKNOWN
 }
