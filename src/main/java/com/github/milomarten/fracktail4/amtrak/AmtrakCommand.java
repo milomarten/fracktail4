@@ -198,7 +198,10 @@ public class AmtrakCommand implements SlashCommandWrapper {
                     // N upcoming trains
                     String lineOne = String.format("%s - %s", s.getName(), s.getCode());
                     String lineTwo = s.getAddressLine();
-                    String lineThree = String.format("This station has %d upcoming train(s).", s.getTrains().size());
+                    String lineThree = String.format("This station has %d upcoming train(s): %s",
+                            s.getTrains().size(),
+                            s.getTrains().stream().map(TrainId::trainNumber)
+                                    .distinct().collect(Collectors.joining(", ")));
                     return lineOne + "\n" + lineTwo + "\n" + lineThree;
                 })
                 .defaultIfEmpty("Unable to find that station, sorry.")
@@ -249,9 +252,13 @@ public class AmtrakCommand implements SlashCommandWrapper {
                         );
                     }
 
-                    String lineThree = String.format("It is currently approaching %s, as of %s. (all times are local time)",
+                    var upcomingStation = t.getUpcomingStation();
+                    String lineThree = String.format("It is currently approaching %s, as of %s. %s(all times are local time)",
                             t.getEventName(), FORMATTER.format(t.getUpdatedAt()
-                                    .withZoneSameInstant(t.getEventTimezone().toZoneId())));
+                                    .withZoneSameInstant(t.getEventTimezone().toZoneId())),
+                            upcomingStation == null ? "" :
+                                    "It's scheduled to arrive there on " + FORMATTER.format(upcomingStation.getScheduledArrival()) + ". "
+                    );
 
                     return lineOne + "\n" + lineTwo + "\n" + lineThree;
                 })

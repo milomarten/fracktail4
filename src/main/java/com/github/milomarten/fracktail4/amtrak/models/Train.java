@@ -34,4 +34,15 @@ public class Train {
     @JsonProperty("lastValTS") private ZonedDateTime lastValueTimestamp;
     @JsonProperty("objectID") private int objectId;
     private TrainProvider provider;
+
+    public RouteStation getUpcomingStation() {
+        if (this.eventCode == null) {
+            return null;
+        }
+        return this.stations
+                .stream()
+                .filter(rs -> this.eventCode.equalsIgnoreCase(rs.getCode()))
+                .findAny()
+                .orElse(null);
+    }
 }
