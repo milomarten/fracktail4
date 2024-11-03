@@ -31,6 +31,7 @@ jobs:
        docker image build . --tag jlamanna/fracktail4:latest --tag jlamanna/fracktail4:${{ github.ref_name }}
        docker image push --all-tags jlamanna/fracktail4
   deploy:
+    needs: ['build']
     runs-on: ubuntu-latest
     steps:
       - uses: kielabokkie/ssh-key-and-known-hosts-action@v1
