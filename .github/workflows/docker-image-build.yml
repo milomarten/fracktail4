@@ -1,4 +1,4 @@
-name: Deploy Docker Image
+name: Rollout Docker Image
 
 on:
   workflow_dispatch:
