@@ -1,0 +1,15 @@
+name: Deploy Docker Image
+
+on:
+  workflow_dispatch:
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+        name: Create SSH Agent
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Run sample SSH Command
+        run: ssh "docker ps -a"
