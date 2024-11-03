@@ -41,5 +41,4 @@ jobs:
           ssh-host: ${{ secrets.SSH_HOST }}
       - name: Run SSH Commands
         run: |
-          cd /root
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "docker compose up -d fracktail"
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} "cd /root & docker compose up -d fracktail"
