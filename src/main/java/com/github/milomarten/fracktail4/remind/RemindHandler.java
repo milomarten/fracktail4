@@ -33,6 +33,7 @@ public class RemindHandler implements PersistenceBean {
         var now = Instant.now();
         load().block();
         var passedJobs = new ArrayList<Runnable>();
+        if (reminderMap == null) { reminderMap = new HashMap<>(); }
         reminderMap.forEach((key, jobs) -> jobs.forEach(rj -> {
             if (rj.passed(now)) {
                 passedJobs.add(() -> runJob(key, rj, true));
