@@ -6,7 +6,7 @@ import org.springframework.scheduling.TriggerContext;
 
 import java.time.Instant;
 
-public record ReminderJob(Instant when, Snowflake where, String content, boolean ephemeral) implements Trigger {
+public record ReminderJob(Instant when, Snowflake where, String content) implements Trigger {
     @Override
     public Instant nextExecution(TriggerContext triggerContext) {
         // These jobs should happen once and only once. Thus, they should return null
@@ -16,5 +16,13 @@ public record ReminderJob(Instant when, Snowflake where, String content, boolean
         } else {
             return null;
         }
+    }
+
+    public String toDiscordTimestamp() {
+        return String.format("<t:%d:f>", when.getEpochSecond());
+    }
+
+    public boolean passed(Instant now) {
+        return now.equals(when) || now.isAfter(when);
     }
 }

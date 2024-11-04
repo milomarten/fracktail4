@@ -3,6 +3,7 @@ package com.github.milomarten.fracktail4.platform.discord.utils;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import discord4j.common.util.Snowflake;
 
@@ -20,5 +21,12 @@ public class SnowflakeDeserializer extends StdDeserializer<Snowflake> {
             return null;
         }
         return Snowflake.of(value);
+    }
+
+    public static class Key extends KeyDeserializer {
+        @Override
+        public Object deserializeKey(String s, DeserializationContext deserializationContext) throws IOException {
+            return s == null ? null : Snowflake.of(s);
+        }
     }
 }
