@@ -12,6 +12,8 @@ public class DiscordModule extends SimpleModule {
         super("DiscordModule", new Version(1, 0, 0, "", null, null));
         addSerializer(new SnowflakeSerializer());
         addDeserializer(Snowflake.class, new SnowflakeDeserializer());
+        addKeySerializer(Snowflake.class, new SnowflakeSerializer.Key());
+        addKeyDeserializer(Snowflake.class, new SnowflakeDeserializer.Key());
         addSerializer(new ReactionEmojiSerializer());
         addDeserializer(ReactionEmoji.class, new ReactionEmojiDeserializer());
     }
