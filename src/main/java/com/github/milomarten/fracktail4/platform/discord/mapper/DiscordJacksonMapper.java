@@ -1,5 +1,7 @@
 package com.github.milomarten.fracktail4.platform.discord.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
@@ -11,7 +13,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class DiscordObjectMapper {
+public class DiscordJacksonMapper {
     private final ObjectMapper om;
 
     public JsonNode map(ChatInputInteractionEvent event) {
@@ -30,5 +32,13 @@ public class DiscordObjectMapper {
             }
         }
         return objNode;
+    }
+
+    public <T> T map(ChatInputInteractionEvent event, Class<T> clazz) {
+        try {
+            return om.treeToValue(map(event), clazz);
+        } catch (IllegalArgumentException | JsonProcessingException ex) {
+            throw new DiscordMapperException("Unable to parse event to object", ex);
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.commands;
 
-import com.github.milomarten.fracktail4.platform.discord.mapper.DiscordObjectMapper;
+import com.github.milomarten.fracktail4.platform.discord.mapper.DiscordJacksonMapper;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Component
 public class TestCommand implements SlashCommandWrapper {
-    private final DiscordObjectMapper dom;
+    private final DiscordJacksonMapper dom;
 
     @Override
     public ApplicationCommandRequest getRequest() {
