@@ -4,14 +4,30 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class DurationUtils {
     private static final Set<String> HOURS = Set.of("h", "hr", "hrs", "hours", "hour");
     private static final Set<String> MINUTES = Set.of("m", "min", "mins", "minutes", "minute");
     private static final Set<String> SECONDS = Set.of("s", "sec", "secs", "seconds", "second");
+
+    private static final Pattern FORMAT_PATTERN =
+            Pattern.compile(String.format("(([0-9]+)%s)?(([0-9]+)%s)?(([0-9]+)%s)?", regexForUnit(HOURS), regexForUnit(MINUTES), regexForUnit(SECONDS)));
+
+    public static boolean isValidFormat(String s) {
+        return FORMAT_PATTERN.matcher(s).matches();
+    }
+
+    private static String regexForUnit(Set<String> s) {
+        return s.stream()
+                .sorted(Comparator.comparing(str -> -str.length()))
+                .collect(Collectors.joining("|", "(", ")"));
+    }
 
     public static String durationToString(Duration duration) {
         var days = duration.toDaysPart();
@@ -44,118 +60,17 @@ public class DurationUtils {
     }
 
     public static Duration stringToDuration(String str) {
-        OptionalInt hours = OptionalInt.empty();
-        OptionalInt minutes = OptionalInt.empty();
-        OptionalInt seconds = OptionalInt.empty();
+        var matcher = FORMAT_PATTERN.matcher(str);
+        if (matcher.matches()) {
+            var hoursRaw = StringUtils.defaultIfBlank(matcher.group(2), "0");
+            var minutesRaw = StringUtils.defaultIfBlank(matcher.group(5), "0");
+            var secondsRaw = StringUtils.defaultIfBlank(matcher.group(8), "0");
 
-        Iterator<Character> iter = IteratorUtils.arrayIterator(str.toCharArray());
-        ParserState stateMachine = new NumberParser("");
-        while (iter.hasNext()) {
-            char c = iter.next();
-            var result = stateMachine.consumeCharacter(c);
-            if (result.isPresent()) {
-                var updateMaybe = stateMachine.getPiece();
-                stateMachine = result.get();
-                if (updateMaybe.isPresent()) {
-                    var update = updateMaybe.get();
-                    switch (update.unit) {
-                        case HOUR -> hours = updateOnce(hours, update.number);
-                        case MINUTE -> minutes = updateOnce(minutes, update.number);
-                        case SECOND -> seconds = updateOnce(seconds, update.number);
-                    }
-                }
-            }
-        }
-
-        var update = stateMachine.getPiece().orElseThrow(() -> new IllegalStateException("Unexpected ending"));
-        switch (update.unit) {
-            case HOUR -> hours = updateOnce(hours, update.number);
-            case MINUTE -> minutes = updateOnce(minutes, update.number);
-            case SECOND -> seconds = updateOnce(seconds, update.number);
-        }
-
-        return Duration.ofHours(hours.orElse(0))
-                .plusMinutes(minutes.orElse(0))
-                .plusSeconds(seconds.orElse(0));
-    }
-
-    private static OptionalInt updateOnce(OptionalInt container, int value) {
-        if (container.isPresent()) {
-            throw new IllegalStateException("Unit specified twice.");
+            return Duration.ofHours(Integer.parseInt(hoursRaw))
+                    .plusMinutes(Integer.parseInt(minutesRaw))
+                    .plusSeconds(Integer.parseInt(secondsRaw));
         } else {
-            return OptionalInt.of(value);
-        }
-    }
-
-    @RequiredArgsConstructor
-    private enum Unit {
-        HOUR(HOURS),
-        MINUTE(MINUTES),
-        SECOND(SECONDS);
-
-        private final Set<String> verbiage;
-
-        public static Optional<Unit> find(String word) {
-            var lowercase = word.toLowerCase();
-            for (var unit : Unit.values()) {
-                if (unit.verbiage.contains(lowercase)) {
-                    return Optional.of(unit);
-                }
-            }
-            return Optional.empty();
-        }
-    }
-
-    private record DurationPiece(int number, Unit unit) {}
-
-    private interface ParserState {
-        Optional<ParserState> consumeCharacter(char c);
-        Optional<DurationPiece> getPiece();
-    }
-
-    @AllArgsConstructor
-    private static class NumberParser implements ParserState {
-        private String number;
-
-        @Override
-        public Optional<ParserState> consumeCharacter(char c) {
-            if (Character.isDigit(c)) {
-                number += c;
-                return Optional.empty();
-            } else {
-                if (number.isEmpty()) {
-                    throw new IllegalStateException("No number present when expected.");
-                }
-                return Optional.of(new UnitParser(Integer.parseInt(number), String.valueOf(c)));
-            }
-        }
-
-        @Override
-        public Optional<DurationPiece> getPiece() {
-            return Optional.empty();
-        }
-    }
-
-    @AllArgsConstructor
-    private static class UnitParser implements ParserState {
-        private final int number;
-        private String unit;
-
-        @Override
-        public Optional<ParserState> consumeCharacter(char c) {
-            if (Character.isDigit(c)) {
-                return Optional.of(new NumberParser(String.valueOf(c)));
-            } else {
-                unit += c;
-                return Optional.empty();
-            }
-        }
-
-        @Override
-        public Optional<DurationPiece> getPiece() {
-            var unit = Unit.find(this.unit)
-                    .orElseThrow(() -> new IllegalStateException("Unknown unit " + this.unit));
-            return Optional.of(new DurationPiece(number, unit));
+            throw new IllegalArgumentException("Incorrect format");
         }
     }
 }

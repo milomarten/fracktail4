@@ -8,7 +8,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
+@Target(ElementType.FIELD)
 public @interface Parameter {
     String description();
     ApplicationCommandOption.Type type() default ApplicationCommandOption.Type.UNKNOWN;

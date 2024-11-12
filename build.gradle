@@ -32,6 +32,7 @@ dependencies {
 	implementation 'org.mnode.ical4j:ical4j:4.0.3'
 	implementation 'org.mnode.ical4j:ical4j-extensions:2.0.0-rc5'
 	implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
+	implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
 
 	compileOnly 'org.projectlombok:lombok'
 

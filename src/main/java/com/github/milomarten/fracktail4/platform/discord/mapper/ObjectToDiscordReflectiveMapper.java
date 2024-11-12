@@ -7,6 +7,7 @@ import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.possible.Possible;
 import jakarta.validation.constraints.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ClassUtils;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -72,14 +73,20 @@ public class ObjectToDiscordReflectiveMapper {
         } else if (clazz.isAssignableFrom(Boolean.class) || clazz.equals(Boolean.TYPE)) {
             return ApplicationCommandOption.Type.BOOLEAN;
         } else if (clazz.isAssignableFrom(Snowflake.class)) {
-            throw new IllegalArgumentException("Field type Snowflake is not enough. Please specify directly the Discord Type");
+            throw new DiscordMapperException("Field type Snowflake is not enough. Please specify directly the Discord Type");
         } else {
-            throw new IllegalArgumentException("Illegal type " + clazz.getCanonicalName() + ".");
+            throw new DiscordMapperException("Illegal type " + clazz.getCanonicalName() + ".");
         }
     }
     private boolean isRequired(Field field) {
         var clazz = field.getType();
-        return !clazz.equals(Optional.class) && !clazz.equals(OptionalInt.class) && !clazz.equals(OptionalDouble.class);
+        if (ClassUtils.isPrimitiveWrapper(clazz)) {
+            return false;
+        } else if (clazz.equals(Optional.class) || clazz.equals(OptionalInt.class) || clazz.equals(OptionalDouble.class)) {
+            return false;
+        } else {
+            return field.isAnnotationPresent(NotNull.class);
+        }
     }
 
     private Possible<Integer> getMinLength(Field f) {

@@ -38,7 +38,7 @@ class DurationUtilsTest {
             "0.5hr", "1day", "12hems", "now"
     })
     public void testInvalidWords(String test) {
-        assertThrows(IllegalStateException.class, () -> DurationUtils.stringToDuration(test));
+        assertThrows(IllegalArgumentException.class, () -> DurationUtils.stringToDuration(test));
     }
 
     @Test
