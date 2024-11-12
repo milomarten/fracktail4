@@ -1,7 +1,10 @@
 package com.github.milomarten.fracktail4.platform.discord.slash.adapter;
 
+import jakarta.validation.ConstraintViolation;
 import lombok.experimental.UtilityClass;
 import reactor.core.publisher.Mono;
+
+import java.util.Set;
 
 @UtilityClass
 public class Responses {
@@ -24,5 +27,9 @@ public class Responses {
                 .withEphemeral(true)
                 .then(Mono.defer(() -> response))
                 .flatMap(event::createFollowup);
+    }
+
+    public <T> SlashCommandResponse replyValidation(Set<ConstraintViolation<T>> violations) {
+        return reply(violations.iterator().next().getMessage());
     }
 }
