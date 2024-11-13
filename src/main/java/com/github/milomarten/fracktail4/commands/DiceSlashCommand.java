@@ -3,72 +3,64 @@ package com.github.milomarten.fracktail4.commands;
 import com.github.milomarten.fracktail4.commands.dice.StringDiceExpressionEvaluator;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail4.platform.discord.mapper.DiscordParameterHelper;
+import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.Parameter;
+import com.github.milomarten.fracktail4.platform.discord.slash.AbstractSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
+import com.github.milomarten.fracktail4.platform.discord.slash.adapter.Responses;
+import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashCommandResponse;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
+import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
-@RequiredArgsConstructor
-public class DiceSlashCommand implements SlashCommandWrapper {
+public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Parameters> {
     private final StringDiceExpressionEvaluator evaluator;
 
-    @Override
-    public ApplicationCommandRequest getRequest() {
-        return ApplicationCommandRequest.builder()
-                .name("roll")
-                .description("Roll some dice! Use `syntax` as the expression for details.")
-                .addOption(ApplicationCommandOptionData.builder()
-                        .name("expression")
-                        .description("The roll expression to evaluate.")
-                        .required(true)
-                        .type(ApplicationCommandOption.Type.STRING.getValue())
-                        .build())
-                .addOption(ApplicationCommandOptionData.builder()
-                        .name("comment")
-                        .description("A small description of the roll")
-                        .required(false)
-                        .type(ApplicationCommandOption.Type.STRING.getValue())
-                        .maxLength(240)
-                        .build())
-                .addOption(ApplicationCommandOptionData.builder()
-                        .name("visible")
-                        .description("Whether this role should be visible to all")
-                        .required(false)
-                        .type(ApplicationCommandOption.Type.BOOLEAN.getValue())
-                        .build())
-                .build();
+    public DiceSlashCommand(DiscordParameterHelper helper, StringDiceExpressionEvaluator evaluator) {
+        super(helper);
+        this.evaluator = evaluator;
     }
 
     @Override
-    public Mono<?> handleEvent(ChatInputInteractionEvent event) {
-        var expression = event.getOption("expression")
-                .flatMap(a -> a.getValue())
-                .map(a -> a.asString())
-                .orElseThrow();
-        if (expression.equalsIgnoreCase("syntax")) {
-            return SlashCommands.replyEphemeral(event, SYNTAX);
+    public Class<Parameters> getParameterClass() {
+        return Parameters.class;
+    }
+
+    @Override
+    protected ImmutableApplicationCommandRequest.Builder augment(ImmutableApplicationCommandRequest.Builder builder) {
+        return builder
+                .name("roll")
+                .description("Roll some dice! Use `syntax` as the expression for details.");
+    }
+
+    @Override
+    protected SlashCommandResponse handleEvent(ChatInputInteractionEvent event, Parameters parameters) {
+        if ("syntax".equalsIgnoreCase(parameters.expression)) {
+            return Responses.replyEphemeral(SYNTAX);
         }
-        var commentOpt = event.getOption("comment")
-                .flatMap(a -> a.getValue())
-                .map(a -> a.asString());
-        var visible = event.getOption("visible")
-                .flatMap(a -> a.getValue())
-                .map(a -> a.asBoolean())
-                .orElse(true);
+
         try {
-            var result = evaluator.evaluate(expression);
+            var result = evaluator.evaluate(parameters.expression);
             String str = String.format("```ansi\n%s = %s\n```", result.representation(), Utils.outputBigDecimal(result.value()));
 
-            return event.reply(commentOpt.map(comment -> comment + "\n" + str).orElse(str))
-                    .withEphemeral(!visible);
+            if (StringUtils.isNotBlank(parameters.comment)) {
+                str = parameters.comment + "\n" + str;
+            }
+
+            return Responses.reply(str, !parameters.visible);
         } catch (ExpressionSyntaxError ex) {
-            return SlashCommands.replyEphemeral(event, ex.getMessage());
+            return Responses.replyEphemeral(ex.getMessage());
         }
     }
 
@@ -95,4 +87,16 @@ public class DiceSlashCommand implements SlashCommandWrapper {
             - <#: Low-cap the number. If the number is less than #, # will be used instead.
             - >#: High-cap the number. If the number is greater than #, # will be used instead.
             """;
+
+    @Data
+    public static class Parameters {
+        @NotNull
+        @Parameter(description = "The roll expression to evaluate.")
+        @NotBlank(message = "Expression must have a value")
+        private String expression;
+        @Parameter(description = "A small description of the roll")
+        private String comment;
+        @Parameter(description = "Whether this role should be visible to all")
+        private boolean visible;
+    }
 }

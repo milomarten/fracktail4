@@ -12,6 +12,10 @@ public class Responses {
         return event -> event.reply(words);
     }
 
+    public SlashCommandResponse reply(String words, boolean ephemeral) {
+        return ephemeral ? replyEphemeral(words) : reply(words);
+    }
+
     public SlashCommandResponse replyEphemeral(String words) {
         return event -> event.reply().withEphemeral(true).withContent(words);
     }
