@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.platform.discord.mapper;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.Parameter;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.command.ApplicationCommandOption;
@@ -19,8 +20,31 @@ import java.util.*;
 @Component
 public class ObjectToDiscordReflectiveMapper {
     public <T> List<ApplicationCommandOptionData> toParams(Class<T> clazz) {
-        var fields = clazz.getDeclaredFields();
         var params = new ArrayList<ApplicationCommandOptionData>();
+
+        // Support polymorphism!
+        if (clazz.isAnnotationPresent(JsonSubTypes.class)) {
+            var subTypes = clazz.getAnnotation(JsonSubTypes.class);
+            for (var subType : subTypes.value()) {
+                var concreteType = subType.value();
+                if (concreteType.isAnnotationPresent(Parameter.class)) {
+                    var parameter = concreteType.getAnnotation(Parameter.class);
+                    var description = parameter.description();
+                    if (description.isBlank()) {
+                        throw new IllegalArgumentException("Description is required for a parameter.");
+                    }
+
+                    params.add(ApplicationCommandOptionData.builder()
+                            .name(subType.name())
+                            .description(description)
+                            .type(parameter.type().getValue())
+                            .options(toParams(concreteType))
+                            .build());
+                }
+            }
+        }
+
+        var fields = clazz.getDeclaredFields();
         for (var field : fields) {
             if (field.isAnnotationPresent(Parameter.class)) {
                 var param = field.getAnnotation(Parameter.class);
