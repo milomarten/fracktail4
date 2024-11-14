@@ -13,6 +13,9 @@ import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.MonthDay;
 import java.util.stream.Collectors;
 
 @Data
@@ -57,14 +60,47 @@ public class AmtrakStationLookup implements AmtrakLookup {
                 station.map(s -> {
                     String lineOne = String.format("%s - %s", s.getName(), s.getCode());
                     String lineTwo = s.getAddressLine();
-                    String lineThree = String.format("This station has %d upcoming train(s): %s",
+
+                    var upcomingTrainsPretty = s.getTrains().stream()
+                            .collect(Collectors.collectingAndThen(
+                                    Collectors.groupingBy(TrainId::trainNumber),
+                                    map -> {
+                                        return map.entrySet().stream()
+                                                .map(entry -> entry.getValue().size() == 1 ?
+                                                        entry.getKey() :
+                                                        entry.getValue().stream()
+                                                                .map(TrainId::dom)
+                                                                .map(this::getDepartureDateFromDOM)
+                                                                .collect(Collectors.joining(", ", entry.getKey() + " (", ")")))
+                                                .collect(Collectors.joining(", "));
+                                    }
+                                ));
+
+                    String lineThree = String.format("This station has %d upcoming train(s):\n%s",
                             s.getTrains().size(),
-                            s.getTrains().stream().map(TrainId::trainNumber)
-                                    .distinct().collect(Collectors.joining(", ")));
+                            upcomingTrainsPretty);
                     return lineOne + "\n" + lineTwo + "\n" + lineThree;
                 })
                 .defaultIfEmpty("Unable to find that station, sorry.")
                 .onErrorResume(e -> Mono.just("Unable to find that station, sorry."))
         );
+    }
+
+    private String getDepartureDateFromDOM(int dom) {
+        var now = LocalDateTime.now();
+        Month monthOfDeparture;
+
+        // In context of today, the DOM can be usually be resolved with context, since the system only shows
+        // trains in current operation. The major challenge is determining when the month rolls over or backwards.
+        // We roll the month back 1 if today's DOM is significantly less than the train's DOM. (Today 1, Train 31: Train is last month)
+        // Similarly, we roll the month forward 1 if today's DOM is significantly more than the train's DOM. (Today 31, Train 1: Train is next month)
+        // We don't roll the month at all if today's DOM is not significantly more or less than the train's DOM
+        // We define "significantly" as more than 4 days.
+
+        if (Math.abs(now.getDayOfMonth() - dom) <= 4) { monthOfDeparture = now.getMonth(); }
+        else if (now.getDayOfMonth() < dom) { monthOfDeparture = now.getMonth().minus(1); }
+        else { monthOfDeparture = now.getMonth().plus(1); }
+
+        return "Dep " + monthOfDeparture.getValue() + "/" + dom;
     }
 }

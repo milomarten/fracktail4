@@ -67,7 +67,7 @@ public class AmtrakTrainLookup implements AmtrakLookup {
                                 t.getEventName(), FORMATTER.format(t.getUpdatedAt()
                                         .withZoneSameInstant(t.getEventTimezone().toZoneId())),
                                 upcomingStation == null ? "" :
-                                        "It's scheduled to arrive there on " + FORMATTER.format(upcomingStation.getScheduledArrival()) + ". "
+                                        "It's estimated to arrive there on " + FORMATTER.format(upcomingStation.getArrival()) + ". "
                         );
 
                         return lineOne + "\n" + lineTwo + "\n" + lineThree;
