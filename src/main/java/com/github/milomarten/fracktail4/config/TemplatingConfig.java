@@ -36,8 +36,8 @@ public class TemplatingConfig implements ApplicationContextAware {
         engine.setEnableSpringELCompiler(true);
         engine.addDialect(new Java8TimeDialect());
 
-        var out = engine.process("sample", new Context(Locale.US, Map.of("planet", "mars")));
-        System.out.println("HEY! --->" + out);
+//        var out = engine.process("sample", new Context(Locale.US, Map.of("planet", "mars")));
+//        System.out.println("HEY! --->" + out);
 
         return engine;
     }
