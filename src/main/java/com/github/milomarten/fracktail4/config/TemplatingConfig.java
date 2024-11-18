@@ -22,7 +22,7 @@ public class TemplatingConfig implements ApplicationContextAware {
     public SpringResourceTemplateResolver templateResolver() {
         var resolver = new SpringResourceTemplateResolver();
         resolver.setApplicationContext(this.context);
-        resolver.setPrefix("/templates/");
+        resolver.setPrefix("classpath:/templates/");
         resolver.setSuffix(".txt");
         resolver.setTemplateMode(TemplateMode.TEXT);
         resolver.setCacheable(true);
@@ -36,8 +36,8 @@ public class TemplatingConfig implements ApplicationContextAware {
         engine.setEnableSpringELCompiler(true);
         engine.addDialect(new Java8TimeDialect());
 
-//        var out = engine.process("sample", new Context(Locale.US, Map.of("planet", "mars")));
-//        System.out.println("HEY! --->" + out);
+        var out = engine.process("sample", new Context(Locale.US, Map.of("planet", "mars")));
+        System.out.println("HEY! --->" + out);
 
         return engine;
     }
