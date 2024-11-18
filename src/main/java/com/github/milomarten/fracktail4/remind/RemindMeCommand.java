@@ -7,6 +7,7 @@ import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashComm
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -15,16 +16,12 @@ import java.time.Instant;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class RemindMeCommand extends AbstractSlashCommand<RemindMeParameters> {
     private static final Duration MINIMUM_DURATION = Duration.ofMinutes(5);
     private static final Duration MAXIMUM_DURATION = Duration.ofDays(60);
 
     private final RemindHandler handler;
-
-    public RemindMeCommand(DiscordParameterHelper helper, RemindHandler handler) {
-        super(helper);
-        this.handler = handler;
-    }
 
     @Override
     public Class<RemindMeParameters> getParameterClass() {

@@ -8,13 +8,14 @@ import discord4j.discordjson.json.ApplicationCommandRequest;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import jakarta.validation.ConstraintViolation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
 
 import java.util.Set;
 
 @RequiredArgsConstructor
 public abstract class AbstractSlashCommand<PARAM> implements SlashCommandWrapper {
-    private final DiscordParameterHelper helper;
+    private DiscordParameterHelper helper;
 
     public abstract Class<PARAM> getParameterClass();
 
@@ -45,5 +46,10 @@ public abstract class AbstractSlashCommand<PARAM> implements SlashCommandWrapper
 
     protected SlashCommandResponse handleValidationErrors(ChatInputInteractionEvent event, Set<ConstraintViolation<PARAM>> errors) {
         return Responses.replyEphemeral(errors.iterator().next().getMessage());
+    }
+
+    @Autowired
+    public final void setHelper(DiscordParameterHelper helper) {
+        this.helper = helper;
     }
 }

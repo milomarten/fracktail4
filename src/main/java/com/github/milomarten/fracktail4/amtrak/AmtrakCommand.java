@@ -7,19 +7,15 @@ import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashComm
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Getter
 @Component
+@RequiredArgsConstructor
 public class AmtrakCommand extends AbstractSlashCommand<AmtrakCommandParameters> {
     private final AmtrakLookup lookup;
     private final AmtrakGateway gateway;
-
-    public AmtrakCommand(DiscordParameterHelper helper, AmtrakLookup lookup, AmtrakGateway gateway) {
-        super(helper);
-        this.lookup = lookup;
-        this.gateway = gateway;
-    }
 
     @Override
     public Class<AmtrakCommandParameters> getParameterClass() {

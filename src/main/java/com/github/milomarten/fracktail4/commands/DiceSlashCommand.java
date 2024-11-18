@@ -24,13 +24,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
+@RequiredArgsConstructor
 public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Parameters> {
     private final StringDiceExpressionEvaluator evaluator;
-
-    public DiceSlashCommand(DiscordParameterHelper helper, StringDiceExpressionEvaluator evaluator) {
-        super(helper);
-        this.evaluator = evaluator;
-    }
 
     @Override
     public Class<Parameters> getParameterClass() {
