@@ -13,9 +13,7 @@ import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Data
 @JsonTypeName("station")
@@ -55,51 +53,29 @@ public class AmtrakStationLookup implements AmtrakLookup {
             return Responses.replyEphemeral("Some criteria must be passed in order to search.");
         }
 
-        return Responses.delayedReply(
-                station.map(s -> {
-                    String lineOne = String.format("%s - %s", s.getName(), s.getCode());
-                    String lineTwo = s.getAddressLine();
-
-                    var upcomingTrainsPretty = s.getTrains().stream()
-                            .collect(Collectors.collectingAndThen(
-                                    Collectors.groupingBy(TrainId::trainNumber),
-                                    map -> {
-                                        return map.entrySet().stream()
-                                                .map(entry -> entry.getValue().size() == 1 ?
-                                                        entry.getKey() :
-                                                        entry.getValue().stream()
-                                                                .map(TrainId::dom)
-                                                                .map(this::getDepartureDateFromDOM)
-                                                                .collect(Collectors.joining(", ", entry.getKey() + " (", ")")))
-                                                .collect(Collectors.joining(", "));
-                                    }
-                                ));
-
-                    String lineThree = String.format("This station has %d upcoming train(s):\n%s",
-                            s.getTrains().size(),
-                            upcomingTrainsPretty);
-                    return lineOne + "\n" + lineTwo + "\n" + lineThree;
-                })
-                .defaultIfEmpty("Unable to find that station, sorry.")
-                .onErrorResume(e -> Mono.just("Unable to find that station, sorry."))
-        );
+        return Responses.delayedReply(station.map(this::forStation)
+                    .map(summary -> root.templateResponse("station-lookup", summary)));
     }
 
-    private String getDepartureDateFromDOM(int dom) {
-        var now = LocalDateTime.now();
-        Month monthOfDeparture;
+    private Summary forStation(Station station) {
+        var trainNumbersAndDOMs = station.getTrains()
+                .stream()
+                .map(TrainId::toString)
+                .toList();
+        var address = new Address(station.getAddress1(), station.getAddress2(), station.getCity(), station.getState(), station.getZip());
+        return new Summary(station.getCode(), station.getName(), address, trainNumbersAndDOMs);
+    }
 
-        // In context of today, the DOM can be usually be resolved with context, since the system only shows
-        // trains in current operation. The major challenge is determining when the month rolls over or backwards.
-        // We roll the month back 1 if today's DOM is significantly less than the train's DOM. (Today 1, Train 31: Train is last month)
-        // Similarly, we roll the month forward 1 if today's DOM is significantly more than the train's DOM. (Today 31, Train 1: Train is next month)
-        // We don't roll the month at all if today's DOM is not significantly more or less than the train's DOM
-        // We define "significantly" as more than 4 days.
+    public record Summary(String code, String name, Address address, List<String> trains) {
+        public int numberOfTrains() { return trains.size(); }
+    }
+    public record Address(String line1, String line2, String city, String state, String zip) {
+        public boolean exists() {
+            return StringUtils.isNoneBlank(line1, city, state, zip);
+        }
 
-        if (Math.abs(now.getDayOfMonth() - dom) <= 4) { monthOfDeparture = now.getMonth(); }
-        else if (now.getDayOfMonth() < dom) { monthOfDeparture = now.getMonth().minus(1); }
-        else { monthOfDeparture = now.getMonth().plus(1); }
-
-        return "Dep " + monthOfDeparture.getValue() + "/" + dom;
+        public boolean hasLine2() {
+            return StringUtils.isNotBlank(line2);
+        }
     }
 }

@@ -20,12 +20,4 @@ public class Station {
     private String state;
     private String zip;
     private List<TrainId> trains;
-
-    public String getAddressLine() {
-        if (address2.isBlank()) {
-            return String.join(", ", List.of(address1, city, state, zip));
-        } else {
-            return String.join(", ", List.of(address1, address2, city, state, zip));
-        }
-    }
 }

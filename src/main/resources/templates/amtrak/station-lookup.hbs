@@ -1,0 +1,8 @@
+{{name}} - {{code}}
+{{~#if address.exists}}{{~#with address}}
+{{line1}}{{#if hasLine2}}
+{{line2}}{{/if}}
+{{city}}, {{state}}, {{zip}}
+{{/with}}{{/if}}
+There are {{numberOfTrains}} relevant trains for this station:
+{{#each trains}}{{this}}{{#if @last}}{{else}}, {{/if}}{{/each}}

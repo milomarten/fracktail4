@@ -1,3 +1,5 @@
 discord:
+  startupAnnouncement:
+    enabled: false
   birthday:
     enabled: false

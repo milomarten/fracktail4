@@ -31,6 +31,7 @@ public class DiscordBootstrap {
     }
 
     @Bean
+    @ConditionalOnProperty(value = "discord.startupAnnouncement.enabled", havingValue = "true")
     public ApplicationListener<ApplicationReadyEvent> onReadyDiscord(GatewayDiscordClient client) {
         return event -> client.getUserById(Snowflake.of(248612704019808258L))
                 .flatMap(User::getPrivateChannel)
