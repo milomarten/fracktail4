@@ -122,7 +122,7 @@ public class ObjectToDiscordReflectiveMapper {
 
     private Possible<Integer> getMaxLength(Field f) {
         if (f.isAnnotationPresent(Size.class)) {
-            return Possible.of(f.getAnnotation(Size.class).min());
+            return Possible.of(f.getAnnotation(Size.class).max());
         }
         return Possible.absent();
     }

@@ -10,11 +10,13 @@ import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashComm
 import discord4j.core.object.command.ApplicationCommandOption;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+@Slf4j
 @Data
 @JsonTypeName("station")
 @Parameter(description = "Lookup an Amtrak or VIA station. VIA-only stations only have codes and names.", type = ApplicationCommandOption.Type.SUB_COMMAND)
@@ -53,8 +55,12 @@ public class AmtrakStationLookup implements AmtrakLookup {
             return Responses.replyEphemeral("Some criteria must be passed in order to search.");
         }
 
-        return Responses.delayedReply(station.map(this::forStation)
-                    .map(summary -> root.templateResponse("station-lookup", summary)));
+        return Responses.delayedReply(station
+                .map(this::forStation)
+                .map(summary -> root.templateResponse("station-lookup", summary))
+                .defaultIfEmpty("Sorry, I don't know that station.")
+                .onErrorReturn("Sorry, I had trouble getting that station.")
+        );
     }
 
     private Summary forStation(Station station) {
