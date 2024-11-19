@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.MonthDay;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 
@@ -45,8 +46,8 @@ public class TemplateConfig {
 
                     @Override
                     public Object apply(Object o, Options options) throws IOException {
-                        if (o instanceof TemporalAccessor t) {
-                            var now = MonthDay.now();
+                        if (o instanceof ZonedDateTime t) {
+                            var now = MonthDay.now(t.getZone());
                             if (now.equals(MonthDay.from(t))) {
                                 return MINI_FORMATTER.format(t);
                             } else {
