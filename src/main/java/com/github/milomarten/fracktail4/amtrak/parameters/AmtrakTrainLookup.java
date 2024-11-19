@@ -48,7 +48,15 @@ public class AmtrakTrainLookup implements AmtrakLookup {
 
         return Responses.delayedReply(train
                 .map(this::toView)
-                .map(view -> root.templateResponse("train-lookup", view))
+                .map(view -> {
+                    if (view.state() == TrainState.PREDEPARTURE) {
+                        return root.templateResponse("train-lookup-predeparture", view);
+                    } else if (view.state() == TrainState.COMPLETED) {
+                        return root.templateResponse("train-lookup-completed", view);
+                    } else {
+                        return root.templateResponse("train-lookup", view);
+                    }
+                })
                 .defaultIfEmpty("Sorry, I don't know that train.")
                 .onErrorMap(ex -> {
                     log.error("", ex);
@@ -58,8 +66,8 @@ public class AmtrakTrainLookup implements AmtrakLookup {
         );
     }
 
-    private static final Set<TrainState> IN_MOTION_STATUSES =
-            EnumSet.of(TrainState.ACTIVE, TrainState.PREDEPARTURE);
+//    private static final Set<TrainState> IN_MOTION_STATUSES =
+//            EnumSet.of(TrainState.ACTIVE, TrainState.PREDEPARTURE);
 
     private TrainView toView(Train train) {
         var firstStation = CollectionUtils.firstElement(train.getStations());
@@ -74,7 +82,7 @@ public class AmtrakTrainLookup implements AmtrakLookup {
                 StationView.of(firstStation),
                 StationView.of(lastStation),
                 StationView.of(upcomingStation),
-                IN_MOTION_STATUSES.contains(train.getTrainState()),
+                train.getTrainState(),
                 train.getVelocity(),
                 train.getUpdatedAt().withZoneSameInstant(train.getEventTimezone().toZoneId())
         );
@@ -88,7 +96,7 @@ public class AmtrakTrainLookup implements AmtrakLookup {
             StationView origin,
             StationView finalDestination,
             StationView nextDestination,
-            boolean inMotion,
+            TrainState state,
             double speed,
             ZonedDateTime lastEvent
         ) {

@@ -1,0 +1,4 @@
+{{#capitalize provider fully=true}}{{/capitalize}} Train {{id}} is the {{name}}, which has not yet departed.
+{{#if hasRouteInfo~}}
+It will leave {{origin.name}} {{#amtrakDateTime origin.times.estDeparture}}{{/amtrakDateTime}}, and is scheduled to arrive at its final destination of {{finalDestination.name}} {{#amtrakDateTime finalDestination.times.estArrival}}{{/amtrakDateTime}}.
+{{/if}}

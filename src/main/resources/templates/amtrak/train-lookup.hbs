@@ -1,11 +1,6 @@
 {{#capitalize provider fully=true}}{{/capitalize}} Train {{id}} is the {{name}}, currently heading {{#bearing bearing}}{{/bearing}} at {{#amtrakSpeed speed}}{{/amtrakSpeed}}.
-{{#if hasRouteInfo}}{{#if inMotion~}}
+{{#if hasRouteInfo~}}
 It left {{origin.name}} {{#amtrakDateTime origin.times.estDeparture}}{{/amtrakDateTime}}, and is scheduled to arrive at its final destination of {{finalDestination.name}} {{#amtrakDateTime finalDestination.times.estArrival}}{{/amtrakDateTime}}.
 {{#if hasNextDestination}}It is currently approaching {{nextDestination.name}}, with the last update {{#amtrakDateTime lastEvent}}{{/amtrakDateTime}}. It's estimated to arrive there {{#amtrakDateTime nextDestination.times.estArrival}}{{/amtrakDateTime}} (all times are local time).{{/if}}
 That makes it {{#amtrakDuration nextDestination.times.delay}}{{/amtrakDuration}} right now.
-{{~else~}}
-It left {{origin.name}} {{#amtrakDateTime origin.times.estDeparture}}{{/amtrakDateTime}}, and arrived at its final destination of {{finalDestination.name}} {{#amtrakDateTime finalDestination.times.estArrival}}{{/amtrakDateTime}} (all times are local time).
 {{~/if}}
-{{~else}}
-The route is empty, I can't provide any more information.
-{{/if}}
