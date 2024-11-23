@@ -11,7 +11,7 @@ import java.util.TimeZone;
 public class Train {
     private String routeName;
     private String trainNum;
-    @JsonProperty("trainID") private String trainId;
+    @JsonProperty("trainID") private TrainId trainId;
     @JsonProperty("lat") private double latitude;
     @JsonProperty("lon") private double longitude;
     @Deprecated private String trainTimely;

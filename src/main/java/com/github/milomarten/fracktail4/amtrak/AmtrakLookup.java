@@ -2,6 +2,7 @@ package com.github.milomarten.fracktail4.amtrak;
 
 import com.github.milomarten.fracktail4.amtrak.models.Station;
 import com.github.milomarten.fracktail4.amtrak.models.Train;
+import com.github.milomarten.fracktail4.amtrak.models.TrainId;
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -9,6 +10,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 @Service
@@ -61,5 +63,11 @@ public class AmtrakLookup {
         return this.trainsCache
                 .flatMapIterable(Function.identity())
                 .filter(t -> name.equalsIgnoreCase(t.getRouteName()));
+    }
+
+    public Flux<Train> trainsByNumbers(Set<TrainId> trainIds) {
+        return this.trainsCache
+                .flatMapIterable(Function.identity())
+                .filter(train -> trainIds.contains(train.getTrainId()));
     }
 }
