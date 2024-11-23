@@ -3,15 +3,12 @@ spring:
     deserialization:
       adjust_dates_to_context_time_zone: false
 
-aws:
-  access-key: AKIAWD3DXWDNWHDXXGXO
-  region: US_EAST_2
-
 discord:
   ownerId: 248612704019808258
   modRoleId: 423978071394222091
   startupAnnouncement:
     enabled: true
+    timezone: America/Chicago
   birthday:
     enabled: true
     announcementChannelId: 746898862098087977

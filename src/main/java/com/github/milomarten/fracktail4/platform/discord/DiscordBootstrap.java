@@ -15,7 +15,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 @Configuration
 @ConditionalOnProperty(prefix = "discord", name = "token")
@@ -32,12 +35,16 @@ public class DiscordBootstrap {
 
     @Bean
     @ConditionalOnProperty(value = "discord.startupAnnouncement.enabled", havingValue = "true")
-    public ApplicationListener<ApplicationReadyEvent> onReadyDiscord(GatewayDiscordClient client) {
-        return event -> client.getUserById(Snowflake.of(248612704019808258L))
+    public ApplicationListener<ApplicationReadyEvent> onReadyDiscord(
+            GatewayDiscordClient client,
+            @Value("${discord.startupAnnouncement.timezone:UTC}") ZoneId timezone,
+            @Value("${discord.ownerId}") Snowflake ownerId
+    ) {
+        return event -> client.getUserById(ownerId)
                 .flatMap(User::getPrivateChannel)
                 .flatMap(pc -> {
-                    LocalDateTime ldt = LocalDateTime.now();
-                    return pc.createMessage("Good morning! It is " + DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(ldt) + ", and I am ready to serve.");
+                    ZonedDateTime zdt = ZonedDateTime.now(timezone);
+                    return pc.createMessage("Good morning! It is " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG).format(zdt) + ", and I am ready to serve.");
                 })
                 .subscribe((obj) -> {}, (err) -> {}, () -> {});
     }
