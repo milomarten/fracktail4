@@ -1,0 +1,6 @@
+{{capitalize provider fully=true}} Train {{id}} is the {{name}}.
+{{#if hasRouteInfo~}}
+It left {{origin.name}} {{amtrakDateTime origin.times.estDeparture}}, and is scheduled to arrive at its final destination of {{finalDestination.name}} {{amtrakDateTime finalDestination.times.estArrival}}.
+{{#if hasNextDestination}}It is currently stopped at {{nextDestination.name}}, with the last update {{amtrakDateTime lastEvent}}. It's estimated to depart at {{amtrakDateTime nextDestination.times.estDeparture}}.{{/if}}
+That makes it {{amtrakDuration nextDestination.times.delay}} right now.
+{{~/if}}

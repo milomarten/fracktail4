@@ -35,7 +35,7 @@ public class Train {
     @JsonProperty("objectID") private int objectId;
     private TrainProvider provider;
 
-    public RouteStation getUpcomingStation() {
+    public RouteStation getEventStation() {
         if (this.eventCode == null) {
             return null;
         }

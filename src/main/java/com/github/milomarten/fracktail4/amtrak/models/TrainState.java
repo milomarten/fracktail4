@@ -7,5 +7,6 @@ public enum TrainState {
     @JsonProperty("Predeparture") PREDEPARTURE,
     @JsonProperty("Active") ACTIVE,
     @JsonProperty("Completed") COMPLETED,
+    AT_STATION, // Fake state used in my code ONLY
     @JsonEnumDefaultValue UNKNOWN
 }

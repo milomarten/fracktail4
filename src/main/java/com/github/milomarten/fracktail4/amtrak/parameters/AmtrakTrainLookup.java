@@ -18,8 +18,6 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.EnumSet;
-import java.util.Set;
 
 @Data
 @JsonTypeName("train")
@@ -53,10 +51,13 @@ public class AmtrakTrainLookup implements AmtrakLookup {
                         return root.templateResponse("train-lookup-predeparture", view);
                     } else if (view.state() == TrainState.COMPLETED) {
                         return root.templateResponse("train-lookup-completed", view);
+                    } else if (view.state() == TrainState.AT_STATION) {
+                        return root.templateResponse("train-lookup-station", view);
                     } else {
                         return root.templateResponse("train-lookup", view);
                     }
                 })
+                        .map(m -> m + "\n-# All times are in local time.")
                 .defaultIfEmpty("Sorry, I don't know that train.")
                 .onErrorMap(ex -> {
                     log.error("", ex);
@@ -66,13 +67,13 @@ public class AmtrakTrainLookup implements AmtrakLookup {
         );
     }
 
-//    private static final Set<TrainState> IN_MOTION_STATUSES =
-//            EnumSet.of(TrainState.ACTIVE, TrainState.PREDEPARTURE);
-
     private TrainView toView(Train train) {
         var firstStation = CollectionUtils.firstElement(train.getStations());
         var lastStation = CollectionUtils.lastElement(train.getStations());
-        var upcomingStation = train.getUpcomingStation();
+        var upcomingStation = train.getEventStation();
+        if (upcomingStation.getStatus() == RouteStatus.STATION) {
+            train.setTrainState(TrainState.AT_STATION);
+        }
 
         return new TrainView(
                 train.getProvider(),

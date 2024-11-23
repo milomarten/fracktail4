@@ -1,19 +1,21 @@
 package com.github.milomarten.fracktail4.config;
 
+import com.github.jknack.handlebars.EscapingStrategy;
 import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.helper.StringHelpers;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
+import com.github.milomarten.fracktail4.platform.discord.utils.DiscordTimestampFormat;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.MonthDay;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.*;
 
 @Configuration
 public class TemplateConfig {
@@ -21,6 +23,7 @@ public class TemplateConfig {
     public Handlebars handlebars() {
         TemplateLoader tl = new ClassPathTemplateLoader("/templates", ".hbs");
         return new Handlebars(tl)
+                .with(EscapingStrategy.NOOP)
                 .registerHelper("capitalize", StringHelpers.capitalize)
                 .registerHelper("bearing", new Helper<String>() {
                     @Override
@@ -38,14 +41,26 @@ public class TemplateConfig {
                         };
                     }
                 })
+                .registerHelper("timestamp", new Helper<Object>() {
+                    @Override
+                    public Object apply(Object o, Options options) throws IOException {
+                        if (o instanceof TemporalAccessor ta) {
+                            String rawFormat = options.hash("format", "LONG_DATE_SHORT_TIME");
+                            DiscordTimestampFormat format = EnumUtils.getEnum(DiscordTimestampFormat.class, rawFormat, DiscordTimestampFormat.LONG_DATE_SHORT_TIME);
+
+                            return format.toDiscord(ta);
+                        }
+                        return "";
+                    }
+                })
                 .registerHelper("amtrakDateTime", new Helper<Object>() {
                     private static final DateTimeFormatter MINI_FORMATTER = DateTimeFormatter.ofPattern("'at' hh:mm a");
                     private static final DateTimeFormatter FULL_FORMATTER = DateTimeFormatter.ofPattern("'on' MMM dd 'at' hh:mm a");
 
                     @Override
                     public Object apply(Object o, Options options) throws IOException {
-                        if (o instanceof ZonedDateTime t) {
-                            var now = MonthDay.now(t.getZone());
+                        if (o instanceof TemporalAccessor t) {
+                            var now = MonthDay.now(ZoneOffset.from(t));
                             if (now.equals(MonthDay.from(t))) {
                                 return MINI_FORMATTER.format(t);
                             } else {
