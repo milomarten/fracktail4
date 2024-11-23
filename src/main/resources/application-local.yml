@@ -1,5 +1,5 @@
 discord:
-#  startupAnnouncement:
-#    enabled: false
+  startupAnnouncement:
+    enabled: false
   birthday:
     enabled: false

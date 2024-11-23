@@ -10,8 +10,11 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class AmtrakLookup {
@@ -19,12 +22,18 @@ public class AmtrakLookup {
     private Mono<List<Station>> stationsCache;
     private Mono<List<Train>> trainsCache;
 
+    private Mono<Map<TrainId, Train>> trainsByIdCache;
+
     public AmtrakLookup(AmtrakGateway gateway) {
         this.gateway = gateway;
         this.stationsCache = Mono.defer(() -> gateway.getAllStations().collectList())
                 .cache(Duration.ofHours(24));
         this.trainsCache = Mono.defer(() -> gateway.getAllTrains().collectList())
-                .cache(Duration.ofMinutes(10));
+                .cache(t -> Duration.ofMinutes(10), e -> Duration.ZERO, () -> Duration.ofMinutes(10));
+
+        this.trainsByIdCache = Mono.defer(() -> trainsCache)
+                .map(list -> list.stream()
+                        .collect(Collectors.toMap(Train::getTrainId, Function.identity())));
     }
 
     public Mono<Station> stationByCode(String code) {
@@ -66,8 +75,10 @@ public class AmtrakLookup {
     }
 
     public Flux<Train> trainsByNumbers(Set<TrainId> trainIds) {
-        return this.trainsCache
-                .flatMapIterable(Function.identity())
-                .filter(train -> trainIds.contains(train.getTrainId()));
+        return this.trainsByIdCache
+                .flatMapMany(m -> Flux.fromIterable(trainIds.stream()
+                        .map(m::get)
+                        .filter(Objects::nonNull)
+                        .toList()));
     }
 }
