@@ -270,11 +270,11 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
         // If our search has crossed an entire year, there is no point continuing on.
         var timeBetweenSearchPoints = Period.between(firstSearchPoint, searchPoint);
         if (timeBetweenSearchPoints.getYears() >= 1) {
-            return replyEphemeral(event, "There are no birthdays in the calendar...");
+            return followup(event, "There are no birthdays in the calendar...");
         }
         var nextBirthdaysMaybe = handler.getNextBirthdays(searchPoint);
         if (nextBirthdaysMaybe.isEmpty()) {
-            return replyEphemeral(event, "There are no birthdays in the calendar...");
+            return followup(event, "There are no birthdays in the calendar...");
         }
         var nextBirthdays = nextBirthdaysMaybe.get();
         var nextBirthdayCritters = nextBirthdays.celebrators();

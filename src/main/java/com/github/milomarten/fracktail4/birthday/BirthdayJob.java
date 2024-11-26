@@ -1,7 +1,8 @@
 package com.github.milomarten.fracktail4.birthday;
 
 import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
-import com.github.milomarten.fracktail4.commands.BirthdaySlashCommand;
+import com.github.milomarten.fracktail4.birthday.v2.DynamicHolidays;
+import com.github.milomarten.fracktail4.birthday.v2.StaticHolidays;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.TextChannel;
@@ -13,7 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(value = "discord.birthday.enabled", havingValue = "true")
 public class BirthdayJob {
     private final BirthdayHandler handler;
+    private final EventCalendar<StaticHolidays> holidayCalendar;
     private final GatewayDiscordClient discordClient;
 
     @Value("${discord.birthday.announcementChannelId}")
@@ -74,5 +76,22 @@ public class BirthdayJob {
                 })
                 .flatMap(str -> announcementChannel.createMessage(str))
                 .subscribe(null, ex -> log.error("Error sending birthday message", ex));
+    }
+
+    @Scheduled(cron = "@midnight", zone = HOME_TIMEZONE_RAW)
+    public void announceHoliday() {
+        var today = LocalDate.now(HOME_TIMEZONE);
+
+        var normalHolidays = Flux.fromIterable(holidayCalendar.getEventsOn(today))
+                .map(h -> Tuples.of(h.getGreeting(), h.getName()));
+        var dynamicHolidays = Flux.fromIterable(DynamicHolidays.getEventsOn(today))
+                .map(h -> Tuples.of(h.getGreeting(), h.getName()));
+
+        Flux.concat(normalHolidays, dynamicHolidays)
+                .flatMap(h -> {
+                    String message = "%s %s, everyone!".formatted(h.getT1(), h.getT2());
+                    return this.announcementChannel.createMessage(message);
+                })
+                .subscribe(null, ex -> log.error("Error sending holiday message", ex));
     }
 }

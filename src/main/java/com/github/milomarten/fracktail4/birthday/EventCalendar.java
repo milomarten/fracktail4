@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.birthday;
 
 import com.github.milomarten.fracktail4.birthday.v2.BirthdayEventInstance;
+import com.github.milomarten.fracktail4.birthday.v2.EventInstance;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.time.LocalDate;
@@ -9,17 +10,17 @@ import java.time.MonthDay;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class BirthdayCalendar<T extends BirthdayEventInstance> {
+public class EventCalendar<T extends EventInstance> {
     private final List[] holder;
     private int size = 0;
 
-    public BirthdayCalendar() {
+    public EventCalendar() {
         // 1 = Jan 1, 366 = Dec 31st. 0 is sentinel for rollover.
         this.holder = new List[367]; // Sure hope they don't add a new day to the calendar
     }
 
     private int getIndexForMonthDay(Month month, int day) {
-        return month.firstDayOfYear(true) + day;
+        return month.firstDayOfYear(true) + day - 1;
     }
 
     private int getIndexForMonthDay(MonthDay monthDay) {
@@ -31,17 +32,7 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
         return getIndexForMonthDay(localDate.getMonth(), localDate.getDayOfMonth());
     }
 
-    private MonthDay getMonthDayForIndex(int idx) {
-        Month moy = Month.of((idx - 1) / 31 + 1);
-        int monthEnd = moy.firstDayOfYear(true) + moy.length(true) - 1;
-        if (idx > monthEnd) {
-            moy = moy.plus(1);
-        }
-        int dom = idx - moy.firstDayOfYear(true) + 1;
-        return MonthDay.of(moy, dom);
-    }
-
-    public void addBirthday(T critter) {
+    public void addEvent(T critter) {
         var idx = getIndexForMonthDay(critter.getDayOfCelebration());
         var ctr = this.holder[idx];
         if (ctr == null) {
@@ -54,7 +45,7 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
         size++;
     }
 
-    public boolean removeBirthday(T critter) {
+    public boolean removeEvent(T critter) {
         var idx = getIndexForMonthDay(critter.getDayOfCelebration());
         var ctr = this.holder[idx];
         if (ctr == null) {
@@ -69,7 +60,7 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
         }
     }
 
-    public List<T> getBirthdaysOn(LocalDate origin) {
+    public List<T> getEventsOn(LocalDate origin) {
         var idx = getIndexForLocalDate(origin);
         var ctr = this.holder[idx];
         if (CollectionUtils.isEmpty(ctr)) {
@@ -79,7 +70,7 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
         }
     }
 
-    public List<T> getBirthdaysOn(MonthDay origin) {
+    public List<T> getEventsOn(MonthDay origin) {
         var idx = getIndexForMonthDay(origin);
         var ctr = this.holder[idx];
         if (CollectionUtils.isEmpty(ctr)) {
@@ -89,7 +80,7 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
         }
     }
 
-    public List<T> getBirthdaysOn(Month month) {
+    public List<T> getEventsOn(Month month) {
         int lowerEnd = getIndexForMonthDay(month, 1);
         int upperEnd = getIndexForMonthDay(month, month.length(true));
 
@@ -100,7 +91,7 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
                 .toList();
     }
 
-    public Optional<NotNowBirthdayCritters> getNextBirthday(LocalDate origin) {
+    public Optional<NotNowEvents<T>> getNextEvent(LocalDate origin) {
         if (this.size == 0) {
             // No amount of looping will help...
             return Optional.empty();
@@ -113,13 +104,13 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
             } else {
                 var ctr = this.holder[idx];
                 if (CollectionUtils.isNotEmpty(ctr)) {
-                    return Optional.of(NotNowBirthdayCritters.from(ctr, year));
+                    return Optional.of(NotNowEvents.from(ctr, year));
                 }
             }
         }
     }
 
-    public Optional<NotNowBirthdayCritters> getPreviousBirthday(LocalDate origin) {
+    public Optional<NotNowEvents<T>> getPreviousEvent(LocalDate origin) {
         if (this.size == 0) {
             // No amount of looping will help...
             return Optional.empty();
@@ -132,7 +123,7 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
             } else {
                 var ctr = this.holder[idx];
                 if (CollectionUtils.isNotEmpty(ctr)) {
-                    return Optional.of(NotNowBirthdayCritters.from(ctr, year));
+                    return Optional.of(NotNowEvents.from(ctr, year));
                 }
             }
         }
@@ -144,18 +135,18 @@ public class BirthdayCalendar<T extends BirthdayEventInstance> {
         return i;
     }
 
-    public List<BirthdayEventInstance> getBirthdays() {
+    public List<BirthdayEventInstance> getEvents() {
         return Arrays.stream(this.holder)
                 .filter(Objects::nonNull)
                 .flatMap(l -> l.stream())
                 .toList();
     }
 
-    public record NotNowBirthdayCritters(List<BirthdayEventInstance> celebrators, LocalDate when) {
-        public static NotNowBirthdayCritters from(List<BirthdayEventInstance> critters, int year) {
+    public record NotNowEvents<T extends EventInstance> (List<T> celebrators, LocalDate when) {
+        public static <T extends EventInstance> NotNowEvents<T> from(List<T> critters, int year) {
             var when = critters.get(0).getDayOfCelebration().atYear(year);
             var whos = new ArrayList<>(critters);
-            return new NotNowBirthdayCritters(whos, when);
+            return new NotNowEvents<>(whos, when);
         }
     }
 }

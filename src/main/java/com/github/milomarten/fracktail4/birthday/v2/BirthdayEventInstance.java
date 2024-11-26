@@ -9,9 +9,8 @@ import java.time.MonthDay;
 import java.time.Year;
 import java.util.Optional;
 
-public interface BirthdayEventInstance {
+public interface BirthdayEventInstance extends EventInstance {
     Mono<String> getName();
-    MonthDay getDayOfCelebration();
     Optional<Year> getStartYear();
 
     Mono<Boolean> shouldDisplayForGuild(Snowflake guildId);

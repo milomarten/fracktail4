@@ -30,7 +30,7 @@ public class BirthdayHandler implements PersistenceBean {
     private final GatewayDiscordClient discordClient;
 
     Map<Snowflake, BirthdayEventInstance> birthdaysById;
-    BirthdayCalendar<BirthdayEventInstance> birthdaysByDate;
+    EventCalendar<BirthdayEventInstance> birthdaysByDate;
 
     @PostConstruct
     private void initLoad() {
@@ -46,18 +46,18 @@ public class BirthdayHandler implements PersistenceBean {
                             .map(bc -> bc.toEvent(discordClient))
                             .collect(Collectors.toMap(UserBirthdayEventInstance::userId, b -> b)));
 
-                    this.birthdaysByDate = new BirthdayCalendar<>();
+                    this.birthdaysByDate = new EventCalendar<>();
                     this.birthdaysById.forEach((id, bc) -> {
-                        this.birthdaysByDate.addBirthday(bc);
+                        this.birthdaysByDate.addEvent(bc);
                     });
 
                     // Load static birthdays!
-                    this.birthdaysByDate.addBirthday(new HardCodedBirthdayEventInstance(
+                    this.birthdaysByDate.addEvent(new HardCodedBirthdayEventInstance(
                             MonthDay.of(Month.APRIL, 2), null,
                             "Mom Marten",
                             Set.of(Snowflake.of(423976318082744321L))));
 
-                    this.birthdaysByDate.addBirthday(new HardCodedBirthdayEventInstance(
+                    this.birthdaysByDate.addEvent(new HardCodedBirthdayEventInstance(
                             MonthDay.of(Month.MARCH, 6), null,
                             "Dad Marten",
                             Set.of(Snowflake.of(423976318082744321L))));
@@ -81,27 +81,27 @@ public class BirthdayHandler implements PersistenceBean {
     }
 
     public List<BirthdayEventInstance> getBirthdaysOn(LocalDate day) {
-        return birthdaysByDate.getBirthdaysOn(day);
+        return birthdaysByDate.getEventsOn(day);
     }
 
     public List<BirthdayEventInstance> getBirthdaysOn(MonthDay day) {
-        return birthdaysByDate.getBirthdaysOn(day);
+        return birthdaysByDate.getEventsOn(day);
     }
 
     public List<BirthdayEventInstance> getBirthdaysOn(Month month) {
-        return birthdaysByDate.getBirthdaysOn(month);
+        return birthdaysByDate.getEventsOn(month);
     }
 
-    public Optional<BirthdayCalendar.NotNowBirthdayCritters> getNextBirthdays(LocalDate start) {
-        return birthdaysByDate.getNextBirthday(start);
+    public Optional<EventCalendar.NotNowEvents<BirthdayEventInstance>> getNextBirthdays(LocalDate start) {
+        return birthdaysByDate.getNextEvent(start);
     }
 
-    public Optional<BirthdayCalendar.NotNowBirthdayCritters> getPreviousBirthdays(LocalDate start) {
-        return birthdaysByDate.getPreviousBirthday(start);
+    public Optional<EventCalendar.NotNowEvents<BirthdayEventInstance>> getPreviousBirthdays(LocalDate start) {
+        return birthdaysByDate.getPreviousEvent(start);
     }
 
     public List<BirthdayEventInstance> getBirthdays() {
-        return birthdaysByDate.getBirthdays();
+        return birthdaysByDate.getEvents();
     }
 
     public boolean hasBirthday(Snowflake critter) {
@@ -117,11 +117,11 @@ public class BirthdayHandler implements PersistenceBean {
 
         if (this.birthdaysById.containsKey(critter)) {
             this.birthdaysById.put(critter, newCritter);
-            this.birthdaysByDate.removeBirthday(newCritter);
-            this.birthdaysByDate.addBirthday(newCritter);
+            this.birthdaysByDate.removeEvent(newCritter);
+            this.birthdaysByDate.addEvent(newCritter);
         } else {
             this.birthdaysById.put(critter, newCritter);
-            this.birthdaysByDate.addBirthday(newCritter);
+            this.birthdaysByDate.addEvent(newCritter);
         }
         return store();
     }
@@ -145,7 +145,7 @@ public class BirthdayHandler implements PersistenceBean {
     public Mono<Void> removeBirthday(Snowflake critter) {
         if (this.birthdaysById.containsKey(critter)) {
             var fullCritter = this.birthdaysById.remove(critter);
-            this.birthdaysByDate.removeBirthday(fullCritter);
+            this.birthdaysByDate.removeEvent(fullCritter);
             return store();
         }
         return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
@@ -154,7 +154,7 @@ public class BirthdayHandler implements PersistenceBean {
     public Mono<Void> removeBirthdays(List<BirthdayCritter> critters) {
         critters.forEach(s -> {
             var fullCritter = this.birthdaysById.remove(s.getCritter());
-            this.birthdaysByDate.removeBirthday(fullCritter);
+            this.birthdaysByDate.removeEvent(fullCritter);
         });
         return store();
     }
