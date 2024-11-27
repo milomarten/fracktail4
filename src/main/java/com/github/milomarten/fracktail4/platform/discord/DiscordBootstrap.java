@@ -1,9 +1,12 @@
 package com.github.milomarten.fracktail4.platform.discord;
 
+import com.github.milomarten.fracktail4.FracktailVersion;
 import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.User;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -47,5 +51,15 @@ public class DiscordBootstrap {
                     return pc.createMessage("Good morning! It is " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG).format(zdt) + ", and I am ready to serve.");
                 })
                 .subscribe((obj) -> {}, (err) -> {}, () -> {});
+    }
+
+    @Bean
+    public ApplicationListener<ApplicationReadyEvent> onReadyDiscordDescriptionSetup(GatewayDiscordClient client) {
+        return event -> {
+            String version = FracktailVersion.getVersion();
+            if (!version.isBlank()) {
+                client.updatePresence(ClientPresence.online(ClientActivity.playing(version))).subscribe();
+            }
+        };
     }
 }
