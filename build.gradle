@@ -49,3 +49,14 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+bootJar {
+	manifest {
+		attributes 'Specification-Title': 'Fracktail 4'
+		attributes 'Specification-Version': getProperty("fracktailVersion")
+		attributes 'Specification-Vendor': 'Milo Marten'
+		attributes 'Implementation-Title': 'com.github.milomarten.fracktail4'
+		attributes 'Implementation-Version': getProperty("fracktailVersion")
+		attributes 'Implementation-Vendor': 'Milo Marten'
+	}
+}

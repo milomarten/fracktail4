@@ -23,7 +23,7 @@ jobs:
       uses: gradle/gradle-build-action@v2.8.0
 
     - name: Execute Gradle build
-      run: ./gradlew build
+      run: ./gradlew build -PfracktailVersion=${{ github.ref_name }}
       
     - name: Build and Push to Docker
       run: |
