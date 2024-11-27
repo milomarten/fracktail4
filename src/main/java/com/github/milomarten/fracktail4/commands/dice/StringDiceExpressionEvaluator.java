@@ -1,6 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.*;
+import com.github.milomarten.fracktail4.commands.dice.term.ConstantTerm;
+import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail4.commands.dice.term.Operation;
+import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

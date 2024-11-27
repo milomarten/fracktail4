@@ -1,7 +1,6 @@
 package com.github.milomarten.fracktail4.platform.discord.slash.adapter;
 
 import com.github.milomarten.fracktail4.base.SimpleNoParameterAsyncCommand;
-import com.github.milomarten.fracktail4.base.SimpleNoParameterCommand;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;

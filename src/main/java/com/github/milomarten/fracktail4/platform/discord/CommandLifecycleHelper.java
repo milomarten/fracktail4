@@ -4,7 +4,6 @@ import com.github.milomarten.fracktail4.config.FracktailRoles;
 import com.github.milomarten.fracktail4.permissions.PermissionsProvider;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandRegistry;
 import discord4j.common.util.Snowflake;
-import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;

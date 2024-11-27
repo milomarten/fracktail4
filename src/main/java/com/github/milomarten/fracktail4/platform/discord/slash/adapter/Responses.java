@@ -2,7 +2,6 @@ package com.github.milomarten.fracktail4.platform.discord.slash.adapter;
 
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
-import jakarta.validation.ConstraintViolation;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;

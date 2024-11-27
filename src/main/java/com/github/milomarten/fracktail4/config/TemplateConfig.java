@@ -13,9 +13,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
-import java.time.*;
+import java.time.Duration;
+import java.time.MonthDay;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.*;
+import java.time.temporal.TemporalAccessor;
 
 @Configuration
 public class TemplateConfig {

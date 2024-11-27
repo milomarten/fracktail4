@@ -7,7 +7,6 @@ import com.github.milomarten.fracktail4.platform.discord.DiscordHookSource;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleCommandAsSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleNoParameterAsyncCommandAsSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleNoParameterCommandAsSlashCommand;
-import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashCommandResponse;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;

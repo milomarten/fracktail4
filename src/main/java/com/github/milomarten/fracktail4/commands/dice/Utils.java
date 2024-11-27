@@ -1,6 +1,5 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import lombok.experimental.UtilityClass;
