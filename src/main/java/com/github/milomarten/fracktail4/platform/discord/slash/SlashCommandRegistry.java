@@ -1,12 +1,8 @@
 package com.github.milomarten.fracktail4.platform.discord.slash;
 
 import com.github.milomarten.fracktail4.base.SimpleCommand;
-import com.github.milomarten.fracktail4.base.SimpleNoParameterAsyncCommand;
-import com.github.milomarten.fracktail4.base.SimpleNoParameterCommand;
 import com.github.milomarten.fracktail4.platform.discord.DiscordHookSource;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleCommandAsSlashCommand;
-import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleNoParameterAsyncCommandAsSlashCommand;
-import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleNoParameterCommandAsSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
@@ -85,10 +81,6 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof SimpleCommand cmd) {
             addCommand(new SimpleCommandAsSlashCommand(cmd));
-        } else if (bean instanceof SimpleNoParameterCommand cmd) {
-            addCommand(new SimpleNoParameterCommandAsSlashCommand(cmd));
-        } else if (bean instanceof SimpleNoParameterAsyncCommand cmd) {
-            addCommand(new SimpleNoParameterAsyncCommandAsSlashCommand(cmd));
         }
 
         return bean;
