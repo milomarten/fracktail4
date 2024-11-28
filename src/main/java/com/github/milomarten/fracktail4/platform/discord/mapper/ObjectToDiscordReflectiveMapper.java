@@ -22,6 +22,11 @@ public class ObjectToDiscordReflectiveMapper {
     public <T> List<ApplicationCommandOptionData> toParams(Class<T> clazz) {
         var params = new ArrayList<ApplicationCommandOptionData>();
 
+        if (clazz == Void.class || clazz == Void.TYPE) {
+            // Special case to allow parameterless commands to use this abstraction layer.
+            return params;
+        }
+
         // Support polymorphism!
         if (clazz.isAnnotationPresent(JsonSubTypes.class)) {
             var subTypes = clazz.getAnnotation(JsonSubTypes.class);

@@ -51,12 +51,16 @@ tasks.named('test') {
 }
 
 bootJar {
+	version = "local"
+	if (hasProperty("fracktailVersion")) {
+		version = getProperty("fracktailVersion")
+	}
 	manifest {
 		attributes 'Specification-Title': 'Fracktail 4'
-		attributes 'Specification-Version': getProperty("fracktailVersion")
+		attributes 'Specification-Version': version
 		attributes 'Specification-Vendor': 'Milo Marten'
 		attributes 'Implementation-Title': 'com.github.milomarten.fracktail4'
-		attributes 'Implementation-Version': getProperty("fracktailVersion")
+		attributes 'Implementation-Version': version
 		attributes 'Implementation-Vendor': 'Milo Marten'
 	}
 }
