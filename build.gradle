@@ -50,10 +50,14 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+tasks.named('jar') {
+	enabled = false
+}
+
 bootJar {
 	version = "local"
-	if (hasProperty("fracktailVersion")) {
-		version = getProperty("fracktailVersion")
+	if (project.hasProperty("fracktailVersion")) {
+		version = project.property("fracktailVersion")
 	}
 	manifest {
 		attributes 'Specification-Title': 'Fracktail 4'
