@@ -130,6 +130,7 @@ public enum Operation {
 
             var dice = (DiceExpression) numberOfDice.dice(numberOfSides, options);
             dice.setTotalingStrategy(new DotStrategy());
+            dice.setExplodeAt(dice.getNumberOfSides());
             return dice;
         }
 
