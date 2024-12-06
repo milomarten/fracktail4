@@ -17,8 +17,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import static com.github.milomarten.fracktail4.commands.dice.Utils.checkPositive;
-import static com.github.milomarten.fracktail4.commands.dice.Utils.checkRange;
+import static com.github.milomarten.fracktail4.commands.dice.Utils.*;
 
 /**
  * Represents an expression for how to roll, reroll, discard, and total dice.
@@ -160,16 +159,6 @@ public class DiceExpression implements Term {
         return result;
     }
 
-    private static void doNTimes(long number, Runnable action) {
-        if (number == 0) return;
-        LongStream.range(0, number).forEach(i -> action.run());
-    }
-
-    private static <T> List<T> doNTimes(int number, Supplier<T> action) {
-        if (number == 0) return List.of();
-        return IntStream.range(0, number).mapToObj(i -> action.get()).toList();
-    }
-
     private void validate() {
         checkRange(Math.abs(numberOfDice),0, 32, "Number Of Dice");
         checkRange(numberOfSides, 0, 1000, "Number of Sides");
@@ -275,6 +264,15 @@ public class DiceExpression implements Term {
         public void addResult(Result roll) {
             this.results.add(roll);
             this.lengthNotDiscounted++;
+        }
+
+        /**
+         * Add a new roll to this result
+         * @param rolls The rolls to add
+         */
+        public void addResults(Results rolls) {
+            this.results.addAll(rolls.results);
+            this.lengthNotDiscounted += rolls.lengthNotDiscounted;
         }
     }
 

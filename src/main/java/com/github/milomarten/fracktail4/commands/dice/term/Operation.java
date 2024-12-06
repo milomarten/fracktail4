@@ -118,6 +118,26 @@ public enum Operation {
             return ONE;
         }
     },
+    DOT_DICE("D", 4) {
+        // This special ONE makes the parsing logic easier, without showing an unexpected 1,
+        // when "D" is used with no left term.
+        private static final Term ONE = new AccumulationTerm(BigDecimal.ONE, "");
+
+        @Override
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) {
+            var numberOfSides = Operation.pull(termStack, "number of sides");
+            var numberOfDice = Operation.pull(termStack, "number of dice");
+
+            var dice = (DiceExpression) numberOfDice.dice(numberOfSides, options);
+            dice.setTotalingStrategy(new DotStrategy());
+            return dice;
+        }
+
+        @Override
+        public Term getImplicitLeftTerm() throws ExpressionSyntaxError {
+            return ONE;
+        }
+    },
     /**
      * Drop the lowest n dice rolls
      */

@@ -33,21 +33,33 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
                     String rollText = result.toString(options);
                     if (result.isDiscounted()) {
                         expr.add("~~" + rollText + "~~");
-                    } else if (value >= successThreshold) {
-                        String resolvedText = Utils.outputDiceRoll(1, Status.CRITICAL_SUCCESS, options);
-                        expr.add(resolvedText + " [" + rollText + "]");
-                        consumer.accept(1);
-                    } else if (value <= failureThreshold) {
-                        String resolvedText = Utils.outputDiceRoll(-1, Status.CRITICAL_FAIL, options);
-                        expr.add(resolvedText + " [" + rollText + "]");
-                        consumer.accept(-1);
                     } else {
-                        expr.add("0 [" + rollText + "]");
-                        consumer.accept(0);
+                        int count = getCountFor(result);
+                        String resolvedText;
+                        if (count > 0) {
+                            resolvedText = Utils.outputDiceRoll(count, Status.CRITICAL_SUCCESS, options);
+                        } else if (count < 0) {
+                            resolvedText = Utils.outputDiceRoll(count, Status.CRITICAL_FAIL, options);
+                        } else {
+                            resolvedText = "0";
+                        }
+                        expr.add(resolvedText + " [" + rollText + "]");
+                        consumer.accept(count);
                     }
                 })
                 .mapToInt(i -> i)
                 .sum();
         return new TermEvaluationResult(BigDecimal.valueOf(total), expr.toString());
+    }
+
+    protected int getCountFor(DiceExpression.Result result) {
+        var value = result.getValue();
+        if (value >= successThreshold) {
+            return 1;
+        } else if (value <= failureThreshold) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 }
