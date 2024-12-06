@@ -56,6 +56,13 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
             As such, you can use normal numbers, positive, negative, +, -, \\*, and /. However, in addition to numbers, you can \
             also write *dice expressions*. The format for a dice roll is `<number of dice>d<faces on the dice>`. For example, \
             2d10 would roll 2 ten-sided dice, and add the results.
+            
+            Note that the case of the `d` matters. `d` will perform a normal dice roll, while `D` will perform a \
+            *dotted* dice roll. This is a shorthand that will, by default:
+            - Explode "infinitely" on the highest dice value
+            - Switch to Success Counting mode, where a success is 7 or more, and a failure is 1.
+            - Additionally, each highest dice value counts as 2 successes instead of 1.
+            The explode value, success value, and failure value can all still be changed as described below.
 
             There is additional syntax that can augment a dice roll. All of these values can be supplied by further math expressions, \
             but all will be coerced to a whole number by dropping everything after the decimal point.:
