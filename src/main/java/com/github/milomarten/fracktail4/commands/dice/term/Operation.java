@@ -151,19 +151,49 @@ public enum Operation {
     /**
      * Keep the highest n dice rolls.
      */
-    KEEP("k", 4) {
+    KEEP_N("k", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             return evaluateTwoParameterFunc(termStack, options, "Dice", "Keep", Term::keep);
         }
     },
     /**
+     * Keep the highest dice roll. Shortcut for k1
+     */
+    KEEP_HIGHEST("K", 4) {
+        @Override
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) {
+            var two = Operation.pull(termStack, "Dice");
+            return two.keep(ConstantTerm.of(1), options);
+        }
+
+        @Override
+        public boolean expectTermAfter() {
+            return false;
+        }
+    },
+    /**
      * Keep the lowest n dice rolls.
      */
-    KEEP_LOWEST("l", 4) {
+    KEEP_LOWEST_N("l", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             return evaluateTwoParameterFunc(termStack, options, "Dice", "Keep", Term::keepLow);
+        }
+    },
+    /**
+     * Keep the lowest dice roll. Shortcut for l1
+     */
+    KEEP_LOWEST("L", 4) {
+        @Override
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) {
+            var two = Operation.pull(termStack, "Dice");
+            return two.keepLow(ConstantTerm.of(1), options);
+        }
+
+        @Override
+        public boolean expectTermAfter() {
+            return false;
         }
     },
     /**
@@ -228,7 +258,7 @@ public enum Operation {
     FAILURE_AT("f", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, options, "Dice", "Fail At", Term::success);
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Fail At", Term::failure);
         }
     },
     // Special commands
@@ -264,6 +294,15 @@ public enum Operation {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
             return evaluateTwoParameterFunc(termStack, options, "value", "cap", Term::capHigh);
+        }
+    },
+    /**
+     * Assemble a dice pool
+     */
+    COMMA(",", 20) {
+        @Override
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) {
+            return evaluateTwoParameterFunc(termStack, options, "value1","value2", Term::comma);
         }
     }
     ;

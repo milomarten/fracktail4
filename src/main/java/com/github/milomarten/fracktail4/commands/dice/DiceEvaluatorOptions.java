@@ -8,7 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class DiceEvaluatorOptions {
-    @Builder.Default private OutputType outputType = OutputType.ANSI;
+    @Builder.Default private OutputType outputType = OutputType.PLAIN;
 
     public enum OutputType {
         PLAIN,

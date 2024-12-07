@@ -39,7 +39,12 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
 
         try {
             var result = evaluator.evaluate(parameters.expression);
-            String str = String.format("```ansi\n%s = %s\n```", result.representation(), Utils.outputBigDecimal(result.value()));
+            String str;
+            if (result.value() == null) {
+                str = String.format("%s", result.representation());
+            } else {
+                str = String.format("%s = *%s*", result.representation(), Utils.outputBigDecimal(result.value()));
+            }
 
             if (StringUtils.isNotBlank(parameters.comment)) {
                 str = parameters.comment + "\n" + str;

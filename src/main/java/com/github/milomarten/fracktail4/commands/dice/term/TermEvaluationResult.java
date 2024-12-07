@@ -12,6 +12,7 @@ public record TermEvaluationResult(BigDecimal value, String representation) {
      * @throws ExpressionSyntaxError The number is too big.
      */
     public int valueAsInt() throws ExpressionSyntaxError {
+        checkForNullValue();
         try {
             return value.toBigInteger().intValueExact();
         } catch (ArithmeticException ex) {
@@ -24,10 +25,12 @@ public record TermEvaluationResult(BigDecimal value, String representation) {
     }
 
     int getDigitCount() {
+        checkForNullValue();
         return value.signum() == 0 ? 1 : value.precision() - value.scale();
     }
 
     int precisionScore() {
+        checkForNullValue();
         if (value.signum() == 0) {
             return 1;
         } else {
@@ -37,6 +40,12 @@ public record TermEvaluationResult(BigDecimal value, String representation) {
             } else {
                 return digitsToTheLeft;
             }
+        }
+    }
+
+    private void checkForNullValue() {
+        if (value == null) {
+            throw new ExpressionSyntaxError("Term " + representation + "is not a number, but being treated as one.");
         }
     }
 }

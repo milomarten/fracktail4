@@ -127,4 +127,8 @@ public interface Term {
     default Term failure(Term at, DiceEvaluatorOptions options){
         throw new ExpressionSyntaxError("failure-at can only be used on dice expressions");
     }
+
+    default Term comma(Term addl, DiceEvaluatorOptions options) {
+        return new DicePoolTerm(this, addl);
+    }
 }
