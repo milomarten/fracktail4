@@ -43,7 +43,7 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
             if (result.value() == null) {
                 str = String.format("%s", result.representation());
             } else {
-                str = String.format("%s = *%s*", result.representation(), Utils.outputBigDecimal(result.value()));
+                str = String.format("%s = **%s**", result.representation(), Utils.outputBigDecimal(result.value()));
             }
 
             if (StringUtils.isNotBlank(parameters.comment)) {

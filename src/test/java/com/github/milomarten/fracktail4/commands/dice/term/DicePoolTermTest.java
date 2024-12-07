@@ -25,7 +25,7 @@ class DicePoolTermTest {
         var result = term.evaluate(OPTS);
 
         assertNull(result.value());
-        assertEquals("{5, 10}", result.representation());
+        assertEquals("{5 = 5, 10 = 10}", result.representation());
     }
 
     @Test
@@ -37,7 +37,7 @@ class DicePoolTermTest {
         when(random.nextInt(anyInt())).thenReturn(10, 5);
         var result = term.evaluate(OPTS);
 
-        assertEquals("{\uD83C\uDFB2(11), \uD83C\uDFB2(6)}", result.representation());
+        assertEquals("{\uD83C\uDFB2(11) = 11, \uD83C\uDFB2(6) = 6}", result.representation());
     }
 
     @Test
@@ -47,7 +47,7 @@ class DicePoolTermTest {
         var result = term.evaluate(OPTS);
 
         assertEquals(10, result.valueAsInt());
-        assertEquals("{~~5~~, 10}", result.representation());
+        assertEquals("{~~5 = 5~~, 10 = 10}", result.representation());
     }
 
     @Test
@@ -57,7 +57,7 @@ class DicePoolTermTest {
         var result = term.evaluate(OPTS);
 
         assertEquals(5, result.valueAsInt());
-        assertEquals("{5, ~~10~~}", result.representation());
+        assertEquals("{5 = 5, ~~10 = 10~~}", result.representation());
     }
 
     private DiceExpression makeDice(int number, int sides) {
