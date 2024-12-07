@@ -279,24 +279,6 @@ public enum Operation {
         }
     },
     /**
-     * Cap the left term to be no less than the right term.
-     */
-    CAP_LOW("<", 6) {
-        @Override
-        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, options, "value", "cap", Term::capLow);
-        }
-    },
-    /**
-     * Cap the left term to be no more than the right term.
-     */
-    CAP_HIGH(">", 6) {
-        @Override
-        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, options, "value", "cap", Term::capHigh);
-        }
-    },
-    /**
      * Assemble a dice pool
      */
     COMMA(",", 20) {

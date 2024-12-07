@@ -72,8 +72,8 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
             There is additional syntax that can augment a dice roll. All of these values can be supplied by further math expressions, \
             but all will be coerced to a whole number by dropping everything after the decimal point.:
             - x#: Drop # of the lowest dice.
-            - k#: Keep the highest # dice, and discard the rest.
-            - l#: Keep the *lowest* # dice, and discard the rest.
+            - k#: Keep the highest # dice, and discard the rest. K is shorthand for k1. For dice pools, this keeps the highest # rolls of the pool, discarding the rest.
+            - l#: Keep the *lowest* # dice, and discard the rest. L is shorthand for l1. For dice pools, this keeps the lowest # rolls of the pool, discarding the rest.
             - r#: Reroll any dice less than #. To keep rerolling, use R instead.
             - e#: Roll 1 new dice per roll greater than #. To keep exploding, use E instead.
             - s#: Switch to Success Counting mode. Instead of adding the face value of the dice, \
@@ -83,8 +83,15 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
             
             In addition to the standard math operators, there are these operators as well:
             - #^: Round the number, rounding upward.
-            - <#: Low-cap the number. If the number is less than #, # will be used instead.
-            - >#: High-cap the number. If the number is greater than #, # will be used instead.
+            - Previously, we had operators for capping low and high. This can now be done using dice pools: \
+            as an example, `(d20,10)K` will pick the highest value, no less than 10.
+            
+            You can create a dice pool by separating expressions using commas. This functions \
+            like a list of dice rolls, and outputs as such. However, once you have a dice pool, all \
+            operations, outside of `k` and `l`, return an error. By using `K` or `L` to reduce \
+            the pool to 1 value, you can once again use operations as normal. As an example, using \
+            `(2d10, 1d20)+5` is an error, but `(2d10, 1d20)K+5` works, since the pool is reduced entirely \
+            to the higher of the two rolls.
             """;
 
     @Data
