@@ -279,14 +279,14 @@ public class DiceExpression implements Term {
     @Override
     public Term drop(Term qty, DiceEvaluatorOptions options) {
         var qtyEval = qty.evaluate(options);
-        this.setNumberToDrop(qtyEval.valueAsInt());
+        this.setNumberToDrop(qtyEval.valueAsInt(options.getRoundingMode()));
         return this;
     }
 
     @Override
     public Term keep(Term qty, DiceEvaluatorOptions options) {
         var keepEval = qty.evaluate(options);
-        this.setNumberToKeep(keepEval.valueAsInt());
+        this.setNumberToKeep(keepEval.valueAsInt(options.getRoundingMode()));
         this.setKeepLowest(false);
         return this;
     }
@@ -294,7 +294,7 @@ public class DiceExpression implements Term {
     @Override
     public Term keepLow(Term qty, DiceEvaluatorOptions options) {
         var keepEval = qty.evaluate(options);
-        this.setNumberToKeep(keepEval.valueAsInt());
+        this.setNumberToKeep(keepEval.valueAsInt(options.getRoundingMode()));
         this.setKeepLowest(true);
         return this;
     }
@@ -302,7 +302,7 @@ public class DiceExpression implements Term {
     @Override
     public Term reroll(Term at, boolean infinite, DiceEvaluatorOptions options) {
         var rerollEval = at.evaluate(options);
-        this.setRerollAt(rerollEval.valueAsInt());
+        this.setRerollAt(rerollEval.valueAsInt(options.getRoundingMode()));
         this.setInfiniteReroll(infinite);
         return this;
     }
@@ -310,7 +310,7 @@ public class DiceExpression implements Term {
     @Override
     public Term explode(Term at, boolean infinite, DiceEvaluatorOptions options) {
         var explodeEval = at.evaluate(options);
-        this.setExplodeAt(explodeEval.valueAsInt());
+        this.setExplodeAt(explodeEval.valueAsInt(options.getRoundingMode()));
         this.setInfiniteExplode(infinite);
         return this;
     }
@@ -318,10 +318,10 @@ public class DiceExpression implements Term {
     @Override
     public Term success(Term at, DiceEvaluatorOptions options) {
         if (totalingStrategy instanceof SuccessFailureStrategy sfs) {
-            sfs.setSuccessThreshold(at.evaluate(options).valueAsInt());
+            sfs.setSuccessThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
         } else {
             var sfs = new SuccessFailureStrategy();
-            sfs.setSuccessThreshold(at.evaluate(options).valueAsInt());
+            sfs.setSuccessThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
             this.totalingStrategy = sfs;
         }
         return this;
@@ -330,10 +330,10 @@ public class DiceExpression implements Term {
     @Override
     public Term failure(Term at, DiceEvaluatorOptions options) {
         if (totalingStrategy instanceof SuccessFailureStrategy sfs) {
-            sfs.setFailureThreshold(at.evaluate(options).valueAsInt());
+            sfs.setFailureThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
         } else {
             var sfs = new SuccessFailureStrategy();
-            sfs.setFailureThreshold(at.evaluate(options).valueAsInt());
+            sfs.setFailureThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
             this.totalingStrategy = sfs;
         }
         return this;

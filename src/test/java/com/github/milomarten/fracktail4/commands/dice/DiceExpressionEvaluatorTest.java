@@ -18,7 +18,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(ConstantTerm.of(1));
 
         var result = evaluator.finish();
-        assertEquals(2, result.valueAsInt());
+        assertEquals(2, result.valueAsInt(OPTS.getRoundingMode()));
     }
 
     @Test
@@ -29,7 +29,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(ConstantTerm.of(1));
 
         var result = evaluator.finish();
-        assertEquals(4, result.valueAsInt());
+        assertEquals(4, result.valueAsInt(OPTS.getRoundingMode()));
     }
 
     @Test
@@ -42,7 +42,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(ConstantTerm.of(3));
 
         var result = evaluator.finish();
-        assertEquals(11, result.valueAsInt());
+        assertEquals(11, result.valueAsInt(OPTS.getRoundingMode()));
     }
 
     @Test
@@ -57,7 +57,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(ConstantTerm.of(3));
 
         var result = evaluator.finish();
-        assertEquals(21, result.valueAsInt());
+        assertEquals(21, result.valueAsInt(OPTS.getRoundingMode()));
     }
 
     @Test
@@ -66,7 +66,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(Operation.DICE);
         evaluator.push(ConstantTerm.of(20));
 
-        var result = evaluator.finish().valueAsInt();
+        var result = evaluator.finish().valueAsInt(OPTS.getRoundingMode());
         assertTrue(result > 0 && result <= 20);
     }
 
@@ -78,7 +78,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(Operation.DICE);
         evaluator.push(ConstantTerm.of(20));
 
-        var result = evaluator.finish().valueAsInt();
+        var result = evaluator.finish().valueAsInt(OPTS.getRoundingMode());
         assertTrue(result > 3 && result <= 23);
     }
 
@@ -89,7 +89,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(Operation.DICE);
         evaluator.push(ConstantTerm.of(10));
 
-        var result = evaluator.finish().valueAsInt();
+        var result = evaluator.finish().valueAsInt(OPTS.getRoundingMode());
         assertTrue(result >= 2 && result <= 20);
     }
 
@@ -104,7 +104,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(Operation.DICE);
         evaluator.push(ConstantTerm.of(10));
 
-        var result = evaluator.finish().valueAsInt();
+        var result = evaluator.finish().valueAsInt(OPTS.getRoundingMode());
         assertTrue(result >= 4 && result <= 40);
     }
 
@@ -120,7 +120,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(Operation.DICE);
         evaluator.push(ConstantTerm.of(6));
 
-        var result = evaluator.finish().valueAsInt();
+        var result = evaluator.finish().valueAsInt(OPTS.getRoundingMode());
         assertTrue(result >= 2 && result <= 72);
     }
 
@@ -149,7 +149,7 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(Operation.CEIL);
         var result = evaluator.finish();
 
-        assertEquals(6, result.valueAsInt());
+        assertEquals(6, result.valueAsInt(OPTS.getRoundingMode()));
     }
 
     @Test
@@ -161,6 +161,6 @@ class DiceExpressionEvaluatorTest {
         evaluator.push(ConstantTerm.of(3));
         var result = evaluator.finish();
 
-        assertEquals(9, result.valueAsInt());
+        assertEquals(9, result.valueAsInt(OPTS.getRoundingMode()));
     }
 }

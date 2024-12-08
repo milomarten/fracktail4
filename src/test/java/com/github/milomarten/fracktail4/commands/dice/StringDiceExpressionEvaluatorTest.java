@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,14 +17,14 @@ class StringDiceExpressionEvaluatorTest {
     public void testNormalSmallInteger() {
         var value = eval.evaluate("5");
 
-        assertEquals(5, value.valueAsInt());
+        assertEquals(5, value.valueAsInt(RoundingMode.DOWN));
     }
 
     @Test
     public void testNormalBigInteger() {
         var value = eval.evaluate("187");
 
-        assertEquals(187, value.valueAsInt());
+        assertEquals(187, value.valueAsInt(RoundingMode.DOWN));
     }
 
     @Test
@@ -37,28 +38,28 @@ class StringDiceExpressionEvaluatorTest {
     public void testNormalNumberPositive() {
         var value = eval.evaluate("+12");
 
-        assertEquals(12, value.valueAsInt());
+        assertEquals(12, value.valueAsInt(RoundingMode.DOWN));
     }
 
     @Test
     public void testNormalNumberNegative() {
         var value = eval.evaluate("-12");
 
-        assertEquals(-12, value.valueAsInt());
+        assertEquals(-12, value.valueAsInt(RoundingMode.DOWN));
     }
 
     @Test
     public void testNormalMathAddition() {
         var value = eval.evaluate("3 + 9");
 
-        assertEquals(12, value.valueAsInt());
+        assertEquals(12, value.valueAsInt(RoundingMode.DOWN));
     }
 
     @Test
     public void testNormalMathWithNegativeNumbers() {
         var value = eval.evaluate("9 + -3");
 
-        assertEquals(6, value.valueAsInt());
+        assertEquals(6, value.valueAsInt(RoundingMode.DOWN));
     }
 
     @ParameterizedTest
@@ -89,7 +90,7 @@ class StringDiceExpressionEvaluatorTest {
         assertDoesNotThrow(() -> {
             var e = eval.evaluate("(2*d20)/(2d20)+7d4+3");
 
-            assertTrue(e.valueAsInt() >= 3);
+            assertTrue(e.valueAsInt(RoundingMode.DOWN) >= 3);
         });
     }
 

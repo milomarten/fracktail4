@@ -74,14 +74,14 @@ public class DicePoolTerm implements Term {
 
     @Override
     public Term keep(Term qty, DiceEvaluatorOptions options) {
-        this.keep = qty.evaluate(options).valueAsInt();
+        this.keep = qty.evaluate(options).valueAsInt(options.getRoundingMode());
         this.keepLow = false;
         return this;
     }
 
     @Override
     public Term keepLow(Term qty, DiceEvaluatorOptions options) {
-        this.keep = qty.evaluate(options).valueAsInt();
+        this.keep = qty.evaluate(options).valueAsInt(options.getRoundingMode());
         this.keepLow = true;
         return this;
     }

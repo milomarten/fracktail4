@@ -2,10 +2,13 @@ package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
 import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.Parameter;
+import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.ParameterChoice;
+import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.ParameterChoices;
 import com.github.milomarten.fracktail4.platform.discord.slash.AbstractSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.Responses;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashCommandResponse;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -13,6 +16,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+
+import java.math.RoundingMode;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -38,7 +44,9 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
         }
 
         try {
-            var result = evaluator.evaluate(parameters.expression);
+            var result = evaluator.evaluate(parameters.expression, DiceEvaluatorOptions.builder()
+                    .roundingMode(Objects.requireNonNullElse(parameters.roundingmode, RoundingMode.FLOOR))
+                    .build());
             String str;
             if (result.value() == null) {
                 str = String.format("%s", result.representation());
@@ -100,5 +108,16 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
         private String comment;
         @Parameter(description = "Whether this role should be visible to all")
         private boolean visible;
+        @Parameter(description = "The rounding function for your system", type = ApplicationCommandOption.Type.STRING)
+        @ParameterChoices(choices = {
+                @ParameterChoice(name = "Truncate", value = "FLOOR"),
+                @ParameterChoice(name = "Half Away from Zero", value = "HALF_UP"),
+                @ParameterChoice(name = "Away from Zero", value = "UP"),
+                @ParameterChoice(name = "Toward Zero", value = "DOWN"),
+                @ParameterChoice(name = "Ceil", value = "CEILING"),
+                @ParameterChoice(name = "Half Toward Zero", value = "HALF_DOWN"),
+                @ParameterChoice(name = "Half Toward Even", value = "HALF_EVEN")
+        })
+        private RoundingMode roundingmode;
     }
 }

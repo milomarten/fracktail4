@@ -95,8 +95,8 @@ public interface Term {
         var facesE = faces.evaluate(options);
 
         return DiceExpression.builder()
-                .numberOfDice(number.valueAsInt())
-                .numberOfSides(facesE.valueAsInt())
+                .numberOfDice(number.valueAsInt(options.getRoundingMode()))
+                .numberOfSides(facesE.valueAsInt(options.getRoundingMode()))
                 .build();
     }
 

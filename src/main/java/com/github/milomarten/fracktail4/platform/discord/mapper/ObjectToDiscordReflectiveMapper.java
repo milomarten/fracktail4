@@ -2,8 +2,10 @@ package com.github.milomarten.fracktail4.platform.discord.mapper;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.Parameter;
+import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.ParameterChoices;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.command.ApplicationCommandOption;
+import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.possible.Possible;
 import jakarta.validation.constraints.*;
@@ -15,6 +17,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -76,6 +79,7 @@ public class ObjectToDiscordReflectiveMapper {
                             .maxLength(getMaxLength(field))
                             .minValue(getMinValue(field))
                             .maxValue(getMaxValue(field))
+                            .choices(getChoices(field))
                             .build()
                     );
                 }
@@ -162,6 +166,21 @@ public class ObjectToDiscordReflectiveMapper {
         }
         if (f.isAnnotationPresent(NegativeOrZero.class)) {
             return Possible.of(0d);
+        }
+        return Possible.absent();
+    }
+
+    private Possible<List<ApplicationCommandOptionChoiceData>> getChoices(Field field) {
+        if (field.isAnnotationPresent(ParameterChoices.class)) {
+            var choices = field.getAnnotation(ParameterChoices.class).choices();
+            return Arrays.stream(choices)
+                    .map(pc -> ApplicationCommandOptionChoiceData.builder()
+                            .name(pc.name())
+                            .value(pc.value())
+                            .build())
+                    .collect(Collectors.collectingAndThen(
+                            Collectors.<ApplicationCommandOptionChoiceData>toList(),
+                            l -> l.isEmpty() ? Possible.absent() : Possible.of(l)));
         }
         return Possible.absent();
     }

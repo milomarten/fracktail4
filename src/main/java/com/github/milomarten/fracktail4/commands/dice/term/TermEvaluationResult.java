@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.function.UnaryOperator;
 
 public record TermEvaluationResult(BigDecimal value, String representation) {
@@ -11,10 +12,11 @@ public record TermEvaluationResult(BigDecimal value, String representation) {
      * @return The value, as an integer.
      * @throws ExpressionSyntaxError The number is too big.
      */
-    public int valueAsInt() throws ExpressionSyntaxError {
+    public int valueAsInt(RoundingMode roundingMode) throws ExpressionSyntaxError {
         checkForNullValue();
         try {
-            return value.toBigInteger().intValueExact();
+            return value.setScale(0, roundingMode)
+                    .intValue();
         } catch (ArithmeticException ex) {
             throw new ExpressionSyntaxError(ex.getMessage());
         }

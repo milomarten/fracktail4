@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.RoundingMode;
 import java.util.random.RandomGenerator;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,7 +47,7 @@ class DicePoolTermTest {
                 .keep(ConstantTerm.of(1), OPTS);
         var result = term.evaluate(OPTS);
 
-        assertEquals(10, result.valueAsInt());
+        assertEquals(10, result.valueAsInt(RoundingMode.DOWN));
         assertEquals("{~~5 = 5~~, 10 = 10}", result.representation());
     }
 
@@ -56,7 +57,7 @@ class DicePoolTermTest {
                 .keepLow(ConstantTerm.of(1), OPTS);
         var result = term.evaluate(OPTS);
 
-        assertEquals(5, result.valueAsInt());
+        assertEquals(5, result.valueAsInt(RoundingMode.DOWN));
         assertEquals("{5 = 5, ~~10 = 10~~}", result.representation());
     }
 

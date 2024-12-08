@@ -82,7 +82,7 @@ class OperationTest {
         roll.setRandomSource(mockDiceRolls(8, 12));
         var result = roll.evaluate(OPTS);
 
-        assertEquals(20, result.valueAsInt());
+        assertEquals(20, result.valueAsInt(OPTS.getRoundingMode()));
     }
 
     @Test
@@ -90,7 +90,7 @@ class OperationTest {
         var stack = createStack(ConstantTerm.of(5.4));
         var ceilinged = Operation.CEIL.evaluate(stack, OPTS);
 
-        assertEquals(6, ceilinged.evaluate(OPTS).valueAsInt());
+        assertEquals(6, ceilinged.evaluate(OPTS).valueAsInt(OPTS.getRoundingMode()));
     }
 
     private static Deque<Term> createStack(Term... items) {
