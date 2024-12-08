@@ -11,6 +11,7 @@ import discord4j.discordjson.possible.Possible;
 import jakarta.validation.constraints.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
@@ -22,6 +23,20 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class ObjectToDiscordReflectiveMapper {
+    private static final Map<Class<?>, NativeMinMax> nativeMinMaxs;
+
+    static {
+        nativeMinMaxs = new HashMap<>();
+        nativeMinMaxs.put(Byte.class, new NativeMinMax(-128, 127));
+        nativeMinMaxs.put(Byte.TYPE, new NativeMinMax(-128, 127));
+        nativeMinMaxs.put(Short.class, new NativeMinMax(-32768, 32767));
+        nativeMinMaxs.put(Short.TYPE, new NativeMinMax(-32768, 32767));
+        nativeMinMaxs.put(Integer.class, new NativeMinMax(-2147483648, 2147483647));
+        nativeMinMaxs.put(Integer.TYPE, new NativeMinMax(-2147483648, 2147483647));
+        nativeMinMaxs.put(Long.class, new NativeMinMax(-9223372036854775808d, 9223372036854775807d));
+        nativeMinMaxs.put(Long.TYPE, new NativeMinMax(-9223372036854775808d, 9223372036854775807d));
+    }
+
     public <T> List<ApplicationCommandOptionData> toParams(Class<T> clazz) {
         var params = new ArrayList<ApplicationCommandOptionData>();
 
@@ -118,7 +133,7 @@ public class ObjectToDiscordReflectiveMapper {
         } else if (clazz.equals(Optional.class) || clazz.equals(OptionalInt.class) || clazz.equals(OptionalDouble.class)) {
             return false;
         } else {
-            return field.isAnnotationPresent(NotNull.class);
+            return field.isAnnotationPresent(NotNull.class) || field.isAnnotationPresent(NotEmpty.class) || field.isAnnotationPresent(NotBlank.class);
         }
     }
 
@@ -150,7 +165,8 @@ public class ObjectToDiscordReflectiveMapper {
         if (f.isAnnotationPresent(PositiveOrZero.class)) {
             return Possible.of(0d);
         }
-        return Possible.absent();
+        var naturalLimit = nativeMinMaxs.get(f.getType());
+        return naturalLimit == null ? Possible.absent() : Possible.of(naturalLimit.min);
     }
 
     private Possible<Double> getMaxValue(Field f) {
@@ -167,7 +183,14 @@ public class ObjectToDiscordReflectiveMapper {
         if (f.isAnnotationPresent(NegativeOrZero.class)) {
             return Possible.of(0d);
         }
-        return Possible.absent();
+        if (f.isAnnotationPresent(Digits.class)) {
+            var digits = f.getAnnotation(Digits.class);
+            var whole = digits.integer() == 0 ? '0' : StringUtils.repeat('9', digits.integer());
+            var fraction = digits.fraction() == 0 ? '0' : StringUtils.repeat('9', digits.fraction());
+            return Possible.of(new BigDecimal(whole + "." + fraction).doubleValue());
+        }
+        var naturalLimit = nativeMinMaxs.get(f.getType());
+        return naturalLimit == null ? Possible.absent() : Possible.of(naturalLimit.max);
     }
 
     private Possible<List<ApplicationCommandOptionChoiceData>> getChoices(Field field) {
@@ -184,4 +207,6 @@ public class ObjectToDiscordReflectiveMapper {
         }
         return Possible.absent();
     }
+
+    private record NativeMinMax(double min, double max) {}
 }
