@@ -44,14 +44,15 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
         }
 
         try {
+            var roundingMode = Objects.requireNonNullElse(parameters.roundingmode, RoundingMode.DOWN);
             var result = evaluator.evaluate(parameters.expression, DiceEvaluatorOptions.builder()
-                    .roundingMode(Objects.requireNonNullElse(parameters.roundingmode, RoundingMode.DOWN))
+                    .roundingMode(roundingMode)
                     .build());
             String str;
             if (result.value() == null) {
                 str = String.format("%s", result.representation());
             } else {
-                str = String.format("%s = **%s**", result.representation(), Utils.outputBigDecimal(result.value()));
+                str = String.format("%s = **%s**", result.representation(), result.valueAsInt(roundingMode));
             }
 
             if (StringUtils.isNotBlank(parameters.comment)) {

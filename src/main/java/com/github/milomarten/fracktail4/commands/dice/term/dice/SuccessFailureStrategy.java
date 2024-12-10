@@ -4,11 +4,13 @@ import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.StringJoiner;
 
 /**
@@ -19,22 +21,21 @@ import java.util.StringJoiner;
  * A failure threshold can also be specified. If the face value is less than or equal to the
  * failure threshold, these act as subtracting one success each.
  */
-@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-public class SuccessFailureStrategy implements DiceTotalingStrategy {
-    private int successThreshold = Integer.MAX_VALUE;
-    private int failureThreshold = 0;
+public class SuccessFailureStrategy<T extends Comparable<T>> implements DiceTotalingStrategy<T> {
+    private T successThreshold;
+    private T failureThreshold;
 
     @Override
-    public TermEvaluationResult compile(DiceExpression.Results results, DiceEvaluatorOptions options) {
+    public TermEvaluationResult compile(List<DiceExpression.Result<T>> results, DiceEvaluatorOptions options) {
         var expr = new StringJoiner(" + ", "\uD83C\uDFB2(", ")");
-        var total = results.getAllResults()
+        var total = results.stream()
                 .<Integer>mapMulti((result, consumer) -> {
-                    var value = result.getValue();
-                    String rollText = result.toString(options);
+                    String rollText = result.toString(options.getOutputType());
                     if (result.isDiscounted()) {
-                        expr.add("~~" + rollText + "~~");
+                        expr.add(rollText);
                     } else {
                         int count = getCountFor(result);
                         String resolvedText;
@@ -54,11 +55,11 @@ public class SuccessFailureStrategy implements DiceTotalingStrategy {
         return new TermEvaluationResult(BigDecimal.valueOf(total), expr.toString());
     }
 
-    protected int getCountFor(DiceExpression.Result result) {
-        var value = result.getValue();
-        if (value >= successThreshold) {
+    protected int getCountFor(DiceExpression.Result<T> result) {
+        var value = result.getRoll().getValue();
+        if (value.compareTo(successThreshold) >= 0) {
             return 1;
-        } else if (value <= failureThreshold) {
+        } else if (value.compareTo(failureThreshold) <= 0) {
             return -1;
         } else {
             return 0;

@@ -3,16 +3,18 @@ package com.github.milomarten.fracktail4.commands.dice.term.dice;
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 
+import java.util.List;
+
 /**
  * Describes a way to turn multiple dice rolls into one final result
  */
-public interface DiceTotalingStrategy {
+public interface DiceTotalingStrategy<T> {
     /**
      * Compile the list of dice rolls into a final result
      * @param results The results to compile
      * @return The final results
      */
-    TermEvaluationResult compile(DiceExpression.Results results, DiceEvaluatorOptions options);
+    TermEvaluationResult compile(List<DiceExpression.Result<T>> results, DiceEvaluatorOptions options);
 
     /**
      * Validate this strategy.

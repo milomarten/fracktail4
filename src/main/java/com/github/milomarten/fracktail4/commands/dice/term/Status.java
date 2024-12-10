@@ -4,16 +4,18 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum Status {
-    NEUTRAL(0),
-    CRITICAL_FAIL(31),
-    CRITICAL_SUCCESS(32);
+    NEUTRAL(37, 47),
+    CRITICAL_FAIL(31, 41),
+    CRITICAL_SUCCESS(32, 42);
 
     private final int ansiColor;
+    private final int ansiDiscountColor;
 
-    public String format(int roll) {
-        if (this.ansiColor == 0) {
-            return String.valueOf(roll);
-        }
-        return String.format("\u001b[1;%dm%s\u001b[0m", this.ansiColor, roll);
+    public String format(Object roll) {
+        return String.format("\u001b[1;%sm%s\u001b[0m", this.ansiColor, roll);
+    }
+
+    public String formatDiscounted(Object roll) {
+        return String.format("\u001b[%sm%s\u001b[0m", this.ansiDiscountColor, roll);
     }
 }

@@ -1,22 +1,16 @@
 package com.github.milomarten.fracktail4.commands.dice.term.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
-import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import com.github.milomarten.fracktail4.commands.dice.term.Term;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
-import java.util.random.RandomGenerator;
-import java.util.stream.Stream;
 
 import static com.github.milomarten.fracktail4.commands.dice.Utils.*;
 
@@ -37,15 +31,15 @@ import static com.github.milomarten.fracktail4.commands.dice.Utils.*;
  */
 @Builder
 @Data
-public class DiceExpression implements Term {
+@EqualsAndHashCode(callSuper = false)
+public class DiceExpression extends AbstractDiceExpression<Integer> {
     /**
      * The number of dice to roll. Default = 1
      */
     @Builder.Default int numberOfDice = 1;
-//    /**
-//     * The number of sides on the dice to roll.
-//     */
-//    int numberOfSides;
+    /**
+     * The dice (or non-dice!) to roll.
+     */
     Rollable<Integer> die;
     /**
      * The number of dice to drop. The n lowest dice will be discarded.
@@ -93,183 +87,7 @@ public class DiceExpression implements Term {
      * By default, this is `SumDiceStrategy.INSTANCE`, which simply adds the face value
      * of all dice, discarding the marked dice appropriately.
      */
-    @Builder.Default DiceTotalingStrategy totalingStrategy = SumDiceStrategy.INSTANCE;
-//    /**
-//     * The source of randomness for the dice rolls.
-//     * By default, uses a new instance of java.util.Random.
-//     */
-//    @Builder.Default RandomGenerator randomSource = new Random();
-
-    @Override
-    public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-        // Flip an error if this dice expression is too high.
-        validate();
-
-        var negateAtTheEnd = numberOfDice < 0;
-        var normalizedNumberOfDice = Math.abs(numberOfDice);
-
-        // 1. Roll Dice
-        var results = new Results(doNTimes(normalizedNumberOfDice, this::roll));
-        // a - Reroll low ones
-        for (int i = 0; i < 100; i++) {
-            var rerolls = results.discountLowerThan(this.rerollAt);
-            doNTimes(rerolls, () -> results.addResult(roll()));
-            if (!infiniteReroll || rerolls == 0) {
-                break;
-            }
-        }
-
-        // b - Explode high ones
-        var previousExplodes = 0L;
-        for (int i = 0; i < 100; i++) {
-            var explodes = results.returnCountHigherThan(this.explodeAt) - previousExplodes;
-            doNTimes(explodes, () -> results.addResult(roll()));
-            if (!infiniteExplode || explodes == 0) {
-                break;
-            }
-            previousExplodes += explodes;
-        }
-
-        // 2. Drop the number requested
-        results.dropLowestDice(numberToDrop);
-        // 3. Keep the number requested
-        if (results.lengthNotDiscounted > numberToKeep) {
-            int numDropFromKeep = results.lengthNotDiscounted - numberToKeep;
-            if (keepLowest) {
-                results.dropHighestDice(numDropFromKeep);
-            } else {
-                results.dropLowestDice(numDropFromKeep);
-            }
-        }
-
-        var finalResults = totalingStrategy.compile(results, options);
-        if (negateAtTheEnd) {
-            finalResults = finalResults.map(BigDecimal::negate, s -> "-" + s);
-        }
-        return finalResults;
-    }
-
-    private Result roll() {
-        var r = die.roll();
-        return new Result(r.getValue(), false, r.getStatus());
-    }
-
-    private void validate() {
-        checkRange(Math.abs(numberOfDice),0, 32, "Number Of Dice");
-//        checkRange(numberOfSides, 0, 1000, "Number of Sides");
-        checkPositive(numberToDrop, "Number to Drop");
-        checkPositive(numberToKeep, "Number to Keep");
-        this.totalingStrategy.validate();
-    }
-
-    @Data
-    @RequiredArgsConstructor
-    @AllArgsConstructor
-    public static class Result {
-        private final int value;
-        private boolean discounted;
-        private Status status = Status.NEUTRAL;
-
-        public String toPlainString() {
-            return String.valueOf(value);
-        }
-
-        public String toAnsiString() {
-            return status.format(this.value);
-        }
-
-        public String toString(DiceEvaluatorOptions options) {
-            return switch (options.getOutputType()) {
-                case PLAIN -> this.toPlainString();
-                case ANSI -> this.toAnsiString();
-            };
-        }
-    }
-
-    public static class Results {
-        private final List<Result> results;
-        private int lengthNotDiscounted;
-
-        public Results(List<Result> results) {
-            this.results = new ArrayList<>(results);
-            this.lengthNotDiscounted = (int) results.stream()
-                    .filter(r -> !r.discounted)
-                    .count();
-        }
-
-        public Stream<Result> getAllResults() {
-            return results.stream();
-        }
-
-        private Stream<Result> getNonDiscountedResults() {
-            return results.stream()
-                    .filter(r -> !r.discounted);
-        }
-
-        public void dropLowestDice(int n) {
-            if (n == 0) return;
-            getNonDiscountedResults()
-                    .sorted(Comparator.comparing(Result::getValue))
-                    .limit(n)
-                    .forEach(r -> {
-                        r.discounted = true;
-                        this.lengthNotDiscounted--;
-                    });
-        }
-
-        public void dropHighestDice(int n) {
-            if (n == 0) return;
-            getNonDiscountedResults()
-                    .sorted(Comparator.comparing(Result::getValue).reversed())
-                    .limit(n)
-                    .forEach(r -> {
-                        r.discounted = true;
-                        this.lengthNotDiscounted--;
-                    });
-        }
-
-        /**
-         * Count every dice less than or equal to n. Also discounts them.
-         * @param n The maximum roll to discount
-         * @return The number found
-         */
-        public long discountLowerThan(int n) {
-            var toReroll = getNonDiscountedResults()
-                    .filter(r -> r.value <= n)
-                    .toList();
-            toReroll.forEach(r -> r.discounted = true);
-            return toReroll.size();
-        }
-
-        /**
-         * Count every dice greater than or equal to n.
-         * @param n The minimum roll to count
-         * @return The number found
-         */
-        public long returnCountHigherThan(int n) {
-            return getNonDiscountedResults()
-                    .filter(r -> r.value >= n)
-                    .count();
-        }
-
-        /**
-         * Add a new roll to this result
-         * @param roll The roll to add
-         */
-        public void addResult(Result roll) {
-            this.results.add(roll);
-            this.lengthNotDiscounted++;
-        }
-
-        /**
-         * Add a new roll to this result
-         * @param rolls The rolls to add
-         */
-        public void addResults(Results rolls) {
-            this.results.addAll(rolls.results);
-            this.lengthNotDiscounted += rolls.lengthNotDiscounted;
-        }
-    }
+    @Builder.Default DiceTotalingStrategy<Integer> totalingStrategy = SumDiceStrategy.INSTANCE;
 
     @Override
     public Term drop(Term qty, DiceEvaluatorOptions options) {
@@ -312,10 +130,10 @@ public class DiceExpression implements Term {
 
     @Override
     public Term success(Term at, DiceEvaluatorOptions options) {
-        if (totalingStrategy instanceof SuccessFailureStrategy sfs) {
+        if (totalingStrategy instanceof SuccessFailureStrategy<Integer> sfs) {
             sfs.setSuccessThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
         } else {
-            var sfs = new SuccessFailureStrategy();
+            var sfs = new SuccessFailureStrategy<>(0, Integer.MAX_VALUE);
             sfs.setSuccessThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
             this.totalingStrategy = sfs;
         }
@@ -324,13 +142,76 @@ public class DiceExpression implements Term {
 
     @Override
     public Term failure(Term at, DiceEvaluatorOptions options) {
-        if (totalingStrategy instanceof SuccessFailureStrategy sfs) {
+        if (totalingStrategy instanceof SuccessFailureStrategy<Integer> sfs) {
             sfs.setFailureThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
         } else {
-            var sfs = new SuccessFailureStrategy();
+            var sfs = new SuccessFailureStrategy<>(0, Integer.MAX_VALUE);
             sfs.setFailureThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
             this.totalingStrategy = sfs;
         }
         return this;
+    }
+
+    @Override
+    protected List<RollResult<Integer>> initialRoll() {
+        return doNTimes(Math.abs(this.numberOfDice), this::roll);
+    }
+
+    @Override
+    protected RollResult<Integer> roll() {
+        return die.roll();
+    }
+
+    @Override
+    protected boolean shouldDiscountAndReroll(RollResult<Integer> result) {
+        return result.getValue() <= this.rerollAt;
+    }
+
+    @Override
+    protected int shouldExplodeInto(RollResult<Integer> result) {
+        return result.getValue() >= this.explodeAt ? 1 : 0;
+    }
+
+    @Override
+    protected void dropDice(List<Result<Integer>> rolls) {
+        // Handle Drops
+        dropLowestDice(rolls, this.numberToDrop);
+
+        // Handle Keeps - Which is just drops, really
+        var numNonDiscountedRolls = (int)rolls.stream().filter(r -> !r.isDiscounted()).count();
+        if (numNonDiscountedRolls > numberToKeep) {
+            var newNumberToDrop = numNonDiscountedRolls - numberToKeep;
+            if (keepLowest) {
+                dropHighestDice(rolls, newNumberToDrop);
+            }
+            else {
+                dropLowestDice(rolls, newNumberToDrop);
+            }
+        }
+    }
+
+    @Override
+    protected TermEvaluationResult compileResults(List<Result<Integer>> rolls, DiceEvaluatorOptions options) {
+        var finalResults = totalingStrategy.compile(rolls, options);
+        if (Math.signum(this.numberOfDice) < 0) {
+            finalResults = finalResults.map(BigDecimal::negate, s -> "-" + s);
+        }
+        return finalResults;
+    }
+
+    public void dropLowestDice(List<Result<Integer>> rolls, int n) {
+        if (n == 0) return;
+        rolls.stream()
+            .sorted(Comparator.comparing(r -> r.getRoll().getValue()))
+            .limit(n)
+            .forEach(Result::discount);
+    }
+
+    public void dropHighestDice(List<Result<Integer>> rolls, int n) {
+        if (n == 0) return;
+        rolls.stream()
+                .sorted(Collections.reverseOrder(Comparator.comparing(r -> r.getRoll().getValue())))
+                .limit(n)
+                .forEach(Result::discount);
     }
 }
