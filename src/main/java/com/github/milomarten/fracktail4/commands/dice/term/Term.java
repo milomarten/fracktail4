@@ -1,9 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.roll.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.roll.DicePoolTerm;
-import com.github.milomarten.fracktail4.commands.dice.roll.Die;
+import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.die.DicePoolTerm;
+import com.github.milomarten.fracktail4.commands.dice.die.Die;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -71,36 +71,19 @@ public interface Term {
         return new AccumulationTerm(ceil, "^" + a.representation());
     }
 
-    default Term capLow(Term lowerBound, DiceEvaluatorOptions options){
-        var a = this.evaluate(options);
-        var b = lowerBound.evaluate(options);
-
-        if (a.value().compareTo(b.value()) < 0) {
-            return new AccumulationTerm(b.value(), a.representation() + " < " + b.representation());
-        } else {
-            return new AccumulationTerm(a.value(), a.representation() + " < " + b.representation());
-        }
-    }
-
-    default Term capHigh(Term upperBound, DiceEvaluatorOptions options){
-        var a = this.evaluate(options);
-        var b = upperBound.evaluate(options);
-
-        if (a.value().compareTo(b.value()) > 0) {
-            return new AccumulationTerm(b.value(), a.representation() + " > " + b.representation());
-        } else {
-            return new AccumulationTerm(a.value(), a.representation() + " > " + b.representation());
-        }
-    }
-
     default Term dice(Term faces, DiceEvaluatorOptions options){
         var number = this.evaluate(options);
-        var facesE = faces.evaluate(options);
 
-        return DiceExpression.builder()
-                .numberOfDice(number.valueAsInt(options.getRoundingMode()))
-                .die(new Die(facesE.valueAsInt(options.getRoundingMode())))
-                .build();
+        if (faces instanceof LetterTerm lt) {
+            return lt.makeTerm(number.valueAsInt(options.getRoundingMode()));
+        } else {
+            var facesE = faces.evaluate(options);
+
+            return DiceExpression.builder()
+                    .numberOfDice(number.valueAsInt(options.getRoundingMode()))
+                    .die(new Die(facesE.valueAsInt(options.getRoundingMode())))
+                    .build();
+        }
     }
 
     default Term drop(Term qty, DiceEvaluatorOptions options){

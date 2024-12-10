@@ -1,9 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.ConstantTerm;
-import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
-import com.github.milomarten.fracktail4.commands.dice.term.Operation;
-import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
+import com.github.milomarten.fracktail4.commands.dice.term.*;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -27,8 +24,16 @@ public class StringDiceExpressionEvaluator {
                 var value = tryParseNumberFromIterator(iterator);
                 evaluator.push(ConstantTerm.of(value));
                 c = iterator.current();
+            } else if (evaluator.isExpectingTerm()) {
+                char finalC = c;
+                var letterTerm = LetterTerm.findLetterTerm(c)
+                        .orElseThrow(() -> new ExpressionSyntaxError("Symbol " + finalC + " not known"));
+                evaluator.push(letterTerm);
+                c = iterator.next();
             } else {
-                var operator = Operation.findOperation(c);
+                char finalC = c;
+                var operator = Operation.findOperation(c)
+                        .orElseThrow(() -> new ExpressionSyntaxError("Symbol " + finalC + " not known"));
                 evaluator.push(operator);
                 c = iterator.next();
             }

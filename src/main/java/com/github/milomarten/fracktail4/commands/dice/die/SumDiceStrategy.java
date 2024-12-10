@@ -1,6 +1,7 @@
-package com.github.milomarten.fracktail4.commands.dice.roll;
+package com.github.milomarten.fracktail4.commands.dice.die;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.DiceTotalingStrategy;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 
 import java.math.BigDecimal;

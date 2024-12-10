@@ -1,6 +1,5 @@
-package com.github.milomarten.fracktail4.commands.dice.roll;
+package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
 import com.github.milomarten.fracktail4.commands.dice.term.Term;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;

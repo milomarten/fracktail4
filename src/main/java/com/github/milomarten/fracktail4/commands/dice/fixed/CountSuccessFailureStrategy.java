@@ -1,35 +1,27 @@
-package com.github.milomarten.fracktail4.commands.dice.roll;
+package com.github.milomarten.fracktail4.commands.dice.fixed;
 
+import com.github.milomarten.fracktail4.commands.dice.AbstractDiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.DiceTotalingStrategy;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
+import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.StringJoiner;
 
-/**
- * An alternate totaling strategy where "successes" are counted.
- * Rather than using the face value of each dice directly, the face values are compared
- * to a success threshold. The number of dice that meet or exceed that threshold are returned.
- * as the evaluation's results.
- * A failure threshold can also be specified. If the face value is less than or equal to the
- * failure threshold, these act as subtracting one success each.
- */
-@AllArgsConstructor
-@Getter
-@Setter
-public class SuccessFailureStrategy<T extends Comparable<T>> implements DiceTotalingStrategy<T> {
-    private T successThreshold;
-    private T failureThreshold;
+@Data
+public class CountSuccessFailureStrategy<E> implements DiceTotalingStrategy<E> {
+    private final String emoji;
+    private E successThreshold;
+    private E failureThreshold;
 
     @Override
-    public TermEvaluationResult compile(List<DiceExpression.Result<T>> results, DiceEvaluatorOptions options) {
-        var expr = new StringJoiner(" + ", "\uD83C\uDFB2(", ")");
+    public TermEvaluationResult compile(List<AbstractDiceExpression.Result<E>> results, DiceEvaluatorOptions options) {
+        var expr = new StringJoiner(" + ", emoji + "(", ")");
         var total = results.stream()
                 .<Integer>mapMulti((result, consumer) -> {
                     String rollText = result.toString(options.getOutputType());
@@ -54,11 +46,11 @@ public class SuccessFailureStrategy<T extends Comparable<T>> implements DiceTota
         return new TermEvaluationResult(BigDecimal.valueOf(total), expr.toString());
     }
 
-    protected int getCountFor(DiceExpression.Result<T> result) {
+    protected int getCountFor(DiceExpression.Result<E> result) {
         var value = result.getRoll().getValue();
-        if (value.compareTo(successThreshold) >= 0) {
+        if (value.equals(successThreshold)) {
             return 1;
-        } else if (value.compareTo(failureThreshold) <= 0) {
+        } else if (value.equals(failureThreshold)) {
             return -1;
         } else {
             return 0;

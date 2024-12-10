@@ -1,9 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.roll.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.roll.DicePoolTerm;
-import com.github.milomarten.fracktail4.commands.dice.roll.Die;
+import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.die.DicePoolTerm;
+import com.github.milomarten.fracktail4.commands.dice.die.Die;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

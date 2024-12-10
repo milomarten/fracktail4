@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.dice.roll;
+package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import lombok.AllArgsConstructor;

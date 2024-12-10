@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.roll.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

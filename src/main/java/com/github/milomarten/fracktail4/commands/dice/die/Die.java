@@ -1,5 +1,7 @@
-package com.github.milomarten.fracktail4.commands.dice.roll;
+package com.github.milomarten.fracktail4.commands.dice.die;
 
+import com.github.milomarten.fracktail4.commands.dice.RollResult;
+import com.github.milomarten.fracktail4.commands.dice.Rollable;
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

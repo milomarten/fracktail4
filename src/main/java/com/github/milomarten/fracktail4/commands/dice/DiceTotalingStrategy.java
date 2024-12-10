@@ -1,6 +1,5 @@
-package com.github.milomarten.fracktail4.commands.dice.roll;
+package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 
 import java.util.List;
@@ -14,7 +13,7 @@ public interface DiceTotalingStrategy<T> {
      * @param results The results to compile
      * @return The final results
      */
-    TermEvaluationResult compile(List<DiceExpression.Result<T>> results, DiceEvaluatorOptions options);
+    TermEvaluationResult compile(List<AbstractDiceExpression.Result<T>> results, DiceEvaluatorOptions options);
 
     /**
      * Validate this strategy.

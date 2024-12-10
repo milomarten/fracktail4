@@ -1,9 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.roll.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.roll.Die;
-import com.github.milomarten.fracktail4.commands.dice.roll.DotStrategy;
+import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.die.Die;
+import com.github.milomarten.fracktail4.commands.dice.die.DotStrategy;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.Optional;
 
 /**
  * Describes all the operations supported by the bot.
@@ -335,10 +336,9 @@ public enum Operation {
         return operator.compute(one, two, options);
     }
 
-    public static Operation findOperation(char symbol) throws ExpressionSyntaxError {
+    public static Optional<Operation> findOperation(char symbol) throws ExpressionSyntaxError {
         return Arrays.stream(Operation.values())
                 .filter(o -> StringUtils.contains(o.symbol, symbol))
-                .findFirst()
-                .orElseThrow(() -> new ExpressionSyntaxError("Symbol " + symbol + " not known"));
+                .findFirst();
     }
 }
