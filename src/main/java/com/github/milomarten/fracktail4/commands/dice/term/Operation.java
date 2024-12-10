@@ -1,6 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.Die;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.DotStrategy;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -128,10 +131,14 @@ public enum Operation {
             var numberOfSides = Operation.pull(termStack, "number of sides");
             var numberOfDice = Operation.pull(termStack, "number of dice");
 
-            var dice = (DiceExpression) numberOfDice.dice(numberOfSides, options);
-            dice.setTotalingStrategy(new DotStrategy());
-            dice.setExplodeAt(dice.getNumberOfSides());
-            return dice;
+            var die = new Die(numberOfSides.evaluate(options).valueAsInt(options.getRoundingMode()));
+
+            return DiceExpression.builder()
+                    .numberOfDice(numberOfDice.evaluate(options).valueAsInt(options.getRoundingMode()))
+                    .die(die)
+                    .totalingStrategy(new DotStrategy())
+                    .explodeAt(die.getNumFaces())
+                    .build();
         }
 
         @Override

@@ -1,6 +1,10 @@
-package com.github.milomarten.fracktail4.commands.dice.term;
+package com.github.milomarten.fracktail4.commands.dice.term.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail4.commands.dice.term.Status;
+import com.github.milomarten.fracktail4.commands.dice.term.Term;
+import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +15,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Supplier;
 import java.util.random.RandomGenerator;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import static com.github.milomarten.fracktail4.commands.dice.Utils.*;
@@ -41,10 +42,11 @@ public class DiceExpression implements Term {
      * The number of dice to roll. Default = 1
      */
     @Builder.Default int numberOfDice = 1;
-    /**
-     * The number of sides on the dice to roll.
-     */
-    int numberOfSides;
+//    /**
+//     * The number of sides on the dice to roll.
+//     */
+//    int numberOfSides;
+    Rollable<Integer> die;
     /**
      * The number of dice to drop. The n lowest dice will be discarded.
      * By default, numberToDrop is 0, so no dice are dropped.
@@ -92,11 +94,11 @@ public class DiceExpression implements Term {
      * of all dice, discarding the marked dice appropriately.
      */
     @Builder.Default DiceTotalingStrategy totalingStrategy = SumDiceStrategy.INSTANCE;
-    /**
-     * The source of randomness for the dice rolls.
-     * By default, uses a new instance of java.util.Random.
-     */
-    @Builder.Default RandomGenerator randomSource = new Random();
+//    /**
+//     * The source of randomness for the dice rolls.
+//     * By default, uses a new instance of java.util.Random.
+//     */
+//    @Builder.Default RandomGenerator randomSource = new Random();
 
     @Override
     public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
@@ -148,20 +150,13 @@ public class DiceExpression implements Term {
     }
 
     private Result roll() {
-        if (numberOfSides == 0) { return new Result(0); }
-        var roll = randomSource.nextInt(numberOfSides) + 1;
-        var result = new Result(roll);
-        if (roll == 1) {
-            result.setStatus(Status.CRITICAL_FAIL);
-        } else if (roll == numberOfSides) {
-            result.setStatus(Status.CRITICAL_SUCCESS);
-        }
-        return result;
+        var r = die.roll();
+        return new Result(r.getValue(), false, r.getStatus());
     }
 
     private void validate() {
         checkRange(Math.abs(numberOfDice),0, 32, "Number Of Dice");
-        checkRange(numberOfSides, 0, 1000, "Number of Sides");
+//        checkRange(numberOfSides, 0, 1000, "Number of Sides");
         checkPositive(numberToDrop, "Number to Drop");
         checkPositive(numberToKeep, "Number to Keep");
         this.totalingStrategy.validate();

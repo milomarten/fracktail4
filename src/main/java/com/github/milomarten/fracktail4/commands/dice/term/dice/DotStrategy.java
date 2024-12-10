@@ -1,4 +1,6 @@
-package com.github.milomarten.fracktail4.commands.dice.term;
+package com.github.milomarten.fracktail4.commands.dice.term.dice;
+
+import com.github.milomarten.fracktail4.commands.dice.term.Status;
 
 public class DotStrategy extends SuccessFailureStrategy {
     public DotStrategy() {

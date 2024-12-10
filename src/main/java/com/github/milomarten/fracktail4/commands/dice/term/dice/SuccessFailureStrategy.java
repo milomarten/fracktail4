@@ -1,7 +1,9 @@
-package com.github.milomarten.fracktail4.commands.dice.term;
+package com.github.milomarten.fracktail4.commands.dice.term.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
+import com.github.milomarten.fracktail4.commands.dice.term.Status;
+import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

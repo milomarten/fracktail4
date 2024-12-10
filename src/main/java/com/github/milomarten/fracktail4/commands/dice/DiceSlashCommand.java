@@ -45,7 +45,7 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
 
         try {
             var result = evaluator.evaluate(parameters.expression, DiceEvaluatorOptions.builder()
-                    .roundingMode(Objects.requireNonNullElse(parameters.roundingmode, RoundingMode.FLOOR))
+                    .roundingMode(Objects.requireNonNullElse(parameters.roundingmode, RoundingMode.DOWN))
                     .build());
             String str;
             if (result.value() == null) {

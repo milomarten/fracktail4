@@ -1,6 +1,9 @@
-package com.github.milomarten.fracktail4.commands.dice.term;
+package com.github.milomarten.fracktail4.commands.dice.term.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail4.commands.dice.term.Term;
+import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 

@@ -1,6 +1,7 @@
-package com.github.milomarten.fracktail4.commands.dice.term;
+package com.github.milomarten.fracktail4.commands.dice.term.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 
 import java.math.BigDecimal;
 import java.util.StringJoiner;

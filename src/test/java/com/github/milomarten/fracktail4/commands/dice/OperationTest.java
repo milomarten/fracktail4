@@ -1,6 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.term.*;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.Die;
+import org.apache.commons.rng.UniformRandomProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -31,9 +34,8 @@ class OperationTest {
     @Test
     public void testAddDiceRollToConstant() {
         var roll = DiceExpression.builder()
-                .numberOfSides(20)
+                .die(new MockDie(20, 5))
                 .numberOfDice(1)
-                .randomSource(mockDiceRolls(5))
                 .build();
         var stack = createStack(roll, ConstantTerm.of(2));
         var result = Operation.ADD.evaluate(stack, OPTS).evaluate(OPTS);
@@ -79,7 +81,7 @@ class OperationTest {
     public void testDiceOperator() {
         var stack = createStack(ConstantTerm.of(20), ConstantTerm.of(2));
         var roll = (DiceExpression) Operation.DICE.evaluate(stack, OPTS);
-        roll.setRandomSource(mockDiceRolls(8, 12));
+        roll.setDie(new MockDie(20, 8, 12));
         var result = roll.evaluate(OPTS);
 
         assertEquals(20, result.valueAsInt(OPTS.getRoundingMode()));
@@ -97,8 +99,8 @@ class OperationTest {
         return new LinkedList<>(Arrays.asList(items));
     }
 
-    private Random mockDiceRolls(int dice1, int...others) {
-        var random = Mockito.mock(Random.class);
+    private UniformRandomProvider mockDiceRolls(int dice1, int...others) {
+        var random = Mockito.mock(UniformRandomProvider.class);
         when(random.nextInt(anyInt())).thenReturn(dice1 - 1,
                 IntStream.of(others).mapToObj(i -> i - 1).toArray(Integer[]::new));
         return random;

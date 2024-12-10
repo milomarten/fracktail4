@@ -1,6 +1,10 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.DicePoolTerm;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.Die;
+import org.apache.commons.rng.UniformRandomProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -16,7 +20,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DicePoolTermTest {
     @Mock
-    private RandomGenerator random;
+    private UniformRandomProvider random;
 
     private static final DiceEvaluatorOptions OPTS = DiceEvaluatorOptions.builder().build();
 
@@ -35,10 +39,10 @@ class DicePoolTermTest {
                 makeDice(1, 20),
                 makeDice(1, 10)
         );
-        when(random.nextInt(anyInt())).thenReturn(10, 5);
+        when(random.nextInt(anyInt(), anyInt())).thenReturn(10, 5);
         var result = term.evaluate(OPTS);
 
-        assertEquals("{\uD83C\uDFB2(11) = 11, \uD83C\uDFB2(6) = 6}", result.representation());
+        assertEquals("{\uD83C\uDFB2(10) = 10, \uD83C\uDFB2(5) = 5}", result.representation());
     }
 
     @Test
@@ -64,8 +68,7 @@ class DicePoolTermTest {
     private DiceExpression makeDice(int number, int sides) {
         return DiceExpression.builder()
                 .numberOfDice(number)
-                .numberOfSides(sides)
-                .randomSource(random)
+                .die(new Die(sides, random))
                 .build();
     }
 }

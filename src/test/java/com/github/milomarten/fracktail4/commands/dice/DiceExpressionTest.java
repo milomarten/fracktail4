@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.term.dice.Die;
+import org.apache.commons.rng.UniformRandomProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -17,16 +19,18 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DiceExpressionTest {
     @Mock
-    private RandomGenerator random;
+    private UniformRandomProvider random;
 
     private static final DiceEvaluatorOptions OPTS = DiceEvaluatorOptions.builder().build();
 
+    private MockDie die(int sides, int... rolls) {
+        return new MockDie(sides, rolls);
+    }
+
     @Test
     public void testNormalD20() {
-        mockRolls(20);
         var dice = DiceExpression.builder()
-                .numberOfSides(20)
-                .randomSource(random)
+                .die(die(20, 20))
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -36,9 +40,8 @@ class DiceExpressionTest {
     @Test
     public void testMultipleD20() {
         var dice = DiceExpression.builder()
-                .numberOfSides(20)
-                .numberOfDice(mockRolls(18, 12, 9))
-                .randomSource(random)
+                .die(die(20, 18, 12, 9))
+                .numberOfDice(3)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -48,10 +51,9 @@ class DiceExpressionTest {
     @Test
     public void testDrop() {
         var dice = DiceExpression.builder()
-                .numberOfSides(20)
-                .numberOfDice(mockRolls(18, 12, 9))
+                .die(die(20, 18, 12, 9))
+                .numberOfDice(3)
                 .numberToDrop(1)
-                .randomSource(random)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -61,10 +63,9 @@ class DiceExpressionTest {
     @Test
     public void testDropExcessive() {
         var dice = DiceExpression.builder()
-                .numberOfSides(20)
-                .numberOfDice(mockRolls(18, 12, 9))
+                .die(die(20, 18, 12, 9))
+                .numberOfDice(3)
                 .numberToDrop(100)
-                .randomSource(random)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -74,10 +75,9 @@ class DiceExpressionTest {
     @Test
     public void testKeepHighest() {
         var dice = DiceExpression.builder()
-                .numberOfSides(20)
-                .numberOfDice(mockRolls(18, 12, 9))
+                .die(die(20, 18, 12, 9))
+                .numberOfDice(3)
                 .numberToKeep(2)
-                .randomSource(random)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -87,10 +87,9 @@ class DiceExpressionTest {
     @Test
     public void testKeepHighestExcessive() {
         var dice = DiceExpression.builder()
-                .numberOfSides(20)
-                .numberOfDice(mockRolls(18, 12, 9))
+                .die(die(20, 18, 12, 9))
+                .numberOfDice(3)
                 .numberToKeep(100)
-                .randomSource(random)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -100,11 +99,10 @@ class DiceExpressionTest {
     @Test
     public void testKeepLowest() {
         var dice = DiceExpression.builder()
-                .numberOfSides(20)
-                .numberOfDice(mockRolls(18, 12, 9))
+                .die(die(20, 18, 12, 9))
+                .numberOfDice(3)
                 .numberToKeep(2)
                 .keepLowest(true)
-                .randomSource(random)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -114,11 +112,10 @@ class DiceExpressionTest {
     @Test
     public void testKeepLowestExcessive() {
         var dice = DiceExpression.builder()
-                .numberOfSides(20)
-                .numberOfDice(mockRolls(18, 12, 9))
+                .die(die(20, 18, 12, 9))
+                .numberOfDice(3)
                 .numberToKeep(100)
                 .keepLowest(true)
-                .randomSource(random)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -127,12 +124,10 @@ class DiceExpressionTest {
 
     @Test
     public void testExplodeOnce() {
-        mockRolls(8, 9, 10, 9);
         var dice = DiceExpression.builder()
-                .numberOfSides(10)
+                .die(die(10, 8, 9, 10, 9))
                 .numberOfDice(3)
                 .explodeAt(10)
-                .randomSource(random)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -141,13 +136,11 @@ class DiceExpressionTest {
 
     @Test
     public void testExplodeMultiple() {
-        mockRolls(8, 9, 10, 10, 10, 9);
         var dice = DiceExpression.builder()
-                .numberOfSides(10)
+                .die(die(10, 8, 9, 10, 10, 10, 9))
                 .numberOfDice(3)
                 .explodeAt(10)
                 .infiniteExplode(true)
-                .randomSource(random)
                 .build();
         var response = dice.evaluate(OPTS);
 
@@ -156,13 +149,11 @@ class DiceExpressionTest {
 
     @Test
     public void testExplodeMultipleCap() {
-        mockRolls(8, 9, 10);
         var dice = DiceExpression.builder()
-                .numberOfSides(10)
+                .die(die(10, 8, 9, 10))
                 .numberOfDice(3)
                 .explodeAt(10)
                 .infiniteExplode(true)
-                .randomSource(random)
                 .build();
 
         var response = dice.evaluate(OPTS);
@@ -171,12 +162,10 @@ class DiceExpressionTest {
 
     @Test
     public void testRerollOnce() {
-        mockRolls(8, 9, 1, 8);
         var dice = DiceExpression.builder()
-                .numberOfSides(10)
+                .die(die(10, 8, 9, 1, 8))
                 .numberOfDice(3)
                 .rerollAt(1)
-                .randomSource(random)
                 .build();
 
         var response = dice.evaluate(OPTS);
@@ -185,13 +174,11 @@ class DiceExpressionTest {
 
     @Test
     public void testRerollMultiple() {
-        mockRolls(8, 9, 1, 1, 1, 8);
         var dice = DiceExpression.builder()
-                .numberOfSides(10)
+                .die(die(10, 8, 9, 1, 1, 1, 8))
                 .numberOfDice(3)
                 .rerollAt(1)
                 .infiniteReroll(true)
-                .randomSource(random)
                 .build();
 
         var response = dice.evaluate(OPTS);
@@ -200,13 +187,11 @@ class DiceExpressionTest {
 
     @Test
     public void testRerollMultipleCap() {
-        mockRolls(8, 9, 1);
         var dice = DiceExpression.builder()
-                .numberOfSides(10)
+                .die(die(10, 8, 9, 1))
                 .numberOfDice(3)
                 .rerollAt(1)
                 .infiniteReroll(true)
-                .randomSource(random)
                 .build();
 
         var response = dice.evaluate(OPTS);
@@ -215,19 +200,12 @@ class DiceExpressionTest {
 
     @Test
     public void testNegativeNumberOfDice() {
-        mockRolls(8, 9, 1);
         var dice = DiceExpression.builder()
-                .numberOfSides(10)
+                .die(die(10, 8, 9, 1))
                 .numberOfDice(-3)
-                .randomSource(random)
                 .build();
 
         var response = dice.evaluate(OPTS);
         assertEquals(-1, response.value().signum());
-    }
-
-    private int mockRolls(int value, int... more) {
-        when(random.nextInt(anyInt())).thenReturn(value - 1, IntStream.of(more).mapToObj(i -> i - 1).toArray(Integer[]::new));
-        return more.length + 1;
     }
 }
