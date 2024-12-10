@@ -24,18 +24,18 @@ public class StringDiceExpressionEvaluator {
                 var value = tryParseNumberFromIterator(iterator);
                 evaluator.push(ConstantTerm.of(value));
                 c = iterator.current();
-            } else if (evaluator.isExpectingTerm()) {
-                char finalC = c;
-                var letterTerm = LetterTerm.findLetterTerm(c)
-                        .orElseThrow(() -> new ExpressionSyntaxError("Symbol " + finalC + " not known"));
-                evaluator.push(letterTerm);
-                c = iterator.next();
             } else {
-                char finalC = c;
-                var operator = Operation.findOperation(c)
-                        .orElseThrow(() -> new ExpressionSyntaxError("Symbol " + finalC + " not known"));
-                evaluator.push(operator);
-                c = iterator.next();
+                var letterTerm = LetterTerm.findLetterTerm(c);
+                if (evaluator.isExpectingTerm() && letterTerm.isPresent()) {
+                    evaluator.push(letterTerm.get());
+                    c = iterator.next();
+                } else {
+                    char finalC = c;
+                    var operator = Operation.findOperation(c)
+                            .orElseThrow(() -> new ExpressionSyntaxError("Symbol " + finalC + " not known"));
+                    evaluator.push(operator);
+                    c = iterator.next();
+                }
             }
         }
 

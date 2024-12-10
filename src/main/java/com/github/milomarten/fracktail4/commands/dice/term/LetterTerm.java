@@ -1,10 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.fixed.Coin;
-import com.github.milomarten.fracktail4.commands.dice.fixed.FateDie;
-import com.github.milomarten.fracktail4.commands.dice.fixed.FixedDiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.fixed.FixedValueDie;
+import com.github.milomarten.fracktail4.commands.dice.fixed.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
@@ -15,7 +12,7 @@ public enum LetterTerm implements Term {
     COIN('c') {
         @Override
         public Term makeTerm(int numDice) {
-            return FixedDiceExpression.<Coin>builder()
+            return CoinExpression.builder()
                     .numberOfDice(numDice)
                     .die(new FixedValueDie<>(Coin.class))
                     .build();
@@ -29,16 +26,19 @@ public enum LetterTerm implements Term {
                     .die(new FixedValueDie<>(FateDie.class))
                     .build();
         }
-    };
+    },
+    PLUS('+'), MINUS('-'), NEUTRAL('0'), HEADS('H'), TAILS('T');
 
     private final char letter;
 
     @Override
     public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-        return new TermEvaluationResult(null, String.valueOf(letter));
+        throw new ExpressionSyntaxError("Invalid use of character " + this.letter);
     }
 
-    public abstract Term makeTerm(int numDice);
+    public Term makeTerm(int numDice) {
+        throw new ExpressionSyntaxError("Invalid use of character " + this.letter);
+    }
 
     public static Optional<LetterTerm> findLetterTerm(char letter) {
         return Arrays.stream(LetterTerm.values())

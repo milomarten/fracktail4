@@ -19,6 +19,6 @@ class FateFixedDiceExpressionTest {
         var result = expr.evaluate(OPTS);
 
         assertNull(result.value());
-        assertEquals("+ -", result.representation());
+        assertEquals("``+`` ``-``", result.representation());
     }
 }
