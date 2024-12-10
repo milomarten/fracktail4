@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.dice.term.dice;
+package com.github.milomarten.fracktail4.commands.dice.roll;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
@@ -6,7 +6,6 @@ import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;

@@ -1,9 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.DicePoolTerm;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.Die;
+import com.github.milomarten.fracktail4.commands.dice.roll.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.roll.DicePoolTerm;
+import com.github.milomarten.fracktail4.commands.dice.roll.Die;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

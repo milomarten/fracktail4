@@ -1,8 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.term.*;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.Die;
+import com.github.milomarten.fracktail4.commands.dice.roll.DiceExpression;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -11,7 +10,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.Random;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

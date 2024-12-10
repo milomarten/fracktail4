@@ -1,8 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.RollResult;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.Rollable;
+import com.github.milomarten.fracktail4.commands.dice.roll.RollResult;
+import com.github.milomarten.fracktail4.commands.dice.roll.Rollable;
 import org.apache.commons.collections4.IteratorUtils;
 
 import java.util.Iterator;

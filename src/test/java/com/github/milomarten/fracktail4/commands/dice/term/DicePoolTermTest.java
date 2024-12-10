@@ -1,9 +1,9 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.DicePoolTerm;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.Die;
+import com.github.milomarten.fracktail4.commands.dice.roll.DiceExpression;
+import com.github.milomarten.fracktail4.commands.dice.roll.DicePoolTerm;
+import com.github.milomarten.fracktail4.commands.dice.roll.Die;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.RoundingMode;
-import java.util.random.RandomGenerator;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;

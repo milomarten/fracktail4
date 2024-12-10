@@ -1,7 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.dice.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.term.dice.Die;
+import com.github.milomarten.fracktail4.commands.dice.roll.DiceExpression;
 import org.apache.commons.rng.UniformRandomProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,12 +8,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.random.RandomGenerator;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DiceExpressionTest {

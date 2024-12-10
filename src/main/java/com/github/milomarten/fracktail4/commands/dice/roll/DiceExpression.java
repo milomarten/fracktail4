@@ -1,6 +1,7 @@
-package com.github.milomarten.fracktail4.commands.dice.term.dice;
+package com.github.milomarten.fracktail4.commands.dice.roll;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.Utils;
 import com.github.milomarten.fracktail4.commands.dice.term.Term;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.Builder;
@@ -163,7 +164,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
 
     @Override
     protected List<RollResult<Integer>> initialRoll() {
-        return doNTimes(Math.abs(this.numberOfDice), this::roll);
+        return Utils.doNTimes(Math.abs(this.numberOfDice), this::roll);
     }
 
     @Override
