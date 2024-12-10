@@ -7,6 +7,7 @@ import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -30,7 +31,7 @@ import static com.github.milomarten.fracktail4.commands.dice.Utils.*;
  * this solely indicates that the final result should be negative. For example, -3d4 will
  * roll three dice, and negate the final result.
  */
-@Builder
+@SuperBuilder
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class DiceExpression extends AbstractDiceExpression<Integer> {
@@ -65,24 +66,10 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
      */
     @Builder.Default int rerollAt = -1;
     /**
-     * Controls whether rerolls should occur "infinitely" or not.
-     * If true, rerolls will continue to happen until a ceiling of 100 tries.
-     * If false, rerolls will only happen once.
-     * By default, infiniteReroll is false, so dice are rerolled only once.
-     */
-    @Builder.Default boolean infiniteReroll = false;
-    /**
      * For all dice above this value, more dice are rolled.
      * By default, explodeAt is `Integer.MAX_VALUE`, so no dice are exploded.
      */
     @Builder.Default int explodeAt = Integer.MAX_VALUE;
-    /**
-     * Controls whether explodes should occur "infinitely" or not.
-     * If true, explodes will continue to happen until a ceiling of 100 tries.
-     * If false, explodes will only happen once.
-     * By default, infiniteExplode is false, so explosions only happen once.
-     */
-    @Builder.Default boolean infiniteExplode = false;
     /**
      * Describe how the roll results should be interpreted.
      * By default, this is `SumDiceStrategy.INSTANCE`, which simply adds the face value

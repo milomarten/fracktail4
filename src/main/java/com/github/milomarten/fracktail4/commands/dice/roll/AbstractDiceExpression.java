@@ -5,6 +5,7 @@ import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError
 import com.github.milomarten.fracktail4.commands.dice.term.Term;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +14,22 @@ import java.util.stream.LongStream;
 
 @Getter
 @Setter
+@SuperBuilder
 public abstract class AbstractDiceExpression<T> implements Term {
-    protected boolean infiniteReroll = false;
-    protected boolean infiniteExplode = false;
+    /**
+     * Controls whether rerolls should occur "infinitely" or not.
+     * If true, rerolls will continue to happen until a ceiling of 100 tries.
+     * If false, rerolls will only happen once.
+     * By default, infiniteReroll is false, so dice are rerolled only once.
+     */
+    @Builder.Default boolean infiniteReroll = false;
+    /**
+     * Controls whether explodes should occur "infinitely" or not.
+     * If true, explodes will continue to happen until a ceiling of 100 tries.
+     * If false, explodes will only happen once.
+     * By default, infiniteExplode is false, so explosions only happen once.
+     */
+    @Builder.Default boolean infiniteExplode = false;
 
     @Override
     public final TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
