@@ -153,6 +153,15 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
     }
 
     @Override
+    protected void validate() {
+        checkRange(Math.abs(numberOfDice),0, 32, "Number Of Dice");
+        checkPositive(numberToDrop, "Number to Drop");
+        checkPositive(numberToKeep, "Number to Keep");
+        this.die.validate();
+        this.totalingStrategy.validate();
+    }
+
+    @Override
     protected List<RollResult<Integer>> initialRoll() {
         return doNTimes(Math.abs(this.numberOfDice), this::roll);
     }
