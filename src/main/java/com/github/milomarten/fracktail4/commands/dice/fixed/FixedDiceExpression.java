@@ -7,6 +7,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
+import static com.github.milomarten.fracktail4.commands.dice.Utils.checkRange;
 import static com.github.milomarten.fracktail4.commands.dice.Utils.doNTimes;
 
 @SuperBuilder
@@ -14,6 +15,14 @@ public class FixedDiceExpression<E extends Enum<E> & FixedValue> extends Abstrac
     @Builder.Default int numberOfDice = 1;
     Rollable<E> die;
     @Builder.Default DiceTotalingStrategy<E> totalingStrategy = new BasicTotalingStrategy<>();
+
+    @Override
+    protected void validate() {
+        super.validate();
+        checkRange(Math.abs(numberOfDice),0, 32, "Number Of Dice");
+        die.validate();
+        totalingStrategy.validate();
+    }
 
     @Override
     protected List<RollResult<E>> initialRoll() {

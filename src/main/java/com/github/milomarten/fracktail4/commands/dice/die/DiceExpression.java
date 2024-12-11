@@ -141,7 +141,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
 
     @Override
     protected void validate() {
-        checkRange(Math.abs(numberOfDice),0, 32, "Number Of Dice");
+        checkRange(Math.abs(numberOfDice),0, 32, "Number Of Tokens");
         checkPositive(numberToDrop, "Number to Drop");
         checkPositive(numberToKeep, "Number to Keep");
         this.die.validate();
