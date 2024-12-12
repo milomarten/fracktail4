@@ -25,7 +25,6 @@ import java.util.StringJoiner;
 @Getter
 @Setter
 public class SuccessFailureStrategy<T extends Comparable<T>> extends CountSuccessFailureStrategy<T> {
-    private T successThreshold;
     private T failureThreshold;
 
     public SuccessFailureStrategy() {
@@ -40,9 +39,9 @@ public class SuccessFailureStrategy<T extends Comparable<T>> extends CountSucces
 
     protected int getCountFor(DiceExpression.Result<T> result) {
         var value = result.getRoll().getValue();
-        if (value.compareTo(successThreshold) >= 0) {
+        if (successThreshold != null && value.compareTo(successThreshold) >= 0) {
             return 1;
-        } else if (value.compareTo(failureThreshold) <= 0) {
+        } else if (failureThreshold != null && value.compareTo(failureThreshold) <= 0) {
             return -1;
         } else {
             return 0;

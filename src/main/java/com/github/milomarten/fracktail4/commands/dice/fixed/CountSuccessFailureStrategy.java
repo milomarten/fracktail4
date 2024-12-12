@@ -8,20 +8,24 @@ import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.StringJoiner;
 
+/**
+ * A totaling strategy which returns the number of rolls which were exactly some value.
+ * @param <E> The type inside the roll.
+ */
 @Data
 public class CountSuccessFailureStrategy<E> implements DiceTotalingStrategy<E> {
     private final String emoji;
-    private E successThreshold;
-    private E failureThreshold;
+    protected E successThreshold;
 
     @Override
     public TermEvaluationResult compile(List<AbstractDiceExpression.Result<E>> results, DiceEvaluatorOptions options) {
-        var expr = new StringJoiner(" + ", emoji + "(", ")");
+        var expr = new StringJoiner(", ", emoji + "(", ")");
         var total = results.stream()
                 .<Integer>mapMulti((result, consumer) -> {
                     String rollText = result.toString(options.getOutputType());
@@ -31,13 +35,13 @@ public class CountSuccessFailureStrategy<E> implements DiceTotalingStrategy<E> {
                         int count = getCountFor(result);
                         String resolvedText;
                         if (count > 0) {
-                            resolvedText = Utils.outputDiceRoll(count, Status.CRITICAL_SUCCESS, options);
+                            resolvedText = StringUtils.repeat("✅", count);
                         } else if (count < 0) {
-                            resolvedText = Utils.outputDiceRoll(count, Status.CRITICAL_FAIL, options);
+                            resolvedText = StringUtils.repeat("❌", -count);
                         } else {
-                            resolvedText = "0";
+                            resolvedText = "";
                         }
-                        expr.add(resolvedText + " [" + rollText + "]");
+                        expr.add(resolvedText + " " + rollText);
                         consumer.accept(count);
                     }
                 })
@@ -50,8 +54,6 @@ public class CountSuccessFailureStrategy<E> implements DiceTotalingStrategy<E> {
         var value = result.getRoll().getValue();
         if (value.equals(successThreshold)) {
             return 1;
-        } else if (value.equals(failureThreshold)) {
-            return -1;
         } else {
             return 0;
         }

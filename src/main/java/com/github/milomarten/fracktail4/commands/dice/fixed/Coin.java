@@ -2,7 +2,7 @@ package com.github.milomarten.fracktail4.commands.dice.fixed;
 
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 
-public enum Coin implements FixedValue {
+public enum Coin implements DieValue {
     HEADS,
     TAILS;
 

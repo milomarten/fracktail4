@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.OptionalInt;
 
 import static com.github.milomarten.fracktail4.commands.dice.Utils.*;
 
@@ -77,6 +78,11 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
     @Builder.Default DiceTotalingStrategy<Integer> totalingStrategy = SumDiceStrategy.INSTANCE;
 
     @Override
+    public OptionalInt getNumberOfDiceIfApplicable() {
+        return OptionalInt.of(numberOfDice);
+    }
+
+    @Override
     public Term drop(Term qty, DiceEvaluatorOptions options) {
         var qtyEval = qty.evaluate(options);
         this.setNumberToDrop(qtyEval.valueAsInt(options.getRoundingMode()));
@@ -120,7 +126,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
         if (totalingStrategy instanceof SuccessFailureStrategy<Integer> sfs) {
             sfs.setSuccessThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
         } else {
-            var sfs = new SuccessFailureStrategy<>(0, Integer.MAX_VALUE);
+            var sfs = new SuccessFailureStrategy<>(Integer.MAX_VALUE, Integer.MIN_VALUE);
             sfs.setSuccessThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
             this.totalingStrategy = sfs;
         }
@@ -132,7 +138,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
         if (totalingStrategy instanceof SuccessFailureStrategy<Integer> sfs) {
             sfs.setFailureThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
         } else {
-            var sfs = new SuccessFailureStrategy<>(0, Integer.MAX_VALUE);
+            var sfs = new SuccessFailureStrategy<>(Integer.MAX_VALUE, Integer.MIN_VALUE);
             sfs.setFailureThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
             this.totalingStrategy = sfs;
         }

@@ -1,13 +1,12 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.fixed.FixedValue;
-import com.github.milomarten.fracktail4.commands.dice.term.Status;
+import com.github.milomarten.fracktail4.commands.dice.fixed.DieValue;
 import org.apache.commons.collections4.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.List;
 
-public class MockFixedDie<E extends Enum<E> & FixedValue> implements Rollable<E> {
+public class MockFixedDie<E extends Enum<E> & DieValue> implements Rollable<E> {
     private Iterator<E> values;
 
     public MockFixedDie(E... rollValues) {

@@ -4,10 +4,12 @@ import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.die.DicePoolTerm;
 import com.github.milomarten.fracktail4.commands.dice.die.Die;
+import com.github.milomarten.fracktail4.commands.dice.fixed.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.OptionalInt;
 
 /**
  * A generic term than can equal something
@@ -18,6 +20,8 @@ public interface Term {
      * @return A result of all the rolls.
      */
     TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError;
+
+    default OptionalInt getNumberOfDiceIfApplicable() { return OptionalInt.empty(); }
 
     default Term add(Term addend, DiceEvaluatorOptions options){
         var a = this.evaluate(options);
@@ -75,7 +79,19 @@ public interface Term {
         var number = this.evaluate(options);
 
         if (faces instanceof LetterTerm lt) {
-            return lt.makeTerm(number.valueAsInt(options.getRoundingMode()));
+            if (lt == LetterTerm.COIN) {
+                return CoinExpression.builder()
+                        .numberOfDice(number.valueAsInt(options.getRoundingMode()))
+                        .die(new FixedValueDie<>(Coin.class))
+                        .build();
+            } else if (lt == LetterTerm.FATE) {
+                return FixedDiceExpression.<FateDie>builder()
+                        .numberOfDice(number.valueAsInt(options.getRoundingMode()))
+                        .die(new FixedValueDie<>(FateDie.class))
+                        .build();
+            } else {
+                throw new ExpressionSyntaxError("Unexpected dice type " + lt.getLetter());
+            }
         } else {
             var facesE = faces.evaluate(options);
 

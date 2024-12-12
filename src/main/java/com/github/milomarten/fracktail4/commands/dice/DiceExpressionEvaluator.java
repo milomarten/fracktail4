@@ -17,6 +17,8 @@ import java.util.LinkedList;
  */
 @RequiredArgsConstructor
 public class DiceExpressionEvaluator {
+    private static final int GLOBAL_DICE_MAX = 32;
+
     private final Deque<Term> terms = new LinkedList<>();
     private final Deque<Operation> operators = new LinkedList<>();
     private final DiceEvaluatorOptions options;
@@ -28,6 +30,8 @@ public class DiceExpressionEvaluator {
      */
     @Getter private boolean expectingTerm = true; // Sentinel so simple "d20" works
 
+    private int remainingDice = GLOBAL_DICE_MAX;
+
     /**
      * Add a term to the stack.
      * @param term The term to add.
@@ -37,8 +41,17 @@ public class DiceExpressionEvaluator {
         if (!expectingTerm) {
             throw new ExpressionSyntaxError("Was not expecting term " + term);
         }
-        this.terms.push(term);
+        internalPushTerm(term);
         expectingTerm = false;
+    }
+
+    private void internalPushTerm(Term term) {
+        this.terms.push(term);
+
+        remainingDice -= term.getNumberOfDiceIfApplicable().orElse(0);
+        if (remainingDice <= 0) {
+            throw new ExpressionSyntaxError("Can only roll a total of 32 dice at once.");
+        }
     }
 
     /**
@@ -51,7 +64,7 @@ public class DiceExpressionEvaluator {
      */
     public void push(Operation operator) {
         if (expectingTerm && operator != Operation.LEFT_PARENTHESIS) {
-            this.terms.push(operator.getImplicitLeftTerm());
+            internalPushTerm(operator.getImplicitLeftTerm());
         }
 
         if (operator == Operation.LEFT_PARENTHESIS) {
@@ -62,7 +75,7 @@ public class DiceExpressionEvaluator {
                     operators.peek() != Operation.LEFT_PARENTHESIS) {
                 underneath = operators.pop();
                 var result = underneath.evaluate(terms, this.options);
-                terms.push(result);
+                internalPushTerm(result);
             }
             if (operators.peek() != Operation.LEFT_PARENTHESIS) {
                 throw new ExpressionSyntaxError("Mismatched parenthesis");
@@ -75,7 +88,7 @@ public class DiceExpressionEvaluator {
                     operators.peek().getPriority() <= operator.getPriority()) {
                 underneath = operators.pop();
                 var result = underneath.evaluate(terms, this.options);
-                terms.push(result);
+                internalPushTerm(result);
             }
             operators.push(operator);
         }
@@ -93,7 +106,7 @@ public class DiceExpressionEvaluator {
         while (!operators.isEmpty()) {
             Operation op = operators.pop();
             var result = op.evaluate(terms, this.options);
-            terms.push(result);
+            internalPushTerm(result);
         }
 
         if (terms.size() != 1) {
