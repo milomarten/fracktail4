@@ -122,6 +122,8 @@ public class ObjectToDiscordReflectiveMapper {
             return ApplicationCommandOption.Type.BOOLEAN;
         } else if (clazz.isAssignableFrom(Snowflake.class)) {
             throw new DiscordMapperException("Field type Snowflake is not enough. Please specify directly the Discord Type");
+        } else if (clazz.isEnum()) {
+            return ApplicationCommandOption.Type.STRING;
         } else {
             throw new DiscordMapperException("Illegal type " + clazz.getCanonicalName() + ".");
         }
@@ -201,6 +203,17 @@ public class ObjectToDiscordReflectiveMapper {
                             .name(pc.name())
                             .value(pc.value())
                             .build())
+                    .collect(Collectors.collectingAndThen(
+                            Collectors.<ApplicationCommandOptionChoiceData>toList(),
+                            l -> l.isEmpty() ? Possible.absent() : Possible.of(l)));
+        } else if (field.getType().isEnum()) {
+            return Arrays.stream(field.getType().getEnumConstants())
+                    .map(e -> (Enum)e)
+                    .map(e -> ApplicationCommandOptionChoiceData.builder()
+                            .name(e.toString())
+                            .value(e.name())
+                            .build()
+                    )
                     .collect(Collectors.collectingAndThen(
                             Collectors.<ApplicationCommandOptionChoiceData>toList(),
                             l -> l.isEmpty() ? Possible.absent() : Possible.of(l)));
