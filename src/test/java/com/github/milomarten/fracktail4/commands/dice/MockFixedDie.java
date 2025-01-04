@@ -2,6 +2,7 @@ package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.fixed.DieValue;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.rng.UniformRandomProvider;
 
 import java.util.Iterator;
 import java.util.List;
@@ -21,7 +22,7 @@ public class MockFixedDie<E extends Enum<E> & DieValue> implements Rollable<E> {
     }
 
     @Override
-    public RollResult<E> roll() {
+    public RollResult<E> roll(UniformRandomProvider random) {
         E roll = this.values.next();
         return new RollResult<>(roll, roll.getStatus());
     }

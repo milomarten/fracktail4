@@ -11,24 +11,18 @@ import org.apache.commons.rng.simple.RandomSource;
 
 import static com.github.milomarten.fracktail4.commands.dice.Utils.checkRange;
 
+@Getter
 @RequiredArgsConstructor
-@AllArgsConstructor
 public class Die implements Rollable<Integer> {
     /**
      * The number of sides on the dice to roll.
      */
-    @Getter private final int numFaces;
-
-    /**
-     * The source of randomness for the dice rolls.
-     * By default, uses a new instance of java.util.Random.
-     */
-    private UniformRandomProvider randomSource = RandomSource.MT.create();
+    private final int numFaces;
 
     @Override
-    public RollResult<Integer> roll() {
+    public RollResult<Integer> roll(UniformRandomProvider random) {
         if (numFaces == 0) { return new RollResult<>(0); }
-        var roll = randomSource.nextInt(1, numFaces + 1);
+        var roll = random.nextInt(1, numFaces + 1);
 
         if (roll == 1) { return new RollResult<>(roll, Status.CRITICAL_FAIL); }
         else if (roll == numFaces) { return new RollResult<>(roll, Status.CRITICAL_SUCCESS); }

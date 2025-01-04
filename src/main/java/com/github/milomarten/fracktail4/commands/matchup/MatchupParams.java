@@ -6,7 +6,8 @@ import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashComm
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = SCARMatchupParams.class, name = "scar")
+        @JsonSubTypes.Type(value = SCARMatchupParams.class, name = "scar"),
+        @JsonSubTypes.Type(value = PokemonMatchupParams.class, name = "pokemon")
 })
 public interface MatchupParams {
     SlashCommandResponse visit(MatchupCommand matchupCommand);

@@ -5,6 +5,7 @@ import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.die.DicePoolTerm;
 import com.github.milomarten.fracktail4.commands.dice.die.Die;
 import org.apache.commons.rng.UniformRandomProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -21,7 +22,14 @@ class DicePoolTermTest {
     @Mock
     private UniformRandomProvider random;
 
-    private static final DiceEvaluatorOptions OPTS = DiceEvaluatorOptions.builder().build();
+    private static DiceEvaluatorOptions OPTS;
+
+    @BeforeEach
+    public void setUp() {
+         OPTS = DiceEvaluatorOptions.builder()
+                .random(random)
+                .build();
+    }
 
     @Test
     public void twoNormalTerms() {
@@ -67,7 +75,7 @@ class DicePoolTermTest {
     private DiceExpression makeDice(int number, int sides) {
         return DiceExpression.builder()
                 .numberOfDice(number)
-                .die(new Die(sides, random))
+                .die(new Die(sides))
                 .build();
     }
 }

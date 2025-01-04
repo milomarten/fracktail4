@@ -2,6 +2,7 @@ package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.rng.UniformRandomProvider;
 
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +24,7 @@ public class MockDie implements Rollable<Integer> {
     }
 
     @Override
-    public RollResult<Integer> roll() {
+    public RollResult<Integer> roll(UniformRandomProvider random) {
         int roll = this.values.next();
         if (roll == 1) { return new RollResult<>(roll, Status.CRITICAL_FAIL); }
         else if (roll == numSides) { return new RollResult<>(roll, Status.CRITICAL_SUCCESS); }

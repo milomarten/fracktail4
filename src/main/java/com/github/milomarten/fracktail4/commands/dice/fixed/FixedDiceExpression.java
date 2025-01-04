@@ -4,6 +4,7 @@ import com.github.milomarten.fracktail4.commands.dice.*;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.Builder;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.rng.UniformRandomProvider;
 
 import java.util.List;
 import java.util.OptionalInt;
@@ -40,13 +41,13 @@ public class FixedDiceExpression<E extends Enum<E> & DieValue> extends AbstractD
     }
 
     @Override
-    protected List<RollResult<E>> initialRoll() {
-        return doNTimes(this.numberOfDice, this::roll);
+    protected List<RollResult<E>> initialRoll(UniformRandomProvider random) {
+        return doNTimes(this.numberOfDice, () -> roll(random));
     }
 
     @Override
-    protected RollResult<E> roll() {
-        return die.roll();
+    protected RollResult<E> roll(UniformRandomProvider random) {
+        return die.roll(random);
     }
 
     @Override

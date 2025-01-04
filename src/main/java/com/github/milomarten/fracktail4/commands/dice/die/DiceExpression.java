@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.rng.UniformRandomProvider;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -155,13 +156,13 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
     }
 
     @Override
-    protected List<RollResult<Integer>> initialRoll() {
-        return Utils.doNTimes(Math.abs(this.numberOfDice), this::roll);
+    protected List<RollResult<Integer>> initialRoll(UniformRandomProvider random) {
+        return Utils.doNTimes(Math.abs(this.numberOfDice), () -> roll(random));
     }
 
     @Override
-    protected RollResult<Integer> roll() {
-        return die.roll();
+    protected RollResult<Integer> roll(UniformRandomProvider random) {
+        return die.roll(random);
     }
 
     @Override

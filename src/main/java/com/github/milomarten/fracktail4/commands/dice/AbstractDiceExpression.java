@@ -5,6 +5,7 @@ import com.github.milomarten.fracktail4.commands.dice.term.Term;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.rng.UniformRandomProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public abstract class AbstractDiceExpression<T> implements Term {
     public final TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
         validate();
 
-        var rolls = initialRoll().stream()
+        var rolls = initialRoll(options.getRandom()).stream()
                 .map(r -> new Result<>(r, false, false))
                 .collect(Collectors.toCollection(ArrayList::new));
 
@@ -52,7 +53,7 @@ public abstract class AbstractDiceExpression<T> implements Term {
                     })
                     .count();
             LongStream.range(0, numRerolls)
-                    .mapToObj(j -> roll())
+                    .mapToObj(j -> roll(options.getRandom()))
                     .map(r -> new Result<>(r, false, false))
                     .forEach(rolls::add);
             if (!infiniteReroll || numRerolls == 0) {
@@ -73,7 +74,7 @@ public abstract class AbstractDiceExpression<T> implements Term {
                     })
                     .sum();
             LongStream.range(0, numExplosions)
-                    .mapToObj(j -> roll())
+                    .mapToObj(j -> roll(options.getRandom()))
                     .map(r -> new Result<>(r, false, false))
                     .forEach(rolls::add);
             if (!infiniteExplode || numExplosions == 0) {
@@ -87,9 +88,9 @@ public abstract class AbstractDiceExpression<T> implements Term {
 
     protected void validate() {}
 
-    protected abstract List<RollResult<T>> initialRoll();
+    protected abstract List<RollResult<T>> initialRoll(UniformRandomProvider random);
 
-    protected abstract RollResult<T> roll();
+    protected abstract RollResult<T> roll(UniformRandomProvider random);
 
     protected abstract boolean shouldDiscountAndReroll(RollResult<T> result);
 
