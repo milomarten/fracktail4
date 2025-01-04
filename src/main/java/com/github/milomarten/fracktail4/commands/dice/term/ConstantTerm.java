@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.DiceExpressionConfiguration;
 import com.github.milomarten.fracktail4.commands.dice.Utils;
 
 import java.math.BigDecimal;
@@ -38,5 +39,12 @@ public record ConstantTerm(BigDecimal bd) implements Term {
     @Override
     public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
         return new TermEvaluationResult(this.bd, Utils.outputBigDecimal(this.bd));
+    }
+
+    @Override
+    public void validate() {
+        if (Utils.numberOfIntegerDigits(this.bd) > DiceExpressionConfiguration.MAX_DIGITS_INTEGER_PART) {
+            throw new ExpressionSyntaxError("Numbers cannot exceed " + DiceExpressionConfiguration.MAX_DIGITS_INTEGER_PART + " digits.");
+        }
     }
 }

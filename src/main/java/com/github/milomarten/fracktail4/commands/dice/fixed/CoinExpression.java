@@ -10,11 +10,11 @@ import lombok.experimental.SuperBuilder;
 public class CoinExpression extends FixedDiceExpression<Coin> {
     @Override
     public Term success(Term at, DiceEvaluatorOptions options) {
-        CountSuccessFailureStrategy<Coin> fs;
-        if (this.totalingStrategy instanceof CountSuccessFailureStrategy<Coin>) {
-            fs = (CountSuccessFailureStrategy<Coin>) this.totalingStrategy;
+        CountSuccessStrategy<Coin> fs;
+        if (this.totalingStrategy instanceof CountSuccessStrategy<Coin>) {
+            fs = (CountSuccessStrategy<Coin>) this.totalingStrategy;
         } else {
-            fs = new CountSuccessFailureStrategy<>("\uD83E\uDE99");
+            fs = new CountSuccessStrategy<>("\uD83E\uDE99");
         }
 
         if (at instanceof LetterTerm lt) {

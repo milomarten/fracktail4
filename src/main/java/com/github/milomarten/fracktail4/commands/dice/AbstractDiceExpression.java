@@ -33,8 +33,6 @@ public abstract class AbstractDiceExpression<T> implements Term {
 
     @Override
     public final TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-        validate();
-
         var rolls = initialRoll(options.getRandom()).stream()
                 .map(r -> new Result<>(r, false, false))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -42,10 +40,10 @@ public abstract class AbstractDiceExpression<T> implements Term {
         // Reroll any dice as per the template's logic
         for (int i = 0; i < 100; i++) {
             var numRerolls = rolls.stream()
-                    .filter(r -> !r.discounted)
+                    .filter(r -> !r.dropped)
                     .filter(r -> {
                         if (shouldDiscountAndReroll(r.roll)) {
-                            r.discounted = true; // Extremely illegal but it's ok.
+                            r.dropped = true; // Extremely illegal but it's ok.
                             return true;
                         } else {
                             return false;
@@ -64,7 +62,7 @@ public abstract class AbstractDiceExpression<T> implements Term {
         // Explode any dice as per the template's logic
         for (int i = 0; i < 100; i++) {
             var numExplosions = rolls.stream()
-                    .filter(r -> !r.discounted && !r.exploded)
+                    .filter(r -> !r.dropped && !r.exploded)
                     .mapToInt(r -> {
                         var num = shouldExplodeInto(r.roll);
                         if (num > 0) {
@@ -86,8 +84,6 @@ public abstract class AbstractDiceExpression<T> implements Term {
         return compileResults(rolls, options);
     }
 
-    protected void validate() {}
-
     protected abstract List<RollResult<T>> initialRoll(UniformRandomProvider random);
 
     protected abstract RollResult<T> roll(UniformRandomProvider random);
@@ -105,20 +101,20 @@ public abstract class AbstractDiceExpression<T> implements Term {
     @Getter @ToString
     public static class Result<T> {
         private final RollResult<T> roll;
-        private boolean discounted;
+        private boolean dropped;
         private boolean exploded;
 
-        public void discount() {
-            this.discounted = true;
+        public void drop() {
+            this.dropped = true;
         }
 
         public String toPlainString() {
             var str = String.valueOf(roll.getValue());
-            return discounted ? "~~" + str + "~~" : str;
+            return dropped ? "~~" + str + "~~" : str;
         }
 
         public String toAnsiString() {
-            return discounted ?
+            return dropped ?
                     roll.getStatus().formatDiscounted(this.roll.getValue()) :
                     roll.getStatus().format(this.roll.getValue());
         }

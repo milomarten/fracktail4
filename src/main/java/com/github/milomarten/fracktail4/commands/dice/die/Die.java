@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice.die;
 
+import com.github.milomarten.fracktail4.commands.dice.DiceExpressionConfiguration;
 import com.github.milomarten.fracktail4.commands.dice.RollResult;
 import com.github.milomarten.fracktail4.commands.dice.Rollable;
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
@@ -31,6 +32,6 @@ public class Die implements Rollable<Integer> {
 
     @Override
     public void validate() {
-        checkRange(numFaces, 0, 1000, "Number of Sides");
+        checkRange(numFaces, 0, DiceExpressionConfiguration.MAX_DICE_SIDES, "Number of Sides");
     }
 }

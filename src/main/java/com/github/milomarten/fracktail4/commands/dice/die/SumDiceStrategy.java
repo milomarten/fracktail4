@@ -20,7 +20,7 @@ public enum SumDiceStrategy implements DiceTotalingStrategy<Integer> {
         var sum = results.stream()
                 .<Integer>mapMulti((result, consumer) -> {
                     String rollText = result.toString(options.getOutputType());
-                    if (result.isDiscounted()) {
+                    if (result.isDropped()) {
                         expr.add(rollText);
                     } else {
                         expr.add(rollText);

@@ -52,7 +52,7 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
             if (result.value() == null) {
                 str = String.format("%s", result.representation());
             } else {
-                str = String.format("%s = **%s**", result.representation(), result.valueAsInt(roundingMode));
+                str = String.format("%s = **%s**", result.representation(), result.valueAsBigInteger(roundingMode));
             }
 
             if (StringUtils.isNotBlank(parameters.comment)) {

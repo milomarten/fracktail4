@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.DiceExpressionConfiguration;
+import com.github.milomarten.fracktail4.commands.dice.Utils;
 
 import java.math.BigDecimal;
 
@@ -13,5 +15,12 @@ public record AccumulationTerm(BigDecimal value, String expression) implements T
     @Override
     public TermEvaluationResult evaluate(DiceEvaluatorOptions options) throws ExpressionSyntaxError {
         return new TermEvaluationResult(value, expression);
+    }
+
+    @Override
+    public void validate() {
+        if (Utils.numberOfIntegerDigits(this.value) > DiceExpressionConfiguration.MAX_DIGITS_INTEGER_PART) {
+            throw new ExpressionSyntaxError("Expression cannot exceed " + DiceExpressionConfiguration.MAX_DIGITS_INTEGER_PART + " digits during evaluation");
+        }
     }
 }

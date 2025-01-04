@@ -1,18 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice.die;
 
-import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.DiceTotalingStrategy;
-import com.github.milomarten.fracktail4.commands.dice.Utils;
-import com.github.milomarten.fracktail4.commands.dice.fixed.CountSuccessFailureStrategy;
-import com.github.milomarten.fracktail4.commands.dice.term.Status;
-import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
-import lombok.AllArgsConstructor;
+import com.github.milomarten.fracktail4.commands.dice.fixed.CountSuccessStrategy;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.StringJoiner;
 
 /**
  * An alternate totaling strategy where "successes" are counted.
@@ -24,14 +14,14 @@ import java.util.StringJoiner;
  */
 @Getter
 @Setter
-public class SuccessFailureStrategy<T extends Comparable<T>> extends CountSuccessFailureStrategy<T> {
+public class CountSuccessFailureStrategy<T extends Comparable<T>> extends CountSuccessStrategy<T> {
     private T failureThreshold;
 
-    public SuccessFailureStrategy() {
+    public CountSuccessFailureStrategy() {
         super("\uD83C\uDFB2");
     }
 
-    public SuccessFailureStrategy(T successThreshold, T failureThreshold) {
+    public CountSuccessFailureStrategy(T successThreshold, T failureThreshold) {
         this();
         this.successThreshold = successThreshold;
         this.failureThreshold = failureThreshold;

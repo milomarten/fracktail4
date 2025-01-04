@@ -3,9 +3,7 @@ package com.github.milomarten.fracktail4.commands.dice.fixed;
 import com.github.milomarten.fracktail4.commands.dice.AbstractDiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.DiceTotalingStrategy;
-import com.github.milomarten.fracktail4.commands.dice.Utils;
 import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
-import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +17,7 @@ import java.util.StringJoiner;
  * @param <E> The type inside the roll.
  */
 @Data
-public class CountSuccessFailureStrategy<E> implements DiceTotalingStrategy<E> {
+public class CountSuccessStrategy<E> implements DiceTotalingStrategy<E> {
     private final String emoji;
     protected E successThreshold;
 
@@ -29,7 +27,7 @@ public class CountSuccessFailureStrategy<E> implements DiceTotalingStrategy<E> {
         var total = results.stream()
                 .<Integer>mapMulti((result, consumer) -> {
                     String rollText = result.toString(options.getOutputType());
-                    if (result.isDiscounted()) {
+                    if (result.isDropped()) {
                         expr.add(rollText);
                     } else {
                         int count = getCountFor(result);

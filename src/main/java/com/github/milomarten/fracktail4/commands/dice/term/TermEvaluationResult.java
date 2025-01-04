@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.function.UnaryOperator;
 
@@ -22,27 +23,18 @@ public record TermEvaluationResult(BigDecimal value, String representation) {
         }
     }
 
+    public BigInteger valueAsBigInteger(RoundingMode roundingMode) throws ExpressionSyntaxError {
+        checkForNullValue();
+        try {
+            return value.setScale(0, roundingMode)
+                    .toBigInteger();
+        } catch (ArithmeticException ex) {
+            throw new ExpressionSyntaxError(ex.getMessage());
+        }
+    }
+
     public TermEvaluationResult map(UnaryOperator<BigDecimal> mapValue, UnaryOperator<String> mapRep) {
         return new TermEvaluationResult(mapValue.apply(this.value), mapRep.apply(this.representation));
-    }
-
-    int getDigitCount() {
-        checkForNullValue();
-        return value.signum() == 0 ? 1 : value.precision() - value.scale();
-    }
-
-    int precisionScore() {
-        checkForNullValue();
-        if (value.signum() == 0) {
-            return 1;
-        } else {
-            var digitsToTheLeft = value.precision() - value.scale();
-            if (digitsToTheLeft == 0) {
-                return -value.scale();
-            } else {
-                return digitsToTheLeft;
-            }
-        }
     }
 
     private void checkForNullValue() {

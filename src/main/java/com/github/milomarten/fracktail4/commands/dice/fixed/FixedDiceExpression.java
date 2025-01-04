@@ -28,9 +28,9 @@ public class FixedDiceExpression<E extends Enum<E> & DieValue> extends AbstractD
     @Builder.Default DiceTotalingStrategy<E> totalingStrategy = new BasicTotalingStrategy<>();
 
     @Override
-    protected void validate() {
+    public void validate() {
         super.validate();
-        checkRange(Math.abs(numberOfDice),0, 32, "Number Of Dice");
+        Utils.checkPositive(numberOfDice, "Number of Dice");
         die.validate();
         totalingStrategy.validate();
     }

@@ -38,6 +38,8 @@ import static com.github.milomarten.fracktail4.commands.dice.Utils.*;
 public class DiceExpression extends AbstractDiceExpression<Integer> {
     /**
      * The number of dice to roll. Default = 1
+     * numberOfDice can be negative. If it is, it will roll |numberOfDice| dice, and negate
+     * the final result.
      */
     @Builder.Default int numberOfDice = 1;
     /**
@@ -80,7 +82,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
 
     @Override
     public OptionalInt getNumberOfDiceIfApplicable() {
-        return OptionalInt.of(numberOfDice);
+        return OptionalInt.of(Math.abs(numberOfDice));
     }
 
     @Override
@@ -124,10 +126,10 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
 
     @Override
     public Term success(Term at, DiceEvaluatorOptions options) {
-        if (totalingStrategy instanceof SuccessFailureStrategy<Integer> sfs) {
+        if (totalingStrategy instanceof CountSuccessFailureStrategy<Integer> sfs) {
             sfs.setSuccessThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
         } else {
-            var sfs = new SuccessFailureStrategy<>(Integer.MAX_VALUE, Integer.MIN_VALUE);
+            var sfs = new CountSuccessFailureStrategy<>(Integer.MAX_VALUE, Integer.MIN_VALUE);
             sfs.setSuccessThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
             this.totalingStrategy = sfs;
         }
@@ -136,10 +138,10 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
 
     @Override
     public Term failure(Term at, DiceEvaluatorOptions options) {
-        if (totalingStrategy instanceof SuccessFailureStrategy<Integer> sfs) {
+        if (totalingStrategy instanceof CountSuccessFailureStrategy<Integer> sfs) {
             sfs.setFailureThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
         } else {
-            var sfs = new SuccessFailureStrategy<>(Integer.MAX_VALUE, Integer.MIN_VALUE);
+            var sfs = new CountSuccessFailureStrategy<>(Integer.MAX_VALUE, Integer.MIN_VALUE);
             sfs.setFailureThreshold(at.evaluate(options).valueAsInt(options.getRoundingMode()));
             this.totalingStrategy = sfs;
         }
@@ -147,8 +149,8 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
     }
 
     @Override
-    protected void validate() {
-        checkRange(Math.abs(numberOfDice),0, 32, "Number Of Tokens");
+    public void validate() {
+        super.validate();
         checkPositive(numberToDrop, "Number to Drop");
         checkPositive(numberToKeep, "Number to Keep");
         this.die.validate();
@@ -181,7 +183,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
         dropLowestDice(rolls, this.numberToDrop);
 
         // Handle Keeps - Which is just drops, really
-        var numNonDiscountedRolls = (int)rolls.stream().filter(r -> !r.isDiscounted()).count();
+        var numNonDiscountedRolls = (int)rolls.stream().filter(r -> !r.isDropped()).count();
         if (numNonDiscountedRolls > numberToKeep) {
             var newNumberToDrop = numNonDiscountedRolls - numberToKeep;
             if (keepLowest) {
@@ -196,7 +198,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
     @Override
     protected TermEvaluationResult compileResults(List<Result<Integer>> rolls, DiceEvaluatorOptions options) {
         var finalResults = totalingStrategy.compile(rolls, options);
-        if (Math.signum(this.numberOfDice) < 0) {
+        if (this.numberOfDice < 0) {
             finalResults = finalResults.map(BigDecimal::negate, s -> "-" + s);
         }
         return finalResults;
@@ -207,7 +209,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
         rolls.stream()
             .sorted(Comparator.comparing(r -> r.getRoll().getValue()))
             .limit(n)
-            .forEach(Result::discount);
+            .forEach(Result::drop);
     }
 
     public void dropHighestDice(List<Result<Integer>> rolls, int n) {
@@ -215,6 +217,6 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
         rolls.stream()
                 .sorted(Collections.reverseOrder(Comparator.comparing(r -> r.getRoll().getValue())))
                 .limit(n)
-                .forEach(Result::discount);
+                .forEach(Result::drop);
     }
 }

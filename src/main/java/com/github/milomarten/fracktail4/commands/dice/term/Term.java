@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail4.commands.dice.DiceExpressionConfiguration;
 import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.die.DicePoolTerm;
 import com.github.milomarten.fracktail4.commands.dice.die.Die;
@@ -23,6 +24,8 @@ public interface Term {
 
     default OptionalInt getNumberOfDiceIfApplicable() { return OptionalInt.empty(); }
 
+    default void validate() {}
+
     default Term add(Term addend, DiceEvaluatorOptions options){
         var a = this.evaluate(options);
         var b = addend.evaluate(options);
@@ -42,10 +45,6 @@ public interface Term {
     default Term multiply(Term multiplier, DiceEvaluatorOptions options){
         var a = this.evaluate(options);
         var b = multiplier.evaluate(options);
-        // Validation Step - Don't go too high!
-        if (a.getDigitCount() + b.getDigitCount() > 18) {
-            throw new ExpressionSyntaxError("Multiplying large values. Numbers shouldn't exceed 18 digits.");
-        }
 
         var mult = a.value().multiply(b.value());
 
@@ -55,12 +54,9 @@ public interface Term {
     default Term divide(Term divisor, DiceEvaluatorOptions options){
         var a = this.evaluate(options);
         var b = divisor.evaluate(options);
-        // Validation Step - Don't go too low.
+
         if (BigDecimal.ZERO.equals(b.value())) {
             throw new ExpressionSyntaxError("Division by Zero");
-        }
-        if (a.precisionScore() - b.precisionScore() > 18) {
-            throw new ExpressionSyntaxError("Dividing large values. Numbers shouldn't exceed 18 digits.");
         }
 
         var ratio = a.value().divide(b.value(), MathContext.DECIMAL128);

@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice.die;
 
-public class DotStrategy extends SuccessFailureStrategy<Integer> {
+public class DotStrategy extends CountSuccessFailureStrategy<Integer> {
     public DotStrategy() {
         super(7, 1);
     }

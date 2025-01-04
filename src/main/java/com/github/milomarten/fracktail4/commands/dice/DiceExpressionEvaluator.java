@@ -17,8 +17,6 @@ import java.util.LinkedList;
  */
 @RequiredArgsConstructor
 public class DiceExpressionEvaluator {
-    private static final int GLOBAL_DICE_MAX = 32;
-
     private final Deque<Term> terms = new LinkedList<>();
     private final Deque<Operation> operators = new LinkedList<>();
     private final DiceEvaluatorOptions options;
@@ -30,7 +28,9 @@ public class DiceExpressionEvaluator {
      */
     @Getter private boolean expectingTerm = true; // Sentinel so simple "d20" works
 
-    private int remainingDice = GLOBAL_DICE_MAX;
+    // Enforce a maximum amount of dice across all dice expressions in the formula.
+    // Explosions don't count toward this
+    private int remainingDice = DiceExpressionConfiguration.MAX_DICE;
 
     /**
      * Add a term to the stack.
@@ -46,12 +46,13 @@ public class DiceExpressionEvaluator {
     }
 
     private void internalPushTerm(Term term) {
-        this.terms.push(term);
-
         remainingDice -= term.getNumberOfDiceIfApplicable().orElse(0);
         if (remainingDice <= 0) {
             throw new ExpressionSyntaxError("Can only roll a total of 32 dice at once.");
         }
+
+        term.validate();
+        this.terms.push(term);
     }
 
     /**
@@ -113,6 +114,8 @@ public class DiceExpressionEvaluator {
             throw new ExpressionSyntaxError("Mismatched operations");
         }
 
-        return terms.pop().evaluate(this.options);
+        var finalAnswer = terms.pop();
+        finalAnswer.validate();
+        return finalAnswer.evaluate(this.options);
     }
 }
