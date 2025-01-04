@@ -20,7 +20,7 @@ public record AccumulationTerm(BigDecimal value, String expression) implements T
     @Override
     public void validate() {
         if (Utils.numberOfIntegerDigits(this.value) > DiceExpressionConfiguration.MAX_DIGITS_INTEGER_PART) {
-            throw new ExpressionSyntaxError("Expression cannot exceed " + DiceExpressionConfiguration.MAX_DIGITS_INTEGER_PART + " digits during evaluation");
+            throw new ExpressionSyntaxError("Expression cannot exceed " + DiceExpressionConfiguration.MAX_DIGITS_INTEGER_PART + " digits during evaluation: " + this.expression);
         }
     }
 }

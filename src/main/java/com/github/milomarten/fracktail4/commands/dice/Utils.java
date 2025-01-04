@@ -45,11 +45,6 @@ public class Utils {
     }
 
     public static int numberOfIntegerDigits(BigDecimal bd) {
-        int numDigits = bd.precision();
-        int scale = bd.scale();
-        if (scale < 0) {
-            numDigits -= scale;
-        }
-        return numDigits;
+        return bd.precision() - bd.scale();
     }
 }

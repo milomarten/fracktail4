@@ -16,7 +16,7 @@ public class DiceExpressionConfiguration {
     /**
      * The maximum number of integer digits any number can be.
      */
-    public static final int MAX_DIGITS_INTEGER_PART = 8;
+    public static final int MAX_DIGITS_INTEGER_PART = 18;
 
     /**
      * The maximum number of fraction digits a number can have.
