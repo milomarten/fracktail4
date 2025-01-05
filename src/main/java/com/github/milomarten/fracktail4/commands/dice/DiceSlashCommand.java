@@ -108,7 +108,7 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
         @Parameter(description = "A small description of the roll")
         private String comment;
         @Parameter(description = "Whether this role should be visible to all")
-        private boolean visible;
+        private boolean visible = true;
         @Parameter(description = "The rounding function for your system", type = ApplicationCommandOption.Type.STRING)
         @ParameterChoices(choices = {
                 @ParameterChoice(name = "Truncate", value = "FLOOR"),

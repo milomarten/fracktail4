@@ -108,22 +108,9 @@ public abstract class AbstractDiceExpression<T> implements Term {
             this.dropped = true;
         }
 
-        public String toPlainString() {
+        public String toString() {
             var str = String.valueOf(roll.getValue());
             return dropped ? "~~" + str + "~~" : str;
-        }
-
-        public String toAnsiString() {
-            return dropped ?
-                    roll.getStatus().formatDiscounted(this.roll.getValue()) :
-                    roll.getStatus().format(this.roll.getValue());
-        }
-
-        public String toString(DiceEvaluatorOptions.OutputType options) {
-            return switch (options) {
-                case PLAIN -> this.toPlainString();
-                case ANSI -> this.toAnsiString();
-            };
         }
     }
 }

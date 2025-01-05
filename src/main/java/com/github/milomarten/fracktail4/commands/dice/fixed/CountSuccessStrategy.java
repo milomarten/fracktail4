@@ -26,7 +26,7 @@ public class CountSuccessStrategy<E> implements DiceTotalingStrategy<E> {
         var expr = new StringJoiner(", ", emoji + "(", ")");
         var total = results.stream()
                 .<Integer>mapMulti((result, consumer) -> {
-                    String rollText = result.toString(options.getOutputType());
+                    String rollText = result.toString();
                     if (result.isDropped()) {
                         expr.add(rollText);
                     } else {

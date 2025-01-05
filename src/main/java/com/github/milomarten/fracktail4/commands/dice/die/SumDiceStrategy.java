@@ -19,7 +19,7 @@ public enum SumDiceStrategy implements DiceTotalingStrategy<Integer> {
         var expr = new StringJoiner(" + ", "\uD83C\uDFB2(", ")");
         var sum = results.stream()
                 .<Integer>mapMulti((result, consumer) -> {
-                    String rollText = result.toString(options.getOutputType());
+                    String rollText = result.toString();
                     if (result.isDropped()) {
                         expr.add(rollText);
                     } else {
