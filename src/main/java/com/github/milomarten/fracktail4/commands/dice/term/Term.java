@@ -78,12 +78,12 @@ public interface Term {
             if (lt == LetterTerm.COIN) {
                 return CoinExpression.builder()
                         .numberOfDice(number.valueAsInt(options.getRoundingMode()))
-                        .die(new FixedValueDie<>(Coin.class))
+                        .die(FixedValueDie.fromEnum(Coin.class))
                         .build();
             } else if (lt == LetterTerm.FATE) {
                 return FixedDiceExpression.<FateDie>builder()
                         .numberOfDice(number.valueAsInt(options.getRoundingMode()))
-                        .die(new FixedValueDie<>(FateDie.class))
+                        .die(FixedValueDie.fromEnum(FateDie.class))
                         .build();
             } else {
                 throw new ExpressionSyntaxError("Unexpected dice type " + lt.getLetter());

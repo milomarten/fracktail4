@@ -22,7 +22,7 @@ import static com.github.milomarten.fracktail4.commands.dice.Utils.doNTimes;
  * @param <E> The type that represents each face of the die.
  */
 @SuperBuilder
-public class FixedDiceExpression<E extends Enum<E> & DieValue> extends AbstractDiceExpression<E> {
+public class FixedDiceExpression<E> extends AbstractDiceExpression<E> {
     @Builder.Default int numberOfDice = 1;
     Rollable<E> die;
     @Builder.Default DiceTotalingStrategy<E> totalingStrategy = new BasicTotalingStrategy<>();

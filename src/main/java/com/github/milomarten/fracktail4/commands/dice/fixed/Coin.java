@@ -1,15 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice.fixed;
 
-import com.github.milomarten.fracktail4.commands.dice.term.Status;
-
-public enum Coin implements DieValue {
+public enum Coin {
     HEADS,
     TAILS;
-
-    @Override
-    public Status getStatus() {
-        return Status.NEUTRAL;
-    }
 
     private static final String[] vals = {"H", "T"};
 

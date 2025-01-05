@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @Getter
-public enum FateDie implements DieValue {
+public enum FateDie {
     PLUS,
     MINUS,
     NEUTRAL;
@@ -19,10 +19,5 @@ public enum FateDie implements DieValue {
     @Override
     public String toString() {
         return vals[ordinal()];
-    }
-
-    @Override
-    public Status getStatus() {
-        return Status.NEUTRAL;
     }
 }
