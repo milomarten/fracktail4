@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import com.github.milomarten.fracktail4.commands.dice.term.Term;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
 import lombok.*;
@@ -98,7 +99,7 @@ public abstract class AbstractDiceExpression<T> implements Term {
 
     @RequiredArgsConstructor
     @AllArgsConstructor
-    @Getter @ToString
+    @Getter
     public static class Result<T> {
         private final RollResult<T> roll;
         private boolean dropped;
@@ -110,6 +111,11 @@ public abstract class AbstractDiceExpression<T> implements Term {
 
         public String toString() {
             var str = String.valueOf(roll.getValue());
+            if (roll.getStatus() == Status.CRITICAL_SUCCESS) {
+                str += "✨";
+            } else if (exploded) {
+                str += "\uD83D\uDCA5";
+            }
             return dropped ? "~~" + str + "~~" : str;
         }
     }

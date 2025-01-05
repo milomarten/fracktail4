@@ -242,6 +242,25 @@ public enum Operation {
         }
     },
     /**
+     * Roll (infinitely) additional dice for each roll that is the highest of that dice
+     */
+    EXPLODE_HIGHEST("!", 4) {
+        @Override
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) {
+            var two = Operation.pull(termStack, "Dice");
+            if (two instanceof DiceExpression de) {
+                return two.explode(ConstantTerm.of(de.getDie().getNumFaces()), true, options);
+            } else {
+                throw new ExpressionSyntaxError("! can only be used for dice");
+            }
+        }
+
+        @Override
+        public boolean expectTermAfter() {
+            return false;
+        }
+    },
+    /**
      * If present, this dice roll enters Success Counting mode.
      * Rather than adding the face value of each dice, the result will instead be the number
      * of dice that are greater than or equal to n.
