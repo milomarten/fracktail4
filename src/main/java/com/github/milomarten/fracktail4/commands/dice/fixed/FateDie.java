@@ -10,16 +10,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum FateDie implements DieValue {
-    PLUS(Status.CRITICAL_SUCCESS),
-    MINUS(Status.CRITICAL_FAIL),
-    NEUTRAL(Status.NEUTRAL);
+    PLUS,
+    MINUS,
+    NEUTRAL;
 
-    private final Status status;
-
-    private static final String[] vals = {"``+``", "``-``", "``0``"};
+    private static final String[] vals = {"+", "-", "0"};
 
     @Override
     public String toString() {
         return vals[ordinal()];
+    }
+
+    @Override
+    public Status getStatus() {
+        return Status.NEUTRAL;
     }
 }

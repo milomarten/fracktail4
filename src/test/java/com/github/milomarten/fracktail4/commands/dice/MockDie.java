@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
+import com.github.milomarten.fracktail4.commands.dice.die.Die;
 import com.github.milomarten.fracktail4.commands.dice.term.Status;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.rng.UniformRandomProvider;
@@ -7,12 +8,11 @@ import org.apache.commons.rng.UniformRandomProvider;
 import java.util.Iterator;
 import java.util.List;
 
-public class MockDie implements Rollable<Integer> {
-    private int numSides;
+public class MockDie extends Die {
     private Iterator<Integer> values;
 
     public MockDie(int numSides, int... rollValues) {
-        this.numSides = numSides;
+        super(numSides);
         setRolls(rollValues);
     }
 
@@ -27,7 +27,7 @@ public class MockDie implements Rollable<Integer> {
     public RollResult<Integer> roll(UniformRandomProvider random) {
         int roll = this.values.next();
         if (roll == 1) { return new RollResult<>(roll, Status.CRITICAL_FAIL); }
-        else if (roll == numSides) { return new RollResult<>(roll, Status.CRITICAL_SUCCESS); }
+        else if (roll == this.getNumFaces()) { return new RollResult<>(roll, Status.CRITICAL_SUCCESS); }
         else { return new RollResult<>(roll); }
     }
 }
