@@ -1,7 +1,6 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandFilter;
-import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandFilterChain;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
@@ -24,13 +23,13 @@ public class BotDisableCommand implements SlashCommandWrapper, SlashCommandFilte
     private final Map<String, Boolean> locks = new HashMap<>();
 
     @Override
-    public Mono<Boolean> filter(ChatInputInteractionEvent event, SlashCommandFilterChain next) {
+    public Mono<Boolean> filter(ChatInputInteractionEvent event) {
         String name = event.getCommandName();
         if ("lock".equals(name)) { return Mono.just(true); } // You cannot lock lock.
         if (lock || locks.getOrDefault(name, false)) {
             return Mono.just(false);
         }
-        return next.callNext(event);
+        return Mono.just(true);
     }
 
     @Override

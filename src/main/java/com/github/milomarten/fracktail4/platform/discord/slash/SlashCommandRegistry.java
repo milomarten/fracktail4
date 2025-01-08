@@ -15,6 +15,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
+import reactor.bool.BooleanUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -91,8 +92,9 @@ public class SlashCommandRegistry implements DiscordHookSource, BeanPostProcesso
         client.on(ChatInputInteractionEvent.class).flatMap(acie -> {
             var name = acie.getCommandName();
             if (this.slashCommandLookup.containsKey(name)) {
-                var chain = new SlashCommandFilterChain(this.filters);
-                return chain.callNext(acie)
+                var canUseMono = filters.stream()
+                        .reduce(Mono.just(true), (a, b) -> BooleanUtils.and(a, b.filter(acie)), BooleanUtils::and);
+                return canUseMono
                         .flatMap(canUse -> {
                             if (canUse) { return this.slashCommandLookup.get(name).handleEvent(acie); }
                             else { return SlashCommands.replyEphemeral(acie, "That command can't be used now.");}
