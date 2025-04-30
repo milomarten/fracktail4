@@ -17,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.util.function.Tuples;
 
 import java.time.LocalDate;
+import java.time.MonthDay;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.function.Predicate;
@@ -76,6 +77,30 @@ public class BirthdayJob {
                 })
                 .flatMap(str -> announcementChannel.createMessage(str))
                 .subscribe(null, ex -> log.error("Error sending birthday message", ex));
+    }
+
+    public void checkBirthdayAndAnnounceIfNecessary(Snowflake userId) {
+        var today = LocalDate.now(HOME_TIMEZONE);
+        var specificBirthdayOpt = handler.getBirthday(userId);
+
+        if (specificBirthdayOpt.isEmpty()) { return; }
+        var specificBirthday = specificBirthdayOpt.get();
+
+        if (MonthDay.from(today).equals(specificBirthday.getDayOfCelebration())) {
+            specificBirthday.resolve()
+                    .filterWhen(bei -> bei.getT1().shouldDisplayForGuild(this.announcementChannel.getGuildId()))
+                    .map(birthday -> {
+                        var ageOptionally = birthday.getT1()
+                                .getStartYear()
+                                .map(year -> String.valueOf(today.getYear() - year.getValue()))
+                                .map(s -> "[" + s + "]")
+                                .orElse("");
+                        return birthday.getT2() + " " + ageOptionally;
+                    })
+                    .map(text -> String.format("<@&1366975961932894278> \uD83C\uDF89 It's Birthday Time! Happy Birthday to %s", text))
+                    .flatMap(str -> announcementChannel.createMessage(str))
+                    .subscribe(null, ex -> log.error("Error sending birthday message", ex));
+        }
     }
 
     @Scheduled(cron = "@midnight", zone = HOME_TIMEZONE_RAW)

@@ -15,6 +15,7 @@ import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -34,6 +35,9 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
     private final BirthdayHandler handler;
     private final BirthdayICalCacheJob cacheJob;
     private final PermissionsProvider<User, FracktailRoles> permissionsProvider;
+
+    @Autowired(required = false)
+    private BirthdayJob birthdayJob;
 
     @Override
     public ApplicationCommandRequest getRequest() {
@@ -430,5 +434,8 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
     private void onUpdate(Snowflake userId) {
         // todo: Make this more refined?
         this.cacheJob.updateCalendar();
+        if (this.birthdayJob != null) {
+            this.birthdayJob.checkBirthdayAndAnnounceIfNecessary(userId);
+        }
     }
 }
