@@ -33,7 +33,7 @@ public enum DynamicHolidays {
                     when.getDayOfWeek() == DayOfWeek.FRIDAY;
         }
     },
-    LABOR_DAY("Labor Day", "Happy") {
+    LABOR_DAY("Labor Day", "Todayborday is") {
         @Override
         public boolean isOnDay(LocalDate when) {
             // Labor Day is the first Monday of September.

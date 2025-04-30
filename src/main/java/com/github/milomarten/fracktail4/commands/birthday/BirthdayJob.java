@@ -71,7 +71,7 @@ public class BirthdayJob {
                                 return birthday.getT2() + " " + ageOptionally;
                             })
                             .collect(Collectors.joining(", ",
-                                    "\uD83C\uDF89 It's Birthday Time! Happy Birthday to ",
+                                    "<@&1366975961932894278> \uD83C\uDF89 It's Birthday Time! Happy Birthday to ",
                                     ""));
                 })
                 .flatMap(str -> announcementChannel.createMessage(str))
