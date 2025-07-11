@@ -39,7 +39,9 @@ public class CommandLifecycleHelper implements DiscordHookSource {
                         return Flux.empty();
                     }
                     String[] args = StringUtils.split(message.getContent());
-                    if ("!updateGlobalCommands".equals(args[0])){
+                    if (args == null || args.length == 0) {
+                        return Flux.empty();
+                    } else if ("!updateGlobalCommands".equals(args[0])){
                         // Send every command to the world.
                         return getId(client)
                                 .flatMapMany(id -> client.getRestClient().getApplicationService()
