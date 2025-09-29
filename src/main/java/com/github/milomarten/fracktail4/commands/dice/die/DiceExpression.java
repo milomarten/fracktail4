@@ -45,7 +45,7 @@ public class DiceExpression extends AbstractDiceExpression<Integer> {
     /**
      * The dice (or non-dice!) to roll.
      */
-    Die die;
+    Rollable<Integer> die;
     /**
      * The number of dice to drop. The n lowest dice will be discarded.
      * By default, numberToDrop is 0, so no dice are dropped.

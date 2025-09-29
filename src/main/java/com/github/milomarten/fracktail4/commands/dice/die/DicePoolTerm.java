@@ -4,6 +4,7 @@ import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
 import com.github.milomarten.fracktail4.commands.dice.term.Term;
 import com.github.milomarten.fracktail4.commands.dice.term.TermEvaluationResult;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DicePoolTerm implements Term {
-    private final List<Term> innerTerms;
+    @Getter private final List<Term> innerTerms;
 
     private int keep = Integer.MAX_VALUE;
     private boolean keepLow = false;

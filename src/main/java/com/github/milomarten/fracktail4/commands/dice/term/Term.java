@@ -2,9 +2,11 @@ package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail4.commands.dice.DiceExpressionConfiguration;
+import com.github.milomarten.fracktail4.commands.dice.Rollable;
 import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.die.DicePoolTerm;
 import com.github.milomarten.fracktail4.commands.dice.die.Die;
+import com.github.milomarten.fracktail4.commands.dice.die.NonConsecutiveDie;
 import com.github.milomarten.fracktail4.commands.dice.fixed.*;
 
 import java.math.BigDecimal;
@@ -118,11 +120,22 @@ public interface Term {
                 throw new ExpressionSyntaxError("Unexpected dice type " + lt.getLetter());
             }
         } else {
-            var facesE = faces.evaluate(options);
+            Rollable<Integer> dieToRoll;
+            if (faces instanceof DicePoolTerm dpt) {
+                var dptFaces = dpt.getInnerTerms()
+                        .stream()
+                        .map(term -> term.evaluate(options))
+                        .map(ter -> ter.valueAsInt(options.getRoundingMode()))
+                        .toList();
+                dieToRoll = new NonConsecutiveDie(dptFaces);
+            } else {
+                var facesE = faces.evaluate(options);
+                dieToRoll = new Die(facesE.valueAsInt(options.getRoundingMode()));
+            }
 
             return DiceExpression.builder()
                     .numberOfDice(number.valueAsInt(options.getRoundingMode()))
-                    .die(new Die(facesE.valueAsInt(options.getRoundingMode())))
+                    .die(dieToRoll)
                     .build();
         }
     }
