@@ -74,6 +74,24 @@ public enum Operation {
         }
     },
     /**
+     * Square root.
+     * This one's for you, Grapha
+     */
+    ROOT("√", 6) {
+        private static final Term TWO = new AccumulationTerm(BigDecimal.valueOf(2), "");
+
+        @Override
+        public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
+            return evaluateTwoParameterFunc(termStack, options,
+                    "index", "radicand", Term::root);
+        }
+
+        @Override
+        public Term getImplicitLeftTerm() throws ExpressionSyntaxError {
+            return TWO;
+        }
+    },
+    /**
      * Marker for a left parenthesis.
      * If evaluated, always throws an exception.
      */
@@ -338,6 +356,13 @@ public enum Operation {
         throw new ExpressionSyntaxError("Was not expecting operation " + this);
     }
 
+    /**
+     * Check if this operation expects a term after it
+     * This is to support postfix operations, like ^, which are designed to transform the
+     * term in front of it to another term.
+     * By default, this returns true
+     * @return False, if this operation is a postfix operation.
+     */
     public boolean expectTermAfter() {
         return true;
     }

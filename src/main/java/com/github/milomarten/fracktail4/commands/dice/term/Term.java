@@ -64,6 +64,35 @@ public interface Term {
         return new AccumulationTerm(ratio, a.representation() + " / " + b.representation());
     }
 
+    default Term root(Term radicand, DiceEvaluatorOptions options){
+        // n root of x
+        // n can only be 1 or more.
+        var n = this.evaluate(options);
+        var nAsInt = n.valueAsInt(options.getRoundingMode());
+        var x = radicand.evaluate(options);
+
+        var squareRootExpression = "(" + n.representation() + ")√(" + x.representation() + ")";
+        if (nAsInt == 1) {
+            // special case: the 1th root of any number is itself.
+            return new AccumulationTerm(x.value(), squareRootExpression);
+        } else if (nAsInt == 2) {
+            // special case: BigDecimal supports square roots natively.
+            return new AccumulationTerm(x.value().sqrt(MathContext.DECIMAL128),
+                    squareRootExpression);
+        } else if (nAsInt > 0) {
+            var power = 1d / nAsInt;
+            var result = Math.pow(x.value().doubleValue(), power);
+            if (Double.isFinite(result)) {
+                return new AccumulationTerm(BigDecimal.valueOf(result),
+                        squareRootExpression);
+            } else {
+                throw new ExpressionSyntaxError("Root operation did not work as expected. The radicand was probably negative");
+            }
+        } else {
+            throw new ExpressionSyntaxError("Can't evaluate a root if the index is nonpositive");
+        }
+    }
+
     default Term ceil(DiceEvaluatorOptions options){
         var a = this.evaluate(options);
         var ceil = a.value().setScale(0, RoundingMode.CEILING);
