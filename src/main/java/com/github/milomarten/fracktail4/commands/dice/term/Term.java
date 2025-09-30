@@ -79,8 +79,12 @@ public interface Term {
             return new AccumulationTerm(x.value(), squareRootExpression);
         } else if (nAsInt == 2) {
             // special case: BigDecimal supports square roots natively.
-            return new AccumulationTerm(x.value().sqrt(MathContext.DECIMAL128),
-                    squareRootExpression);
+            try {
+                return new AccumulationTerm(x.value().sqrt(MathContext.DECIMAL128),
+                        squareRootExpression);
+            } catch (ArithmeticException ex) {
+                throw new ExpressionSyntaxError("Root operation did not work as expected. The radicand was probably negative");
+            }
         } else if (nAsInt > 0) {
             var power = 1d / nAsInt;
             var result = Math.pow(x.value().doubleValue(), power);

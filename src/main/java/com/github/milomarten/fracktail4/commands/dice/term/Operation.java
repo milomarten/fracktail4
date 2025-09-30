@@ -266,8 +266,8 @@ public enum Operation {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) {
             var two = Operation.pull(termStack, "Dice");
-            if (two instanceof DiceExpression de) {
-                return two.explode(ConstantTerm.of(de.getDie().getNumFaces()), true, options);
+            if (two instanceof DiceExpression de && de.getDie() instanceof Die die) {
+                return two.explode(ConstantTerm.of(die.getNumFaces()), true, options);
             } else {
                 throw new ExpressionSyntaxError("! can only be used for dice");
             }
