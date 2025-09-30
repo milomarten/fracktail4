@@ -1,0 +1,279 @@
+<h1 id="fracktail-dice-expressions">Fracktail Dice Expressions</h1>
+<p>The <code>/roll</code> command in Fracktail is a powerful tool,
+that can do a number of math operators. It can be tricky
+to understand, and impossible to explain all the nuances
+within a short text description. This README file will
+explain all the ins and outs of the command.</p>
+<h2 id="operators">Operators</h2>
+<p>All major operators are supported, and all formatting of equations
+is written in the same way as basic math. In addition to the
+typical operators (+, -, *, etc), dice-specific operators are
+provided as well. For example, just as you would write &quot;4 + 3&quot;, you
+can also write &quot;4 d 3&quot;, which rolls 4 dice with three faces each
+and adds the result. Some operators only work when certain terms
+are to the left of them, like the k operator, which only works on
+dice terms.</p>
+<h2 id="terms">Terms</h2>
+<p>Working with dice expressions is all about working with terms.
+There are four types of terms, with specific rules on how to convert
+these terms into other types.</p>
+<h3 id="number">Number</h3>
+<p>A term can just be a regular rational number. Behind the scenes, a BigDecimal
+is used, to make sure there is minimal data loss during computation. However,
+at the end of the computation, only four decimal points will be shown, depending
+on the rounding mode.</p>
+<h3 id="dice">Dice</h3>
+<p>A term that represents a set of dice to be rolled. Dice can be created, using a <code>d</code>
+or a <code>D</code> operator on any other terms. There are a number of operators that
+work only on dice, such as <code>k</code>. Dice are resolved into a number once it is rolled,
+which is done as soon as a non-dice operator is used on it, or if it is the only
+remaining term in the expression.</p>
+<p>As an example, using <code>4d10</code> creates four dice with ten faces. At this point,
+the dice have not been rolled. We use <code>k2</code> on the dice, which indicates that
+we should keep the highest two dice and discard the others; however, we
+still have not rolled the dice. Once we further add <code>+1</code> to the expression,
+then the dice are rolled, totaled up, and 1 is added to that result. The term is now
+a number, not a dice; we cannot use <code>4d10+1k2</code>, as this does not make sense.</p>
+<h3 id="pool">Pool</h3>
+<p>A pool is a group of one or more terms, which can be any mixture of types.
+A pool can be created using a <code>,</code> operator on any other terms, including other
+pools. Parenthesis around the pool are not required, but easier to read.
+The only way to resolve a pool into a number is to reduce it to one element,
+by using a <code>k</code> for instance.</p>
+<p>As an example, using <code>(4d10,10)</code> will create a pool of two elements: one is a four ten-sided
+dice, and one is the constant number 6. Attempting to use any numerical
+operator, like <code>+</code>, will fail. Using <code>k1</code> will evaluate every element
+in the pool and keep the highest one, turning it into a number. However,
+using <code>k2</code> will just create another pool with the highest two elements.</p>
+<p>A pool can be passed as the right parameter of a <code>d</code> operator; this allows
+non-standard dice, functionally acting as a &quot;randomly pick an item in the pool&quot;.</p>
+<p>As an example, using <code>2d(2,4,6,8)</code> will choose two random numbers from the pool of
+2, 4, 6, or 8. </p>
+<h3 id="symbol">Symbol</h3>
+<p>Coins and Fate Dice are supported in dice expressions. The result of a coin flip
+or a fate dice roll is a sequence of symbols; H/T, or +/-/0. Attempting
+to use almost any operator on the result of a coin flip or fate die roll will cause an
+error. For example, <code>2dC + 5</code> will not work, since the result of two coin flips
+cannot logically have 5 added to it.</p>
+<p>Using <code>s</code> or <code>f</code> operators will allow you to resolve a coin flip into a number. 
+Building on the earlier example, <code>2dCsH + 5</code> will work, because
+the number of heads will be counted, and 5 can be added to that.</p>
+<p>Fate dice cannot be coerced back into a number at this time, but this feature
+may be added if it is desired.</p>
+<h2 id="a-note-on-rounding">A note on rounding</h2>
+<p>Many mathematical operators cannot use anything aside from
+an integer as an argument, for example, the number of dice to roll. 
+At the same time, it is frequent in role-playing games that 
+the number of dice to roll is a potentially non-integer expression.
+The system typically has a rounding rule that it uses to turn any
+non-integer into an integer.</p>
+<p>Fracktail accommodates this by allowing you to specify a rounding rule
+in the command. The options are explained here:</p>
+<ul>
+<li>Truncate: The decimal portion is chopped off, leaving only the integer portion. e.g. 4.3, 4.5, and 4.9 all becomes 4.</li>
+<li>Ceil: Always increase to the nearest whole number. e.g. 4.3 becomes 5, -1.3 becomes -1.</li>
+<li>Away From Zero: Round moving away from zero. e.g. 4.3 becomes 5, -1.3 becomes -2.</li>
+<li>Toward Zero: Round moving toward zero. e.g. 4.3 becomes 4, -1.3 becomes -1.</li>
+<li>Half Away From Zero: Round to the nearest integer. Halves move away from 0. e.g. 4.3 becomes 4, 4.5 becomes 5, -1.5 becomes -2.</li>
+<li>Half Toward Zero: Round to the nearest integer. Halves move toward 0. e.g. 4.3 becomes 4, 4.5 becomes 4, -1.5 becomes -1</li>
+<li>Half Toward Even: Round to the nearest integer. Halves move toward the even number. e.g. 4.3 becomes 4, 4.5 becomes 4, -1.5 becomes -2</li>
+</ul>
+<p>If no rounding mode is specified, the default is Truncate, which is typically
+used by many popular campaigns.</p>
+<h2 id="operator-list">Operator List</h2>
+<p>All operators will be described here, along with their priority and limitations.
+Lower-priority operations will be performed before higher-priority ones.
+Operations with the same priority will be evaluated from left-to-right.</p>
+<h3 id="add-subtract">Add/Subtract</h3>
+<ul>
+<li>Syntax: <code>a + b</code> and <code>a - b</code></li>
+<li>Priority: 10</li>
+<li>Allowed Types: <code>a</code> and <code>b</code> can be Number or a Dice</li>
+</ul>
+<p>Simply add or subtract two terms together.</p>
+<h3 id="multiply-divide">Multiply/Divide</h3>
+<ul>
+<li>Syntax: <code>a * b</code> and <code>a / b</code></li>
+<li>Priority: 8</li>
+<li>Allowed Types: <code>a</code> and <code>b</code> can be Number or a Dice</li>
+<li>For division, <code>b</code> must be non-zero.</li>
+</ul>
+<p>Multiply or divide two terms together. 
+Division will only compute up to 34 digits, rounding the rest to the
+nearest half. </p>
+<h3 id="root">Root</h3>
+<ul>
+<li>Syntax: <code>a √ b</code> computes the a-th root of b.</li>
+<li>Priority: 6</li>
+<li>Allowed Types: <code>a</code> and <code>b</code> can be Number or a Dice</li>
+<li><code>a</code> must be greater than 0. <code>b</code> must be non-negative.</li>
+<li><code>a</code> may be omitted, in which case <code>2</code> is the default.</li>
+<li><code>a</code> is coerced into an integer using the rounding rules.</li>
+</ul>
+<p>Compute the nth-root of a number. This was included as a joke for Grapha.
+There are some special cases:</p>
+<ul>
+<li>If <code>a</code> is 1, <code>b</code> is returned unchanged</li>
+<li>If <code>a</code> is 2, the square root is computed up to 34 digits, rounding to the nearest half.</li>
+<li>If <code>a</code> is any other number, there is further loss of digits due to conversion between decimal types on backend.</li>
+</ul>
+<h3 id="parenthesis-brackets">Parenthesis/Brackets</h3>
+<ul>
+<li>Syntax: <code>()</code> or <code>[]</code> to group expressions together</li>
+<li>Priority: N/A</li>
+</ul>
+<p>Parenthesis or brackets can be used to group operations of lower priority together before
+applying a higher-priority operation.
+Parenthesis and Brackets do not need to match; Using <code>(3+5]</code> is perfectly
+valid, despite looking awkward. This is mostly for ease of coding. In the future,
+they may be forced to match.</p>
+<h3 id="dice">Dice</h3>
+<ul>
+<li>Syntax: <code>a d b</code> rolls <code>a</code> dice with <code>b</code> number of faces</li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> can be a number or a dice. <code>b</code> can be any type.</li>
+<li><code>b</code> must be non-negative, <code>C</code>, or <code>F</code>.</li>
+<li><code>a</code> may be omitted, in which case <code>1</code> is the default.</li>
+<li><code>a</code> and <code>b</code> are coerced into integers using the rounding rules.</li>
+</ul>
+<p>Create a dice to be rolled. </p>
+<p><code>a</code> may be any integer number. If <code>a</code> is 0, no dice are
+rolled, and the result is 0. If <code>a</code> is negative, <code>-a</code> dice are rolled, and the
+result is negated.</p>
+<p>If <code>b</code> is 0, the result is 0. If <code>b</code> is a <code>C</code>, this dice becomes a coin flip, resulting
+in either Heads (<code>H</code>) or Tails (<code>T</code>). If <code>b</code> is a <code>F</code>, this dice becomes a fate dice,
+result in either <code>+</code>, <code>-</code>, or <code>0</code>. </p>
+<p>Because of order of operations, rolling a <code>1d4d8</code> would roll a <code>1d4</code> first, and then
+roll that many <code>d8</code>s for the final result. To invert this, use <code>1d(4d8)</code>, which
+would roll four <code>d8</code>s, then roll 1 dice of that many faces.</p>
+<h3 id="dot-dice">Dot Dice</h3>
+<ul>
+<li>Syntax: <code>a D b</code> rolls <code>a</code> dot dice with <code>b</code> number of faces</li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> can be dice or a number. <code>b</code> can be any type.</li>
+<li><code>a</code> may be omitted, in which case <code>1</code> is the default.</li>
+<li><code>a</code> and <code>b</code> are coerced into integers using the rounding rules.</li>
+</ul>
+<p>Dot dice is a shortcut for SCAR-type rolling. This functions identically to a regular
+dice roll, but automatically sets up exploding at a 10, and the success
+strategy that SCAR uses. It can otherwise be used in the same way as a dice roll.</p>
+<h3 id="drop">Drop</h3>
+<ul>
+<li>Syntax: <code>axb</code> drops <code>b</code> dice from <code>a</code>&#39;s roll</li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> must be a dice. <code>b</code> can be a dice or a number.</li>
+<li><code>b</code> is coerced into an integer using the rounding rules.</li>
+</ul>
+<p>After rolling the dice, the lowest values are dropped. If <code>b</code> is negative, an
+error is thrown.</p>
+<h3 id="keep-highest-n-keep-lowest-n">Keep Highest N/Keep Lowest N</h3>
+<ul>
+<li>Syntax: <code>akb</code> keeps the highest <code>b</code> dice from <code>a</code>&#39;s roll. <code>alb</code> keeps the lowest <code>b</code> dice from <code>a</code>&#39;s roll</li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> must be dice or a pool. <code>b</code> can be a dice or a number.</li>
+<li><code>b</code> is coerced into an integer using the rounding rules.</li>
+</ul>
+<p>After rolling the dice, the lowest or the highest values are dropped. <code>k</code> keeps the
+highest, while <code>l</code> keeps the lowest.</p>
+<p>The difference between Drop and Keep is the number of dice that remain. For example:</p>
+<ul>
+<li><code>8x3</code> would roll eight dice and remove 3. As such, 5 dice remain.</li>
+<li><code>8k3</code> or <code>8l3</code> would roll eight dice and remove all but 3.</li>
+</ul>
+<p>If a pool is kept, a pool is returned with the highest or lowest elements dropped.
+If, after dropping, the pool is just of size one, it becomes a number instead.</p>
+<p>e.g., <code>(1d8, 4)k1</code>, will become a number equal to either the result of the d8, or 4,
+whichever is higher. This allows an effective way to enforce a minimum or maximum value in
+a roll.</p>
+<h4 id="keep-highest-keep-lowest">Keep Highest, Keep Lowest</h4>
+<ul>
+<li>Syntax: <code>aK</code> or <code>aL</code></li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> must be dice or a pool.</li>
+</ul>
+<p>This is syntactic sugar for keeping the highest or lowest dice of the set.
+Identical to <code>ak1</code> or <code>al1</code>.</p>
+<h3 id="reroll">Reroll</h3>
+<ul>
+<li>Syntax: <code>arb</code> rerolls <code>a</code> if an element is less than or equal to <code>b</code>.</li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> must be a dice. <code>b</code> must be a number or a dice.</li>
+<li><code>b</code> is coerced into an integer using the rounding rules.</li>
+</ul>
+<p>Rolls <code>a</code> dice, doing one reroll of any dice values that were less than or equal to <code>b</code>.
+For example, if <code>4d10</code> results in <code>8, 3, 1, 9</code>, then <code>4d10r5</code> would drop the two
+values less than or equal to 5, and roll two new dice to replace them. The newly-
+rolled dice will remain, even if they are also less than 5.</p>
+<h4 id="reroll-infinite">Reroll Infinite</h4>
+<p>By using a <code>R</code> instead of an <code>r</code>, the dice will continue to be rerolled as long
+as some value is less than or equal to <code>b</code>. </p>
+<p>Since this is easy to abuse, the rerolls cap out at 100 retries.</p>
+<h3 id="explode">Explode</h3>
+<ul>
+<li>Syntax: <code>aeb</code> rolls an <code>a</code> for each element after the initial roll greater than or equal to <code>b</code>.</li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> must be a dice. <code>b</code> must be a number or a dice.</li>
+<li><code>b</code> is coerced into an integer using the rounding rules.</li>
+</ul>
+<p>Rolls <code>a</code> dice, and rolls an additional <code>a</code> if one of your rolls is greater than
+or equal to <code>b</code>.
+For example, if <code>4d10</code> results in <code>8, 3, 1, 9</code>, then <code>4d10e5</code> would roll two new
+<code>d10</code>s, and add those values to the total. Even if the new values are still greater
+than or equal to 5, no other dice are rolled.</p>
+<h4 id="explode-infinite">Explode Infinite</h4>
+<p>By using <code>E</code> instead of <code>e</code>, the dice will continue to explode as long as some
+value is greater than or equal to <code>b</code>.</p>
+<p>Since this is easy to abuse, the explodes cap out at 100.</p>
+<h4 id="explode-highest">Explode Highest</h4>
+<ul>
+<li>Syntax: <code>a!</code></li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> must be a dice.</li>
+</ul>
+<p>Syntactic sugar for infinitely exploding with the highest number as <code>b</code>. </p>
+<h3 id="success-at">Success At</h3>
+<ul>
+<li>Syntax: <code>asb</code> rolls <code>a</code> and reports the number of rolls greater than or equal to <code>b</code>.</li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> must be a dice. <code>b</code> may be a number or a dice.</li>
+<li><code>b</code> is coerced into an integer using the rounding rules, or may be <code>H</code> or <code>T</code> for coin flips.</li>
+</ul>
+<p>By default, the bot reports the total number after summing all the faces of each die.
+By using this command, you switch to a counting mode, where the number of dice passing
+a certain test will be reported instead. </p>
+<p>For example, if <code>4d10</code> returns <code>1, 3, 6, 9</code>, the result is <code>19</code>. However,
+if <code>4d10s5</code> is used, the result is <code>2</code>, since two dice are greater than or equal to 5.</p>
+<h3 id="failure-at">Failure At</h3>
+<ul>
+<li>Syntax: <code>afb</code> rolls <code>a</code> and reports the number of rolls less than or equal to <code>b</code>.</li>
+<li>Priority: 4</li>
+<li>Allowed Types: <code>a</code> must be a dice. <code>b</code> may be a number or a dice.</li>
+<li><code>b</code> is coerced into an integer using the rounding rules, or may be <code>H</code> or <code>T</code> for coin flips.</li>
+</ul>
+<p>By default, the bot reports the total number after summing all the faces of each die.
+By using this command, you switch to a counting mode, where the number of dice passing
+a certain test will be reported instead. </p>
+<p>Unlike Success At, Failure At is for subtracting instead of adding. Typically, you will
+use Success At and Failure At in tandem. Failure can be used on its own, where it will
+always report a non-positive number.</p>
+<p>For example, if <code>4d10</code> returns <code>1, 3, 6, 9</code>, the result is <code>19</code>. However,
+if <code>4d10s5f1</code> is used, the result is <code>1</code>, since two dice are greater than or equal to 5,
+but 1 dice is less than or equal to 1. </p>
+<h3 id="ceil">Ceil</h3>
+<ul>
+<li>Syntax: <code>a^</code> rounds <code>a</code> up to the nearest whole number.</li>
+<li>Priority: 6</li>
+<li>Allowed Types: Dice or Number.</li>
+</ul>
+<p>This operator will round the result of a up to the nearest whole number, toward
+positive infinity.</p>
+<h3 id="comma">Comma</h3>
+<ul>
+<li>Syntax: <code>a,b</code> creates a pool containing the contents of <code>a</code> and <code>b</code>.</li>
+<li>Priority: 20</li>
+<li>Allowed Types: <code>a</code> can be any type. <code>b</code> can be any type.</li>
+</ul>
+<p>If <code>a</code> is a number or dice, using a comma will create a pool with the contents
+of a and b. If <code>a</code> is already a pool, the element will be added to the existing pool.
+Note that <code>b</code> is always added verbatim to <code>a</code>&#39;s pool; if <code>b</code> is a pool, the pools are
+not concatenated together.</p>
