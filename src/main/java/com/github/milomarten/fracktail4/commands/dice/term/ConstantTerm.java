@@ -6,7 +6,7 @@ import com.github.milomarten.fracktail4.commands.dice.Utils;
 
 import java.math.BigDecimal;
 
-public record ConstantTerm(BigDecimal bd) implements Term {
+public record ConstantTerm(BigDecimal bd) implements SingleValuedTerm {
     /**
      * Create a term from a double.
      * The expression is the value of the double, eliminating all trailing zeroes.

@@ -1,7 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice.term;
 
 import com.github.milomarten.fracktail4.commands.dice.DiceEvaluatorOptions;
-import com.github.milomarten.fracktail4.commands.dice.DiceExpressionConfiguration;
 import com.github.milomarten.fracktail4.commands.dice.Rollable;
 import com.github.milomarten.fracktail4.commands.dice.die.DiceExpression;
 import com.github.milomarten.fracktail4.commands.dice.die.DicePoolTerm;
@@ -33,7 +32,7 @@ public interface Term {
         var b = addend.evaluate(options);
         var sum = a.value().add(b.value());
 
-        return new AccumulationTerm(sum, a.representation() + " + " + b.representation());
+        return new BinaryOperatorTerm(this, addend, Operation.ADD, sum);
     }
 
     default Term subtract(Term minuend, DiceEvaluatorOptions options){
@@ -41,7 +40,7 @@ public interface Term {
         var b = minuend.evaluate(options);
         var diff = a.value().subtract(b.value());
 
-        return new AccumulationTerm(diff, a.representation() + " - " + b.representation());
+        return new BinaryOperatorTerm(this, minuend, Operation.SUBTRACT, diff);
     }
 
     default Term multiply(Term multiplier, DiceEvaluatorOptions options){
@@ -50,7 +49,7 @@ public interface Term {
 
         var mult = a.value().multiply(b.value());
 
-        return new AccumulationTerm(mult, a.representation() + " * " + b.representation());
+        return new BinaryOperatorTerm(this, multiplier, Operation.MULTIPLY, mult);
     }
 
     default Term divide(Term divisor, DiceEvaluatorOptions options){
@@ -63,7 +62,7 @@ public interface Term {
 
         var ratio = a.value().divide(b.value(), MathContext.DECIMAL128);
 
-        return new AccumulationTerm(ratio, a.representation() + " / " + b.representation());
+        return new BinaryOperatorTerm(this, divisor, Operation.DIVIDE, ratio);
     }
 
     default Term root(Term radicand, DiceEvaluatorOptions options){
@@ -75,12 +74,20 @@ public interface Term {
 
         if (nAsInt == 1) {
             // special case: the 1th root of any number is itself.
-            return new AccumulationTerm(x.value(), "¹√(" + x.representation() + ")");
+            return new BinaryOperatorTerm(
+                    ConstantTerm.of(1),
+                    radicand,
+                    Operation.ROOT,
+                    x.value());
         } else if (nAsInt == 2) {
             // special case: BigDecimal supports square roots natively.
             try {
-                return new AccumulationTerm(x.value().sqrt(MathContext.DECIMAL128),
-                        "√(" + x.representation() + ")");
+                return new BinaryOperatorTerm(
+                        ConstantTerm.of(2),
+                        radicand,
+                        Operation.ROOT,
+                        x.value().sqrt(MathContext.DECIMAL128)
+                );
             } catch (ArithmeticException ex) {
                 throw new ExpressionSyntaxError("Root operation did not work as expected. The radicand was probably negative");
             }
@@ -88,9 +95,12 @@ public interface Term {
             var power = 1d / nAsInt;
             var result = Math.pow(x.value().doubleValue(), power);
             if (Double.isFinite(result)) {
-                var squareRootExpression = "(" + n.representation() + ")√(" + x.representation() + ")";
-                return new AccumulationTerm(BigDecimal.valueOf(result),
-                        squareRootExpression);
+                return new BinaryOperatorTerm(
+                        ConstantTerm.of(nAsInt),
+                        radicand,
+                        Operation.ROOT,
+                        BigDecimal.valueOf(result)
+                );
             } else {
                 throw new ExpressionSyntaxError("Root operation did not work as expected. The radicand was probably negative");
             }
@@ -103,7 +113,7 @@ public interface Term {
         var a = this.evaluate(options);
         var ceil = a.value().setScale(0, RoundingMode.CEILING);
 
-        return new AccumulationTerm(ceil, "^" + a.representation());
+        return new UnaryOperatorTerm(this, Operation.CEIL, ceil);
     }
 
     default Term dice(Term faces, DiceEvaluatorOptions options){

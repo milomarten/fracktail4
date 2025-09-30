@@ -78,7 +78,7 @@ public enum Operation {
      * This one's for you, Grapha
      */
     ROOT("√", 6) {
-        private static final Term TWO = new AccumulationTerm(BigDecimal.valueOf(2), "");
+        private static final Term TWO = new ImplicitTerm(BigDecimal.valueOf(2));
 
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
@@ -125,7 +125,7 @@ public enum Operation {
     DICE("d", 4) {
         // This special ONE makes the parsing logic easier, without showing an unexpected 1,
         // when "d" is used with no left term.
-        private static final Term ONE = new AccumulationTerm(BigDecimal.ONE, "");
+        private static final Term ONE = new ImplicitTerm(BigDecimal.ONE);
 
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
@@ -143,7 +143,7 @@ public enum Operation {
     DOT_DICE("D", 4) {
         // This special ONE makes the parsing logic easier, without showing an unexpected 1,
         // when "D" is used with no left term.
-        private static final Term ONE = new AccumulationTerm(BigDecimal.ONE, "");
+        private static final Term ONE = new ImplicitTerm(BigDecimal.ONE);
 
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) {
