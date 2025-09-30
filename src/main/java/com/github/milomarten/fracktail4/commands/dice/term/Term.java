@@ -73,15 +73,14 @@ public interface Term {
         var nAsInt = n.valueAsInt(options.getRoundingMode());
         var x = radicand.evaluate(options);
 
-        var squareRootExpression = "(" + n.representation() + ")√(" + x.representation() + ")";
         if (nAsInt == 1) {
             // special case: the 1th root of any number is itself.
-            return new AccumulationTerm(x.value(), squareRootExpression);
+            return new AccumulationTerm(x.value(), "¹√(" + x.representation() + ")");
         } else if (nAsInt == 2) {
             // special case: BigDecimal supports square roots natively.
             try {
                 return new AccumulationTerm(x.value().sqrt(MathContext.DECIMAL128),
-                        squareRootExpression);
+                        "√(" + x.representation() + ")");
             } catch (ArithmeticException ex) {
                 throw new ExpressionSyntaxError("Root operation did not work as expected. The radicand was probably negative");
             }
@@ -89,6 +88,7 @@ public interface Term {
             var power = 1d / nAsInt;
             var result = Math.pow(x.value().doubleValue(), power);
             if (Double.isFinite(result)) {
+                var squareRootExpression = "(" + n.representation() + ")√(" + x.representation() + ")";
                 return new AccumulationTerm(BigDecimal.valueOf(result),
                         squareRootExpression);
             } else {
