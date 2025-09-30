@@ -34,15 +34,11 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
     protected ImmutableApplicationCommandRequest.Builder augment(ImmutableApplicationCommandRequest.Builder builder) {
         return builder
                 .name("roll")
-                .description("Roll some dice! Use `syntax` as the expression for details.");
+                .description("Roll some dice! See https://milomarten.github.io/fracktail4/dice for more.");
     }
 
     @Override
     protected SlashCommandResponse handleEvent(ChatInputInteractionEvent event, Parameters parameters) {
-        if ("syntax".equalsIgnoreCase(parameters.expression)) {
-            return Responses.replyEphemeral(SYNTAX);
-        }
-
         try {
             var roundingMode = Objects.requireNonNullElse(parameters.roundingmode, RoundingMode.DOWN);
             var result = evaluator.evaluate(parameters.expression, DiceEvaluatorOptions.builder()
@@ -63,40 +59,6 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
         } catch (ExpressionSyntaxError ex) {
             return Responses.replyEphemeral(ex.getMessage());
         }
-    }
-
-    private static final String SYNTAX = """
-            Expressions are written as you would write a normal math equation. \
-            As such, you can use normal numbers, positive, negative, +, -, \\*, and /. However, in addition to numbers, you can \
-            also write *dice expressions*. The format for a dice roll is `<number of dice>d<faces on the dice>`. For example, \
-            2d10 would roll 2 ten-sided dice, and add the results.
-            
-            Note that the case of the `d` matters. `d` will perform a normal dice roll, while `D` will perform a \
-            *dotted* dice roll. This is a shorthand that will, by default:
-            - Explode "infinitely" on the highest dice value
-            - Switch to Success Counting mode, where a success is 7 or more, and a failure is 1.
-            - Additionally, each highest dice value counts as 2 successes instead of 1.
-            The explode value, success value, and failure value can all still be changed as described below.
-
-            There is additional syntax that can augment a dice roll. All of these values can be supplied by further math expressions, \
-            but all will be coerced to a whole number by dropping everything after the decimal point.:
-            - x#: Drop # of the lowest dice.
-            - k#: Keep the highest # dice, and discard the rest. K is shorthand for k1.
-            - l#: Keep the *lowest* # dice, and discard the rest. L is shorthand for l1.
-            - r#: Reroll any dice less than #. To keep rerolling, use R instead.
-            - e#: Roll 1 new dice per roll greater than #. To keep exploding, use E instead.
-            - s#: Switch to Success Counting mode. Instead of adding the face value of the dice, \
-            the bot will add the number of dice greater than or equal to #.
-            - f#: Switch to Success Counting mode. Instead of adding the face value of the dice, \
-            the bot will subtract the number of dice less than or equal to #.
-            
-            In addition to the standard math operators, there are these operators as well:
-            - #^: Round the number, rounding upward.
-            - ,: Create a dice pool.
-            """;
-
-    static {
-        if (SYNTAX.length() > 2000) { }
     }
 
     @Data
