@@ -33,6 +33,20 @@ public record TermEvaluationResult(BigDecimal value, String representation) {
         }
     }
 
+    public String valueAsRoundedString(int numDecimalDigits, RoundingMode roundingMode) throws ExpressionSyntaxError {
+        checkForNullValue();
+        try {
+            if (numDecimalDigits == 0) {
+                return valueAsBigInteger(roundingMode).toString();
+            } else {
+                return value.setScale(-numDecimalDigits, roundingMode)
+                        .toString();
+            }
+        } catch (ArithmeticException ex) {
+            throw new ExpressionSyntaxError(ex.getMessage());
+        }
+    }
+
     public TermEvaluationResult map(UnaryOperator<BigDecimal> mapValue, UnaryOperator<String> mapRep) {
         return new TermEvaluationResult(mapValue.apply(this.value), mapRep.apply(this.representation));
     }

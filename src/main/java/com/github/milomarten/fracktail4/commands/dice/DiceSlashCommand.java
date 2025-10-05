@@ -10,11 +10,14 @@ import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashComm
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.stereotype.Component;
 
 import java.math.RoundingMode;
@@ -48,7 +51,8 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
             if (result.value() == null) {
                 str = String.format("%s", result.representation());
             } else {
-                str = String.format("%s = **%s**", result.representation(), result.valueAsBigInteger(roundingMode));
+                str = String.format("%s = **%s**", result.representation(),
+                        result.valueAsRoundedString(parameters.scale, roundingMode));
             }
 
             if (StringUtils.isNotBlank(parameters.comment)) {
@@ -82,5 +86,9 @@ public class DiceSlashCommand extends AbstractSlashCommand<DiceSlashCommand.Para
                 @ParameterChoice(name = "Half Toward Even", value = "HALF_EVEN")
         })
         private RoundingMode roundingmode;
+        @Parameter(description = "The number of decimal digits in the output")
+        @Min(0)
+        @Max(9)
+        private int scale = 0;
     }
 }
