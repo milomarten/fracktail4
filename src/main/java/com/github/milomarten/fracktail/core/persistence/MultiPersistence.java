@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.persistence;
+package com.github.milomarten.fracktail.core.persistence;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;

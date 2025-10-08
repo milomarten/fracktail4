@@ -1,8 +1,8 @@
-package com.github.milomarten.fracktail4.config;
+package com.github.milomarten.fracktail.core.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.milomarten.fracktail4.persistence.FilePersistence;
-import com.github.milomarten.fracktail4.persistence.Persistence;
+import com.github.milomarten.fracktail.core.persistence.FilePersistence;
+import com.github.milomarten.fracktail.core.persistence.Persistence;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

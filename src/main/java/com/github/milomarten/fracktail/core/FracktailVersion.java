@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4;
+package com.github.milomarten.fracktail.core;
 
 public class FracktailVersion {
     public static String getVersion() {

@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.platform.discord;
 
-import com.github.milomarten.fracktail4.FracktailVersion;
+import com.github.milomarten.fracktail.core.FracktailVersion;
 import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClient;
 import discord4j.core.GatewayDiscordClient;

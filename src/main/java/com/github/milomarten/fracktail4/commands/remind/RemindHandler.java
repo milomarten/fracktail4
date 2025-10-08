@@ -1,8 +1,8 @@
 package com.github.milomarten.fracktail4.commands.remind;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.milomarten.fracktail4.persistence.Persistence;
-import com.github.milomarten.fracktail4.persistence.PersistenceBean;
+import com.github.milomarten.fracktail.core.persistence.Persistence;
+import com.github.milomarten.fracktail.core.persistence.PersistenceBean;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.MessageChannel;

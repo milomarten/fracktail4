@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.persistence;
+package com.github.milomarten.fracktail.core.persistence;
 
 import reactor.core.publisher.Mono;
 

@@ -1,3 +1,6 @@
+app:
+  version: fracktail4
+
 spring:
   jackson:
     deserialization:
