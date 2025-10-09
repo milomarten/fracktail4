@@ -9,6 +9,10 @@ import java.util.List;
 public class VisitorGroup<T> implements Visitor<T> {
     private final List<Visitor<T>> visitors = new ArrayList<>();
 
+    public VisitorGroup(VisitorGroup<T> original) {
+        this.visitors.addAll(original.visitors);
+    }
+
     public VisitorGroup<T> add(Visitor<T> visitor) {
         visitors.add(visitor);
         return this;
