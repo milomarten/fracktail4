@@ -34,4 +34,12 @@ public class DiscordVisitor {
     public Visitor<ImmutableApplicationCommandOptionData.Builder> argMaxLength(int maxLength) {
         return input -> input.maxLength(maxLength);
     }
+
+    public Visitor<ImmutableApplicationCommandOptionData.Builder> argMin(Number min) {
+        return input -> input.minValue(min.doubleValue());
+    }
+
+    public Visitor<ImmutableApplicationCommandOptionData.Builder> argMax(Number max) {
+        return input -> input.maxValue(max.doubleValue());
+    }
 }

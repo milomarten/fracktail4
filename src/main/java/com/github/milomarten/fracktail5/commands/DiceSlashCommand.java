@@ -7,11 +7,10 @@ import com.github.milomarten.fracktail4.platform.discord.slash.adapter.Responses
 import com.github.milomarten.fracktail5.platform.discord.DiscordArgumentDetails;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
-import com.github.milomarten.fracktail5.platform.discord.argument.BooleanArgumentParser;
-import com.github.milomarten.fracktail5.platform.discord.argument.PojoParser;
-import com.github.milomarten.fracktail5.platform.discord.argument.StringArgumentParser;
+import com.github.milomarten.fracktail5.platform.discord.argument.*;
 import com.github.milomarten.fracktail5.platform.util.DiscordResponses;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -48,6 +47,20 @@ public class DiceSlashCommand implements DiscordSlashCommand {
                                         .defaultTo(true),
                                 Arguments::setVisible
                         )
+                        .addField(new IntArgumentParser(
+                                        "scale",
+                                        "The number of decimal digits in the output")
+                                        .min(0).max(9).defaultTo(0),
+                                Arguments::setScale
+                        )
+                        .addField(new EnumArgumentParser<>(
+                                        "roundingmode",
+                                        "The rounding function for your system",
+                                        RoundingOption.class,
+                                        RoundingOption::getName)
+                                        .defaultTo(RoundingOption.DOWN),
+                                Arguments::setRoundingMode
+                        )
                 ,
                 this::roll
         );
@@ -55,7 +68,7 @@ public class DiceSlashCommand implements DiscordSlashCommand {
 
     private DiscordResponse roll(Arguments parameters) {
         try {
-            var roundingMode = Objects.requireNonNullElse(parameters.roundingMode, RoundingMode.DOWN);
+            var roundingMode = Objects.requireNonNullElse(parameters.roundingMode.mode, RoundingMode.DOWN);
             var result = evaluator.evaluate(parameters.expression, DiceEvaluatorOptions.builder()
                     .roundingMode(roundingMode)
                     .build());
@@ -81,12 +94,26 @@ public class DiceSlashCommand implements DiscordSlashCommand {
         }
     }
 
+    @RequiredArgsConstructor
+    private enum RoundingOption {
+        FLOOR("Truncate", RoundingMode.FLOOR),
+        HALF_UP("Half Away from Zero", RoundingMode.HALF_UP),
+        UP("Away from Zero", RoundingMode.UP),
+        DOWN("Toward Zero", RoundingMode.DOWN),
+        CEILING("Ceil", RoundingMode.CEILING),
+        HALF_DOWN("Half Toward Zero", RoundingMode.HALF_DOWN),
+        HALF_EVEN("Half Toward Even", RoundingMode.HALF_EVEN);
+
+        @Getter private final String name;
+        private final RoundingMode mode;
+    }
+
     @Data
     private static class Arguments {
         private String expression;
         private String comment;
         private boolean visible;
-        private RoundingMode roundingMode;
+        private RoundingOption roundingMode;
         private int scale;
     }
 }
