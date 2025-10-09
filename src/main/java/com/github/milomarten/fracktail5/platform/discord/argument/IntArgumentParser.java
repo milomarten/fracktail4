@@ -4,12 +4,18 @@ import com.github.milomarten.fracktail5.platform.util.DiscordVisitor;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
+import discord4j.core.object.command.ApplicationCommandOption;
 
 import java.util.Optional;
 
 public class IntArgumentParser extends BaseOptionalArgumentParser<Integer> {
     public IntArgumentParser(String name, String description) {
         super(name, description);
+    }
+
+    @Override
+    protected ApplicationCommandOption.Type type() {
+        return ApplicationCommandOption.Type.INTEGER;
     }
 
     @Override

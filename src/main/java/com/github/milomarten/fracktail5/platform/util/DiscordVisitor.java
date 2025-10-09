@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail5.platform.util;
 
 import com.github.milomarten.fracktail5.platform.Visitor;
+import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ImmutableApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import lombok.experimental.UtilityClass;
@@ -13,6 +14,10 @@ public class DiscordVisitor {
 
     public Visitor<ImmutableApplicationCommandRequest.Builder> description(String description) {
         return input -> input.description(description);
+    }
+
+    public Visitor<ImmutableApplicationCommandOptionData.Builder> argType(ApplicationCommandOption.Type type) {
+        return input -> input.type(type.getValue());
     }
 
     public Visitor<ImmutableApplicationCommandOptionData.Builder> argName(String name) {

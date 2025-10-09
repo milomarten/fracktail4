@@ -4,6 +4,7 @@ import com.github.milomarten.fracktail5.platform.util.DiscordVisitor;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
+import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import org.apache.commons.lang3.EnumUtils;
 
@@ -43,5 +44,10 @@ public class EnumArgumentParser<E extends Enum<E>> extends BaseOptionalArgumentP
                 .map(i -> {
                     return EnumUtils.getEnum(this.enumClass, i, null);
                 });
+    }
+
+    @Override
+    protected ApplicationCommandOption.Type type() {
+        return ApplicationCommandOption.Type.STRING;
     }
 }
