@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail.core.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail.core.dice.StringDiceExpressionEvaluator;
+import com.github.milomarten.fracktail.core.dice.term.ExpressionSyntaxError;
 import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.Parameter;
 import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.ParameterChoice;
 import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.ParameterChoices;
@@ -17,7 +19,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.Range;
 import org.springframework.stereotype.Component;
 
 import java.math.RoundingMode;

@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
+import com.github.milomarten.fracktail.core.dice.Utils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

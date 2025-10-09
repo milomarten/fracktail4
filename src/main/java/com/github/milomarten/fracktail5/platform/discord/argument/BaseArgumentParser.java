@@ -7,7 +7,10 @@ import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 
-public abstract class BaseArgumentParser<T> implements DiscordArgumentParser<T> {
+import java.util.List;
+
+public abstract class BaseArgumentParser<T>
+        implements Argument<T>, Visitor<ImmutableApplicationCommandRequest.Builder> {
     protected final String name;
     private final VisitorGroup<ImmutableApplicationCommandOptionData.Builder> visitors;
 
@@ -20,6 +23,11 @@ public abstract class BaseArgumentParser<T> implements DiscordArgumentParser<T> 
 
     protected void addVisitor(Visitor<ImmutableApplicationCommandOptionData.Builder> visitor) {
         this.visitors.add(visitor);
+    }
+
+    @Override
+    public List<ApplicationCommandOptionData> getOptions() {
+        return List.of(visitors.visit(ApplicationCommandOptionData.builder()).build());
     }
 
     @Override

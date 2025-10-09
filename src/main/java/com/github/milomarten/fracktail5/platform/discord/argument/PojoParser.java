@@ -2,51 +2,53 @@ package com.github.milomarten.fracktail5.platform.discord.argument;
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
-import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-public class PojoParser<ARG> implements DiscordArgumentParser<ARG>, Argument<ARG>{
+public class PojoParser<ARG> implements Argument<ARG>{
     private final Supplier<ARG> constructor;
-    private final List<SetterField<ARG, ?>> arguments;
+    private final List<SetterField<ARG, ?>> fields;
 
     public PojoParser(Supplier<ARG> constructor) {
         this.constructor = constructor;
-        this.arguments = new ArrayList<>();
+        this.fields = new ArrayList<>();
     }
 
     public <TYPE> PojoParser<ARG> addField(Argument<TYPE> argument, BiConsumer<ARG, TYPE> setter) {
-        this.arguments.add(new SetterField<>(argument, setter));
+        this.fields.add(new SetterField<>(argument, setter));
         return this;
     }
 
     @Override
-    public ARG convert(ChatInputInteractionEvent chatInputInteractionEvent) {
+    public ARG get(ChatInputInteractionEvent chatInputInteractionEvent) {
         var obj = constructor.get();
-        arguments.forEach(argument -> argument.set(obj, chatInputInteractionEvent));
+        for (var field : this.fields) {
+            field.set(obj, chatInputInteractionEvent);
+        }
         return obj;
     }
 
     @Override
-    public ImmutableApplicationCommandRequest.Builder visit(ImmutableApplicationCommandRequest.Builder input) {
-        return input.addAllOptions(getOptions());
-    }
-
-    @Override
     public List<ApplicationCommandOptionData> getOptions() {
-        return arguments.stream()
+        return fields.stream()
                 .map(sf -> sf.arg)
                 .map(Argument::getOptions)
                 .flatMap(List::stream)
-                .toList();
-    }
-
-    @Override
-    public ARG get(ChatInputInteractionEvent event) {
-        return convert(event);
+                .collect(
+                        Collectors.collectingAndThen(
+                                Collectors.toMap(
+                                    ApplicationCommandOptionData::name,
+                                    Function.identity(),
+                                    (one, two) -> two
+                            ),
+                                map -> new ArrayList<>(map.values())
+                        )
+                );
     }
 
     private record SetterField<ARG, TYPE>(Argument<TYPE> arg, BiConsumer<ARG, TYPE> setter) {

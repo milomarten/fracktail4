@@ -12,7 +12,7 @@ public class BooleanArgumentParser extends BaseOptionalArgumentParser<Boolean> {
     }
 
     @Override
-    public Optional<Boolean> convert(ChatInputInteractionEvent chatInputInteractionEvent) {
+    public Optional<Boolean> get(ChatInputInteractionEvent chatInputInteractionEvent) {
         return chatInputInteractionEvent.getOption(this.name)
                 .flatMap(ApplicationCommandInteractionOption::getValue)
                 .map(ApplicationCommandInteractionOptionValue::asBoolean);

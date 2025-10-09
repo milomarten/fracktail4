@@ -12,13 +12,6 @@ public class StringArgumentParser extends BaseOptionalArgumentParser<String> {
         super(name, description);
     }
 
-    @Override
-    public Optional<String> convert(ChatInputInteractionEvent chatInputInteractionEvent) {
-        return chatInputInteractionEvent.getOption(this.name)
-                .flatMap(ApplicationCommandInteractionOption::getValue)
-                .map(ApplicationCommandInteractionOptionValue::asString);
-    }
-
     public StringArgumentParser minLength(int minLength) {
         addVisitor(DiscordVisitor.argMinLength(minLength));
         return this;
@@ -27,5 +20,12 @@ public class StringArgumentParser extends BaseOptionalArgumentParser<String> {
     public StringArgumentParser maxLength(int maxLength) {
         addVisitor(DiscordVisitor.argMaxLength(maxLength));
         return this;
+    }
+
+    @Override
+    public Optional<String> get(ChatInputInteractionEvent event) {
+        return event.getOption(this.name)
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString);
     }
 }

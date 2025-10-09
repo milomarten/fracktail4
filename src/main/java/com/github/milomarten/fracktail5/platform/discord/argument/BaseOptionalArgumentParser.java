@@ -2,8 +2,10 @@ package com.github.milomarten.fracktail5.platform.discord.argument;
 
 import com.github.milomarten.fracktail5.platform.util.DiscordVisitor;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 public abstract class BaseOptionalArgumentParser<T> extends BaseArgumentParser<Optional<T>> {
@@ -11,34 +13,34 @@ public abstract class BaseOptionalArgumentParser<T> extends BaseArgumentParser<O
         super(name, description);
     }
 
-    public DiscordArgumentParser<T> required() {
+    public Argument<T> required() {
         return new BaseArgumentParserRequired<>(this);
     }
 
-    public DiscordArgumentParser<T> defaultTo(T value) {
+    public Argument<T> defaultTo(T value) {
         return new BaseArgumentParserDefault<>(this, value);
     }
 
-    private record BaseArgumentParserRequired<T>(BaseOptionalArgumentParser<T> base) implements DiscordArgumentParser<T> {
+    private record BaseArgumentParserRequired<T>(BaseOptionalArgumentParser<T> base) implements Argument<T> {
         public BaseArgumentParserRequired(BaseOptionalArgumentParser<T> base) {
             this.base = base;
             this.base.addVisitor(DiscordVisitor.argRequired(true));
         }
 
         @Override
-        public T convert(ChatInputInteractionEvent chatInputInteractionEvent) {
-            return base.convert(chatInputInteractionEvent)
+        public T get(ChatInputInteractionEvent chatInputInteractionEvent) {
+            return base.get(chatInputInteractionEvent)
                     .orElseThrow();
         }
 
         @Override
-        public ImmutableApplicationCommandRequest.Builder visit(ImmutableApplicationCommandRequest.Builder input) {
-            return base.visit(input);
+        public List<ApplicationCommandOptionData> getOptions() {
+            return base.getOptions();
         }
     }
 
     private record BaseArgumentParserDefault<T>(BaseOptionalArgumentParser<T> base,
-                                                T defaultValue) implements DiscordArgumentParser<T> {
+                                                T defaultValue) implements Argument<T> {
         public BaseArgumentParserDefault(BaseOptionalArgumentParser<T> base, T defaultValue) {
             this.base = base;
             this.defaultValue = defaultValue;
@@ -46,14 +48,14 @@ public abstract class BaseOptionalArgumentParser<T> extends BaseArgumentParser<O
         }
 
         @Override
-        public T convert(ChatInputInteractionEvent chatInputInteractionEvent) {
-            return base.convert(chatInputInteractionEvent)
+        public T get(ChatInputInteractionEvent chatInputInteractionEvent) {
+            return base.get(chatInputInteractionEvent)
                     .orElse(defaultValue);
         }
 
         @Override
-        public ImmutableApplicationCommandRequest.Builder visit(ImmutableApplicationCommandRequest.Builder input) {
-            return base.visit(input);
+        public List<ApplicationCommandOptionData> getOptions() {
+            return base.getOptions();
         }
     }
 }
