@@ -23,52 +23,53 @@ import java.util.Objects;
 public class DiceSlashCommand implements DiscordSlashCommand {
     private final StringDiceExpressionEvaluator evaluator;
 
-    @Override
+    private final Details DISCORD_SPEC = new DiscordArgumentDetails<>(
+            "roll",
+            "Roll some dice! See https://milomarten.github.io/fracktail4/dice for more.",
+            new PojoParser<>(Arguments::new)
+                    .addField(new StringArgumentParser(
+                                    "expression",
+                                    "The roll expression to evaluate.")
+                                    .required(),
+                            Arguments::setExpression
+                    )
+                    .addField(new StringArgumentParser(
+                                    "comment",
+                                    "A small description of the roll")
+                                    .defaultTo(null),
+                            Arguments::setComment
+                    )
+                    .addField(new BooleanArgumentParser(
+                                    "visible",
+                                    "Whether this role should be visible to all")
+                                    .defaultTo(true),
+                            Arguments::setVisible
+                    )
+                    .addField(new IntArgumentParser(
+                                    "scale",
+                                    "The number of decimal digits in the output")
+                                    .min(0).max(9).defaultTo(0),
+                            Arguments::setScale
+                    )
+                    .addField(new EnumArgumentParser<>(
+                                    "roundingmode",
+                                    "The rounding function for your system",
+                                    RoundingOption.class,
+                                    RoundingOption::getName)
+                                    .defaultTo(RoundingOption.DOWN),
+                            Arguments::setRoundingMode
+                    )
+            ,
+            this::roll
+    );
+
     public Details getDiscordSlashCommandDetails() {
-        return new DiscordArgumentDetails<>(
-                "roll",
-                "Roll some dice! See https://milomarten.github.io/fracktail4/dice for more.",
-                new PojoParser<>(Arguments::new)
-                        .addField(new StringArgumentParser(
-                                        "expression",
-                                        "The roll expression to evaluate.")
-                                        .required(),
-                                Arguments::setExpression
-                        )
-                        .addField(new StringArgumentParser(
-                                        "comment",
-                                        "A small description of the roll")
-                                        .defaultTo(null),
-                                Arguments::setComment
-                        )
-                        .addField(new BooleanArgumentParser(
-                                        "visible",
-                                        "Whether this role should be visible to all")
-                                        .defaultTo(true),
-                                Arguments::setVisible
-                        )
-                        .addField(new IntArgumentParser(
-                                        "scale",
-                                        "The number of decimal digits in the output")
-                                        .min(0).max(9).defaultTo(0),
-                                Arguments::setScale
-                        )
-                        .addField(new EnumArgumentParser<>(
-                                        "roundingmode",
-                                        "The rounding function for your system",
-                                        RoundingOption.class,
-                                        RoundingOption::getName)
-                                        .defaultTo(RoundingOption.DOWN),
-                                Arguments::setRoundingMode
-                        )
-                ,
-                this::roll
-        );
+        return DISCORD_SPEC;
     }
 
     private DiscordResponse roll(Arguments parameters) {
         try {
-            var roundingMode = Objects.requireNonNullElse(parameters.roundingMode.mode, RoundingMode.DOWN);
+            var roundingMode = parameters.roundingMode.mode;
             var result = evaluator.evaluate(parameters.expression, DiceEvaluatorOptions.builder()
                     .roundingMode(roundingMode)
                     .build());
