@@ -1,6 +1,5 @@
 package com.github.milomarten.fracktail5.platform.discord.argument;
 
-import com.github.milomarten.fracktail5.platform.util.DiscordVisitor;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.core.object.command.ApplicationCommandInteractionOptionValue;
@@ -13,11 +12,27 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class EnumArgumentParser<E extends Enum<E>> extends BaseOptionalArgumentParser<E> {
+/**
+ * A parameter parser which supports enums by name.
+ * Discord does not directly support enums, but allows for any given argument to have a list
+ * of permissible values. This parser leverages this behavior to effectively handle enums.
+ * <br>
+ * Discord allows the value of the argument to be different from the label the front-end user
+ * sees. As such, this Parser has a `namer` field, which converts the Enum name into a
+ * human-friendly string.
+ * <br>
+ * This class is named EnumString because it uses a String parameter on the Discord side, thus
+ * matching enums by name. A second option is EnumInteger, which matches enums by ordinal instead.
+ * EnumInteger allows you to rename enums without needing to re-spec, while EnumString allows you
+ * to rearrange enums in your codebase without needing to re-spec, so choose your favorite. EnumInteger
+ * may also be slightly more efficient, but it's probably negligible.
+ * @param <E> The enum type
+ */
+public class EnumStringArgumentParser<E extends Enum<E>> extends BaseOptionalArgumentParser<E> {
     private final Class<E> enumClass;
     private final Function<E, String> namer;
 
-    public EnumArgumentParser(String name, String description, Class<E> clazz, Function<E, String> namer) {
+    public EnumStringArgumentParser(String name, String description, Class<E> clazz, Function<E, String> namer) {
         super(name, description);
         this.enumClass = clazz;
         this.namer = namer;

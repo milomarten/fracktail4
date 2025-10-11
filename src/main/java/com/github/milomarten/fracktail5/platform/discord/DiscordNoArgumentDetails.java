@@ -8,11 +8,20 @@ import lombok.Getter;
 
 import java.util.function.Supplier;
 
+/**
+ * One type of Discord command, which takes no arguments at all.
+ */
 public class DiscordNoArgumentDetails implements DiscordSlashCommand.Details {
     @Getter private final String name;
     @Getter private final VisitorGroup<ImmutableApplicationCommandRequest.Builder> spec;
     private final Supplier<DiscordResponse> invoker;
 
+    /**
+     * Create these details
+     * @param name The name of the command
+     * @param description The description of the command
+     * @param invoker The function to execute when the command is invoked.
+     */
     public DiscordNoArgumentDetails(
             String name,
             String description,

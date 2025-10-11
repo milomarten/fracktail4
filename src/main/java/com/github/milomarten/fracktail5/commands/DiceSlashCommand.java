@@ -3,7 +3,6 @@ package com.github.milomarten.fracktail5.commands;
 import com.github.milomarten.fracktail.core.dice.DiceEvaluatorOptions;
 import com.github.milomarten.fracktail.core.dice.StringDiceExpressionEvaluator;
 import com.github.milomarten.fracktail.core.dice.term.ExpressionSyntaxError;
-import com.github.milomarten.fracktail4.platform.discord.slash.adapter.Responses;
 import com.github.milomarten.fracktail5.platform.discord.DiscordArgumentDetails;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
@@ -16,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.math.RoundingMode;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
@@ -51,7 +49,7 @@ public class DiceSlashCommand implements DiscordSlashCommand {
                                     .min(0).max(9).defaultTo(0),
                             Arguments::setScale
                     )
-                    .addField(new EnumArgumentParser<>(
+                    .addField(new EnumStringArgumentParser<>(
                                     "roundingmode",
                                     "The rounding function for your system",
                                     RoundingOption.class,

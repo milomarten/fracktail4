@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail5.platform.discord;
 
 import com.github.milomarten.fracktail5.platform.Visitor;
+import com.github.milomarten.fracktail5.platform.VisitorGroup;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -12,27 +13,31 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * The orchestrator for handling all Slash Command usage
+ * Any beans implementing DiscordSlashCommand will be processed and registered for use.
+ * When a slash command is on the bot, it will find the relevant command and execute it.
+ * If there is no such command, a message will inform the user that the command doesn't exist.
+ * <br>
+ * Any beans implementing the Visitor&t;DiscordSlashCommand&gt; interface will be invoked with
+ * every command that is registered, to allow for cross-cutting command code.
+ */
 @Component
 @Slf4j
-public class DiscordRegistry implements DiscordHookSource {
+public class DiscordSlashCommandRegistry implements DiscordHookSource {
     private final Map<String, DiscordSlashCommand> slashCommands;
 
-    public DiscordRegistry(
+    public DiscordSlashCommandRegistry(
             List<DiscordSlashCommand> slashCommands,
             List<Visitor<DiscordSlashCommand>> visitors
     ) {
         visitors.forEach(visitor -> {
             log.info("Registering DiscordSlashCommand visitor {}", visitor.getClass().getSimpleName());
         });
+        var visitorGroup = new VisitorGroup<>(visitors);
         this.slashCommands = slashCommands.stream()
                 .peek(cmd -> log.info("Registered Slash Command {}", cmd.getDiscordSlashCommandDetails().getName()))
-                .map(dsc -> {
-                    var wrappedDsc = dsc;
-                    for (var visitor : visitors) {
-                        wrappedDsc = visitor.visit(wrappedDsc);
-                    }
-                    return wrappedDsc;
-                })
+                .map(visitorGroup::visit)
                 .collect(Collectors.<DiscordSlashCommand, String, DiscordSlashCommand>toMap(
                         d -> d.getDiscordSlashCommandDetails().getName(),
                         Function.identity()

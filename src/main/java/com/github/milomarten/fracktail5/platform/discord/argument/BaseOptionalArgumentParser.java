@@ -2,9 +2,7 @@ package com.github.milomarten.fracktail5.platform.discord.argument;
 
 import com.github.milomarten.fracktail5.platform.util.DiscordVisitor;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
-import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
-import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,13 +12,32 @@ public abstract class BaseOptionalArgumentParser<T> extends BaseArgumentParser<O
         super(name, description);
     }
 
+    /**
+     * Mark this argument as required instead of optional.
+     * This configures the Discord spec to require this input for the command.
+     * If the command is invoked without it, a NoSuchElementException is thrown.
+     * <br>
+     * When this is invoked, `this` is effectively lost, and should no longer be used.
+     * @return An argument with the same configuration as this, but marked as required.
+     */
     public Argument<T> required() {
         return new BaseArgumentParserRequired<>(this);
     }
 
+    /**
+     * Mark this argument with a default value.
+     * Intrinsically, this configures the Discord spec to not require this input
+     * for the command, and defaulting to the supplied value if it is omitted.
+     * <br>
+     * When this is invoked, `this` is effectively lost, and should no longer be used.
+     * @param value The value to default to
+     * @return An argument with the same configuration as this, but defaulting to a specific value.
+     */
     public Argument<T> defaultTo(T value) {
         return new BaseArgumentParserDefault<>(this, value);
     }
+
+    // to do - defaultToSupplier, defaultToFunction
 
     private record BaseArgumentParserRequired<T>(BaseOptionalArgumentParser<T> base) implements Argument<T> {
         public BaseArgumentParserRequired(BaseOptionalArgumentParser<T> base) {
