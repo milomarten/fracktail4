@@ -58,7 +58,8 @@ public class PojoParser<ARG> implements Argument<ARG>{
      * @param <TYPE> The type within the field
      */
     public <TYPE> PojoParser<ARG> addOptionalField(Argument<Optional<TYPE>> argument, BiConsumer<ARG, TYPE> setter) {
-        return addField(argument, (arg, opt) -> opt.ifPresent(value -> setter.accept(arg, value)));
+        return addField(argument,
+                (arg, opt) -> opt.ifPresent(value -> setter.accept(arg, value)));
     }
 
     @Override

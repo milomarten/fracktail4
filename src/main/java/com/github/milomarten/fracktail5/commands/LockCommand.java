@@ -26,14 +26,14 @@ public class LockCommand implements DiscordSlashCommand, Visitor<DiscordSlashCom
                   "status",
                     "On or Off, depending on if you want to lock or unlock the bot"
             ).required(), Parameters::setLock)
-            .addOptionalField(new StringArgumentParser(
+            .addField(new StringArgumentParser(
                   "command",
                     "The command to turn off, if only one command should be disabled."
-            ), Parameters::setCommand)
-            .addOptionalField(new StringArgumentParser(
+            ).defaultTo(null), Parameters::setCommand)
+            .addField(new StringArgumentParser(
                     "reason",
                     "The reason for locking the command"
-            ), Parameters::setReason),
+            ).defaultTo(null), Parameters::setReason),
             this::lock
     );
 
