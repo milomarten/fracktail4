@@ -5,6 +5,7 @@ import discord4j.discordjson.json.ApplicationCommandOptionData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -22,6 +23,10 @@ public class PojoParser<ARG> implements Argument<ARG>{
     public <TYPE> PojoParser<ARG> addField(Argument<TYPE> argument, BiConsumer<ARG, TYPE> setter) {
         this.fields.add(new SetterField<>(argument, setter));
         return this;
+    }
+
+    public <TYPE> PojoParser<ARG> addOptionalField(Argument<Optional<TYPE>> argument, BiConsumer<ARG, TYPE> setter) {
+        return addField(argument, (arg, opt) -> opt.ifPresent(value -> setter.accept(arg, value)));
     }
 
     @Override

@@ -6,11 +6,13 @@ import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandRegis
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.MessageReference;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.spec.MessageCreateSpec;
 import discord4j.discordjson.Id;
 import discord4j.discordjson.json.ApplicationCommandData;
+import discord4j.discordjson.possible.Possible;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -123,7 +125,10 @@ public class CommandLifecycleHelper implements DiscordHookSource {
         return message.getChannel()
                 .flatMap(mc -> mc.createMessage(MessageCreateSpec.builder()
                         .content(response)
-                        .messageReference(message.getId())
+                        .messageReference(
+                                Possible.ofNullable(message.getMessageReference().orElse(null))
+                                        .map(MessageReference::getData)
+                        )
                         .build()))
                 .then();
     }
