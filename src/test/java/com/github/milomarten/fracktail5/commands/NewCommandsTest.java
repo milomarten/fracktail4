@@ -6,6 +6,7 @@ import com.github.milomarten.fracktail4.commands.CommandBootstrap;
 import com.github.milomarten.fracktail4.commands.PuptimeCommand;
 import com.github.milomarten.fracktail4.commands.UptimeCommand;
 import com.github.milomarten.fracktail4.commands.dice.DiceSlashCommand;
+import com.github.milomarten.fracktail4.commands.remind.RemindMeCommand;
 import com.github.milomarten.fracktail4.platform.discord.mapper.DiscordJacksonMapper;
 import com.github.milomarten.fracktail4.platform.discord.mapper.DiscordParameterHelper;
 import com.github.milomarten.fracktail4.platform.discord.mapper.ObjectToDiscordReflectiveMapper;
@@ -48,6 +49,12 @@ class NewCommandsTest {
                 new DiceSlashCommand(null),
                 new com.github.milomarten.fracktail5.commands.DiceSlashCommand(null)
         );
+        // Intentionally removed one parameter, `where`, which is now populated automatically instead
+        // of a manual entry
+//        compareCommands(
+//                new RemindMeCommand(null),
+//                new com.github.milomarten.fracktail5.commands.RemindMeCommand(null)
+//        );
     }
 
     private void compareCommands(SlashCommandWrapper v4, DiscordSlashCommand v5) {

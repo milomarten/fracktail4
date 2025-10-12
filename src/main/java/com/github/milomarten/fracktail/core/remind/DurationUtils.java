@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.remind;
+package com.github.milomarten.fracktail.core.remind;
 
 import org.apache.commons.lang3.StringUtils;
 

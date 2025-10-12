@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.commands.remind;
 
+import com.github.milomarten.fracktail.core.remind.DurationUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.remind;
+package com.github.milomarten.fracktail.core.remind;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

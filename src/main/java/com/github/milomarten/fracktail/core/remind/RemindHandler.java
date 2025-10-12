@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.remind;
+package com.github.milomarten.fracktail.core.remind;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.milomarten.fracktail.core.persistence.Persistence;
