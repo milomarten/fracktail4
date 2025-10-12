@@ -26,6 +26,14 @@ public class IntArgumentParser extends BaseOptionalArgumentParser<Integer> {
                 .map(Long::intValue);
     }
 
+    @Override
+    public Optional<Integer> get(ChatInputInteractionEvent event, ApplicationCommandInteractionOption branch) {
+        return branch.getOption(this.name)
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asLong)
+                .map(Long::intValue);
+    }
+
     public IntArgumentParser min(int min) {
         this.addVisitor(DiscordVisitor.argMin(min));
         return this;

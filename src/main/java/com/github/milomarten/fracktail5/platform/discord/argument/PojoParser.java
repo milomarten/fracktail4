@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail5.platform.discord.argument;
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 
 import java.util.ArrayList;
@@ -49,24 +50,20 @@ public class PojoParser<ARG> implements Argument<ARG>{
         return this;
     }
 
-    /**
-     * Add a field mapper that pulls an optional field from the context, and stores it in the POJO if present
-     * Syntactic sugar for addField, where the setter is only invoked if the argument is present.
-     * @param argument The description of the field to pull
-     * @param setter The setter to invoke on the result of the argument
-     * @return This, for chaining
-     * @param <TYPE> The type within the field
-     */
-    public <TYPE> PojoParser<ARG> addOptionalField(Argument<Optional<TYPE>> argument, BiConsumer<ARG, TYPE> setter) {
-        return addField(argument,
-                (arg, opt) -> opt.ifPresent(value -> setter.accept(arg, value)));
-    }
-
     @Override
     public ARG get(ChatInputInteractionEvent chatInputInteractionEvent) {
         var obj = constructor.get();
         for (var field : this.fields) {
             field.set(obj, chatInputInteractionEvent);
+        }
+        return obj;
+    }
+
+    @Override
+    public ARG get(ChatInputInteractionEvent event, ApplicationCommandInteractionOption branch) {
+        var obj = constructor.get();
+        for (var field : this.fields) {
+            field.set(obj, event, branch);
         }
         return obj;
     }
@@ -92,6 +89,11 @@ public class PojoParser<ARG> implements Argument<ARG>{
     private record SetterField<ARG, TYPE>(Argument<TYPE> arg, BiConsumer<ARG, TYPE> setter) {
         public void set(ARG arg, ChatInputInteractionEvent chatInputInteractionEvent) {
             var param = this.arg.get(chatInputInteractionEvent);
+            this.setter.accept(arg, param);
+        }
+
+        public void set(ARG arg, ChatInputInteractionEvent event, ApplicationCommandInteractionOption branch) {
+            var param = this.arg.get(event, branch);
             this.setter.accept(arg, param);
         }
     }

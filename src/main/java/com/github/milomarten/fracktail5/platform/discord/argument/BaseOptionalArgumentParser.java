@@ -2,6 +2,7 @@ package com.github.milomarten.fracktail5.platform.discord.argument;
 
 import com.github.milomarten.fracktail5.platform.discord.util.DiscordVisitor;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 
 import java.util.List;
@@ -52,6 +53,12 @@ public abstract class BaseOptionalArgumentParser<T> extends BaseArgumentParser<O
         }
 
         @Override
+        public T get(ChatInputInteractionEvent source, ApplicationCommandInteractionOption event) {
+            return base.get(source, event)
+                    .orElseThrow();
+        }
+
+        @Override
         public List<ApplicationCommandOptionData> getOptions() {
             return base.getOptions();
         }
@@ -68,6 +75,12 @@ public abstract class BaseOptionalArgumentParser<T> extends BaseArgumentParser<O
         @Override
         public T get(ChatInputInteractionEvent chatInputInteractionEvent) {
             return base.get(chatInputInteractionEvent)
+                    .orElse(defaultValue);
+        }
+
+        @Override
+        public T get(ChatInputInteractionEvent source, ApplicationCommandInteractionOption event) {
+            return base.get(source, event)
                     .orElse(defaultValue);
         }
 

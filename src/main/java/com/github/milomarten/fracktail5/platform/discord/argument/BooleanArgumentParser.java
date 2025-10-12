@@ -23,4 +23,11 @@ public class BooleanArgumentParser extends BaseOptionalArgumentParser<Boolean> {
                 .flatMap(ApplicationCommandInteractionOption::getValue)
                 .map(ApplicationCommandInteractionOptionValue::asBoolean);
     }
+
+    @Override
+    public Optional<Boolean> get(ChatInputInteractionEvent source, ApplicationCommandInteractionOption event) {
+        return event.getOption(this.name)
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asBoolean);
+    }
 }

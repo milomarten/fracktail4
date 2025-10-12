@@ -34,4 +34,11 @@ public class StringArgumentParser extends BaseOptionalArgumentParser<String> {
                 .flatMap(ApplicationCommandInteractionOption::getValue)
                 .map(ApplicationCommandInteractionOptionValue::asString);
     }
+
+    @Override
+    public Optional<String> get(ChatInputInteractionEvent event, ApplicationCommandInteractionOption branch) {
+        return branch.getOption(this.name)
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString);
+    }
 }

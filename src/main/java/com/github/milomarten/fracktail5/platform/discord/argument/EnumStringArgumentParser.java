@@ -62,6 +62,16 @@ public class EnumStringArgumentParser<E extends Enum<E>> extends BaseOptionalArg
     }
 
     @Override
+    public Optional<E> get(ChatInputInteractionEvent event, ApplicationCommandInteractionOption branch) {
+        return branch.getOption(this.name)
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString)
+                .map(i -> {
+                    return EnumUtils.getEnum(this.enumClass, i, null);
+                });
+    }
+
+    @Override
     protected ApplicationCommandOption.Type type() {
         return ApplicationCommandOption.Type.STRING;
     }
