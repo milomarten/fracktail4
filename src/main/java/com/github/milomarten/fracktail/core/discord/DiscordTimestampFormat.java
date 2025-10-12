@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.platform.discord.utils;
+package com.github.milomarten.fracktail.core.discord;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -7,7 +7,7 @@ import com.github.milomarten.fracktail5.platform.discord.DiscordArgumentDetails;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
 import com.github.milomarten.fracktail5.platform.discord.argument.*;
-import com.github.milomarten.fracktail5.platform.util.DiscordResponses;
+import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

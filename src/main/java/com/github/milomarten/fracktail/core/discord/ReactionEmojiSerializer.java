@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.platform.discord.utils;
+package com.github.milomarten.fracktail.core.discord;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

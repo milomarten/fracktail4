@@ -1,7 +1,7 @@
 package com.github.milomarten.fracktail5.platform.discord;
 
 import com.github.milomarten.fracktail5.platform.VisitorGroup;
-import com.github.milomarten.fracktail5.platform.util.DiscordVisitor;
+import com.github.milomarten.fracktail5.platform.discord.util.DiscordVisitor;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import lombok.Getter;

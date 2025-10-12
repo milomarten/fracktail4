@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.config;
+package com.github.milomarten.fracktail.core.config;
 
 import com.github.jknack.handlebars.EscapingStrategy;
 import com.github.jknack.handlebars.Handlebars;
@@ -7,7 +7,7 @@ import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.helper.StringHelpers;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
-import com.github.milomarten.fracktail4.platform.discord.utils.DiscordTimestampFormat;
+import com.github.milomarten.fracktail.core.discord.DiscordTimestampFormat;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

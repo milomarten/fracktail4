@@ -8,7 +8,7 @@ import com.github.milomarten.fracktail5.platform.discord.WrappedDiscordSlashComm
 import com.github.milomarten.fracktail5.platform.discord.argument.BooleanArgumentParser;
 import com.github.milomarten.fracktail5.platform.discord.argument.PojoParser;
 import com.github.milomarten.fracktail5.platform.discord.argument.StringArgumentParser;
-import com.github.milomarten.fracktail5.platform.util.DiscordResponses;
+import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import lombok.Data;
 import org.springframework.stereotype.Component;

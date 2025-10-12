@@ -2,7 +2,7 @@ package com.github.milomarten.fracktail5.commands;
 
 import com.github.milomarten.fracktail5.platform.discord.DiscordNoArgumentDetails;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
-import com.github.milomarten.fracktail5.platform.util.DiscordResponses;
+import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
 import org.springframework.stereotype.Component;
 
 @Component

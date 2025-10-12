@@ -1,18 +1,13 @@
 package com.github.milomarten.fracktail5.commands;
 
 import com.github.milomarten.fracktail.core.FracktailVersion;
-import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
-import com.github.milomarten.fracktail4.platform.discord.slash.adapter.Responses;
 import com.github.milomarten.fracktail5.platform.discord.DiscordNoArgumentDetails;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
-import com.github.milomarten.fracktail5.platform.util.DiscordResponses;
-import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
-import discord4j.discordjson.json.ApplicationCommandRequest;
+import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
 import lombok.Getter;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 

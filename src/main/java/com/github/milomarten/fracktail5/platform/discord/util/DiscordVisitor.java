@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail5.platform.util;
+package com.github.milomarten.fracktail5.platform.discord.util;
 
 import com.github.milomarten.fracktail5.platform.Visitor;
 import discord4j.core.object.command.ApplicationCommandOption;

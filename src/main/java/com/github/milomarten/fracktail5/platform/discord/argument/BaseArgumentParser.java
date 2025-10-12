@@ -2,7 +2,7 @@ package com.github.milomarten.fracktail5.platform.discord.argument;
 
 import com.github.milomarten.fracktail5.platform.Visitor;
 import com.github.milomarten.fracktail5.platform.VisitorGroup;
-import com.github.milomarten.fracktail5.platform.util.DiscordVisitor;
+import com.github.milomarten.fracktail5.platform.discord.util.DiscordVisitor;
 import discord4j.core.object.command.ApplicationCommandOption;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandOptionData;

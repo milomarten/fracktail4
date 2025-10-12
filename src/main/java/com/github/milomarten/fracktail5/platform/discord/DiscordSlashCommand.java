@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail5.platform.discord;
 
 import com.github.milomarten.fracktail5.platform.VisitorGroup;
+import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 
@@ -41,7 +42,7 @@ public interface DiscordSlashCommand {
          * The code to execute when running this command
          * @param event The slash event context
          * @return A response of some sort.
-         * @see com.github.milomarten.fracktail5.platform.util.DiscordResponses
+         * @see DiscordResponses
          */
         DiscordResponse invoke(ChatInputInteractionEvent event);
     }
