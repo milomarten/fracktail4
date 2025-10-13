@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.birthday.v2;
+package com.github.milomarten.fracktail.core.birthday.v2;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

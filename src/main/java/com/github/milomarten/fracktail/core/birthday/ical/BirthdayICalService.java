@@ -1,7 +1,7 @@
-package com.github.milomarten.fracktail4.commands.birthday.ical;
+package com.github.milomarten.fracktail.core.birthday.ical;
 
-import com.github.milomarten.fracktail4.commands.birthday.BirthdayHandler;
-import com.github.milomarten.fracktail4.commands.birthday.v2.BirthdayEventInstance;
+import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
+import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
 import discord4j.core.GatewayDiscordClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

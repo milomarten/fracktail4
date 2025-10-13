@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.birthday.ical;
+package com.github.milomarten.fracktail.core.birthday.ical;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.platform.discord.react;
+package com.github.milomarten.fracktail.core.discord.react;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import discord4j.common.util.Snowflake;

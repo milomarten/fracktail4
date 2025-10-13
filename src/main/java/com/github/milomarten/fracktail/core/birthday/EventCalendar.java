@@ -1,7 +1,7 @@
-package com.github.milomarten.fracktail4.commands.birthday;
+package com.github.milomarten.fracktail.core.birthday;
 
-import com.github.milomarten.fracktail4.commands.birthday.v2.BirthdayEventInstance;
-import com.github.milomarten.fracktail4.commands.birthday.v2.EventInstance;
+import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
+import com.github.milomarten.fracktail.core.birthday.v2.EventInstance;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.time.LocalDate;

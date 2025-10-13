@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.birthday.v2;
+package com.github.milomarten.fracktail.core.birthday.v2;
 
 import discord4j.common.util.Snowflake;
 import reactor.core.publisher.Mono;

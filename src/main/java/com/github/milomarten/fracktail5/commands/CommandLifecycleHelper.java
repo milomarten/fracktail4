@@ -47,6 +47,8 @@ public class CommandLifecycleHelper implements DiscordHookSource {
             } catch (NumberFormatException ex) {
                 return Mono.just("Must provide ID of server");
             }
+        } else if ("global".equals(command)) {
+            return handleGlobalCommand();
         }
         return Mono.empty();
     }
@@ -62,6 +64,21 @@ public class CommandLifecycleHelper implements DiscordHookSource {
                 })
                 .map(done -> {
                     return String.format("%d command pushed to %d", done.size(), where);
+                })
+                .onErrorResume(e -> Mono.just(e.getMessage()));
+    }
+
+    private Mono<String> handleGlobalCommand() {
+        return getApplicationId()
+                .flatMap(appId -> {
+                    var specs = registry.getSpecs();
+                    return client.getRestClient()
+                            .getApplicationService()
+                            .bulkOverwriteGlobalApplicationCommand(appId, specs)
+                            .collectList();
+                })
+                .map(done -> {
+                    return String.format("%d command pushed to prod. It'll take a bit of time!", done.size());
                 })
                 .onErrorResume(e -> Mono.just(e.getMessage()));
     }

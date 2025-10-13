@@ -1,9 +1,9 @@
-package com.github.milomarten.fracktail4.commands.birthday;
+package com.github.milomarten.fracktail.core.birthday;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.github.milomarten.fracktail4.commands.birthday.v2.BirthdayEventInstance;
-import com.github.milomarten.fracktail4.commands.birthday.v2.HardCodedBirthdayEventInstance;
-import com.github.milomarten.fracktail4.commands.birthday.v2.UserBirthdayEventInstance;
+import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
+import com.github.milomarten.fracktail.core.birthday.v2.HardCodedBirthdayEventInstance;
+import com.github.milomarten.fracktail.core.birthday.v2.UserBirthdayEventInstance;
 import com.github.milomarten.fracktail.core.persistence.Persistence;
 import com.github.milomarten.fracktail.core.persistence.PersistenceBean;
 import discord4j.common.util.Snowflake;

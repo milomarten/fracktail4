@@ -1,6 +1,6 @@
-package com.github.milomarten.fracktail4.commands.birthday.v2;
+package com.github.milomarten.fracktail.core.birthday.v2;
 
-import com.github.milomarten.fracktail4.commands.birthday.BirthdayCritter;
+import com.github.milomarten.fracktail.core.birthday.BirthdayCritter;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.User;

@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.birthday;
+package com.github.milomarten.fracktail.core.birthday;
 
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;

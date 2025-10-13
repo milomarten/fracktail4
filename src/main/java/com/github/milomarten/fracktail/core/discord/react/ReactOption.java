@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.platform.discord.react;
+package com.github.milomarten.fracktail.core.discord.react;
 
 import discord4j.core.object.reaction.ReactionEmoji;
 import lombok.AllArgsConstructor;

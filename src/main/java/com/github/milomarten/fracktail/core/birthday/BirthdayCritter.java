@@ -1,6 +1,6 @@
-package com.github.milomarten.fracktail4.commands.birthday;
+package com.github.milomarten.fracktail.core.birthday;
 
-import com.github.milomarten.fracktail4.commands.birthday.v2.UserBirthdayEventInstance;
+import com.github.milomarten.fracktail.core.birthday.v2.UserBirthdayEventInstance;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import lombok.AllArgsConstructor;

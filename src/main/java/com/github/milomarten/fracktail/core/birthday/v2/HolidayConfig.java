@@ -1,6 +1,6 @@
-package com.github.milomarten.fracktail4.commands.birthday.v2;
+package com.github.milomarten.fracktail.core.birthday.v2;
 
-import com.github.milomarten.fracktail4.commands.birthday.EventCalendar;
+import com.github.milomarten.fracktail.core.birthday.EventCalendar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
