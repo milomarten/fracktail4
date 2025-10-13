@@ -1,9 +1,9 @@
-package com.github.milomarten.fracktail4.commands.amtrak;
+package com.github.milomarten.fracktail.core.amtrak;
 
-import com.github.milomarten.fracktail4.commands.amtrak.models.StaleStatus;
-import com.github.milomarten.fracktail4.commands.amtrak.models.Station;
-import com.github.milomarten.fracktail4.commands.amtrak.models.Train;
-import com.github.milomarten.fracktail4.commands.amtrak.models.TrainId;
+import com.github.milomarten.fracktail.core.amtrak.models.StaleStatus;
+import com.github.milomarten.fracktail.core.amtrak.models.Station;
+import com.github.milomarten.fracktail.core.amtrak.models.Train;
+import com.github.milomarten.fracktail.core.amtrak.models.TrainId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;

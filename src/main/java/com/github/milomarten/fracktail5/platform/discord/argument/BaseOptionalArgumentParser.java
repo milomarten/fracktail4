@@ -38,6 +38,18 @@ public abstract class BaseOptionalArgumentParser<T> extends BaseArgumentParser<O
         return new BaseArgumentParserDefault<>(this, value);
     }
 
+    /**
+     * Mark this argument to simply default to null.
+     * Intrinsically, this configures the Discord spec to not require this input
+     * for the command, defaulting its value to null.
+     * <br>
+     * When this is invoked, `this` is effectively lost, and should no longer be used.
+     * @return An argument with the same configuration as this, but defaulting to null.
+     */
+    public Argument<T> defaultToNull() {
+        return defaultTo(null);
+    }
+
     // to do - defaultToSupplier, defaultToFunction
 
     private record BaseArgumentParserRequired<T>(BaseOptionalArgumentParser<T> base) implements Argument<T> {

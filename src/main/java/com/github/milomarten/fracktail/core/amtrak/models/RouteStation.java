@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.amtrak.models;
+package com.github.milomarten.fracktail.core.amtrak.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

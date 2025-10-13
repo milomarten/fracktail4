@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.commands.amtrak;
+package com.github.milomarten.fracktail.core.amtrak;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;

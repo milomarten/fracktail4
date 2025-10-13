@@ -1,8 +1,8 @@
-package com.github.milomarten.fracktail4.commands.amtrak;
+package com.github.milomarten.fracktail.core.amtrak;
 
-import com.github.milomarten.fracktail4.commands.amtrak.models.Station;
-import com.github.milomarten.fracktail4.commands.amtrak.models.Train;
-import com.github.milomarten.fracktail4.commands.amtrak.models.TrainId;
+import com.github.milomarten.fracktail.core.amtrak.models.Station;
+import com.github.milomarten.fracktail.core.amtrak.models.Train;
+import com.github.milomarten.fracktail.core.amtrak.models.TrainId;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

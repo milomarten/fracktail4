@@ -30,6 +30,15 @@ public class TemplateCache {
         });
     }
 
+    public String apply(String name, Object context) {
+        try {
+            return get(name).apply(context);
+        } catch (IOException ex) {
+            log.error("Error applying template {} with {}", name, context, ex);
+            return "";
+        }
+    }
+
     public DiscordResponse reply(String name, Object context) {
         var template = get(name);
         return event -> {
