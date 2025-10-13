@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail5.commands;
 
 import com.github.milomarten.fracktail.core.FracktailVersion;
+import com.github.milomarten.fracktail.core.discord.DiscordTimestampFormat;
 import com.github.milomarten.fracktail5.platform.discord.DiscordNoArgumentDetails;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
 import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
@@ -29,10 +30,10 @@ public class UptimeCommand implements DiscordSlashCommand, ApplicationListener<A
                         Hi! My name is Fracktail. Milo Marten created me!
                         You can see my source code here: https://github.com/milomarten/fracktail4/. You'll \
                         notice that I'm on version %s.
-                        I started up <t:%d:R>. Wow!
+                        I started up %s. Wow!
                         """,
                         FracktailVersion.getVersion(),
-                        startTime == null ? 0 : startTime.getEpochSecond()));
+                        startTime == null ? "???" : DiscordTimestampFormat.RELATIVE.toDiscord(startTime)));
             });
 
     @Override

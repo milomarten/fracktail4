@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail5.commands;
 
 import com.github.milomarten.fracktail.core.FracktailVersion;
+import com.github.milomarten.fracktail.core.discord.DiscordTimestampFormat;
 import com.github.milomarten.fracktail5.platform.discord.DiscordNoArgumentDetails;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
 import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
@@ -29,10 +30,10 @@ public class PuptimeCommand implements DiscordSlashCommand, ApplicationListener<
                             Woof! My arf bark Fracktail. Milo Marten woofed me!
                             You bow-wow my arf yip bark: https://github.com/milomarten/fracktail4/. You'll \\
                             bark arf I'm sniff howl %s.
-                            I woof woof <t:%d:R>. Bow-wow!
+                            I woof woof %s. Bow-wow!
                         """,
                         FracktailVersion.getVersion(),
-                        startTime == null ? 0 : startTime.getEpochSecond()));
+                        startTime == null ? "???" : DiscordTimestampFormat.RELATIVE.toDiscord(startTime)));
             });
 
     @Override
