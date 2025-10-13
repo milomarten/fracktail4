@@ -36,7 +36,7 @@ public class UserBirthdayEventInstance implements BirthdayEventInstance {
 
     public Mono<String> _getName() {
         return this.client.getUserById(this.userId)
-                .map(User::getUsername);
+                .map(u -> u.getGlobalName().orElse(u.getUsername()));
     }
 
     @Override
