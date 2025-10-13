@@ -1,7 +1,7 @@
 package com.github.milomarten.fracktail4.platform.discord.slash;
 
 import com.github.milomarten.fracktail4.base.SimpleCommand;
-import com.github.milomarten.fracktail4.platform.discord.DiscordHookSource;
+import com.github.milomarten.fracktail.core.discord.DiscordHookSource;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SimpleCommandAsSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.GatewayDiscordClient;

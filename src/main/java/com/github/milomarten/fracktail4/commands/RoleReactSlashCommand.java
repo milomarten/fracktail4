@@ -1,9 +1,9 @@
 package com.github.milomarten.fracktail4.commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.milomarten.fracktail4.platform.discord.react.ReactMessage;
-import com.github.milomarten.fracktail4.platform.discord.react.ReactOption;
-import com.github.milomarten.fracktail4.platform.discord.react.RoleHandler;
+import com.github.milomarten.fracktail.core.discord.react.ReactMessage;
+import com.github.milomarten.fracktail.core.discord.react.ReactOption;
+import com.github.milomarten.fracktail.core.discord.react.RoleHandler;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandRegistry;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;

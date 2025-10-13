@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.commands;
 
-import com.github.milomarten.fracktail4.FracktailVersion;
+import com.github.milomarten.fracktail.core.FracktailVersion;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.Responses;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;

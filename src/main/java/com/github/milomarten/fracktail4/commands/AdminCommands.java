@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.commands;
 
-import com.github.milomarten.fracktail4.persistence.PersistenceBean;
+import com.github.milomarten.fracktail.core.persistence.PersistenceBean;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandWrapper;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;

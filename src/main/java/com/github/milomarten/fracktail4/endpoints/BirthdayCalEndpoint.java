@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.endpoints;
 
-import com.github.milomarten.fracktail4.commands.birthday.ical.BirthdayICalCacheJob;
+import com.github.milomarten.fracktail.core.birthday.ical.BirthdayICalCacheJob;
 import lombok.RequiredArgsConstructor;
 import net.fortuna.ical4j.data.CalendarOutputter;
 import org.springframework.web.bind.annotation.GetMapping;

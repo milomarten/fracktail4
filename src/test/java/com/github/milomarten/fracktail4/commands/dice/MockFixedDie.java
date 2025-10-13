@@ -1,6 +1,8 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.Status;
+import com.github.milomarten.fracktail.core.dice.RollResult;
+import com.github.milomarten.fracktail.core.dice.Rollable;
+import com.github.milomarten.fracktail.core.dice.term.Status;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.rng.UniformRandomProvider;
 

@@ -2,8 +2,8 @@ package com.github.milomarten.fracktail4.commands.amtrak.parameters;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.github.milomarten.fracktail4.commands.amtrak.AmtrakCommand;
-import com.github.milomarten.fracktail4.commands.amtrak.models.Station;
-import com.github.milomarten.fracktail4.commands.amtrak.models.TrainId;
+import com.github.milomarten.fracktail.core.amtrak.models.Station;
+import com.github.milomarten.fracktail.core.amtrak.models.TrainId;
 import com.github.milomarten.fracktail4.platform.discord.mapper.annotations.Parameter;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.Responses;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashCommandResponse;

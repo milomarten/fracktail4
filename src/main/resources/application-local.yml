@@ -1,3 +1,6 @@
+app:
+  version: fracktail5
+
 discord:
   startupAnnouncement:
     enabled: false

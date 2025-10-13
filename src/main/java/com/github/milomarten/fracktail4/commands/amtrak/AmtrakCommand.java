@@ -1,7 +1,9 @@
 package com.github.milomarten.fracktail4.commands.amtrak;
 
+import com.github.milomarten.fracktail.core.amtrak.AmtrakGateway;
+import com.github.milomarten.fracktail.core.amtrak.AmtrakLookup;
 import com.github.milomarten.fracktail4.commands.amtrak.parameters.AmtrakCommandParameters;
-import com.github.milomarten.fracktail4.config.TemplateCache;
+import com.github.milomarten.fracktail.core.config.TemplateCache;
 import com.github.milomarten.fracktail4.platform.discord.slash.AbstractSlashCommand;
 import com.github.milomarten.fracktail4.platform.discord.slash.adapter.SlashCommandResponse;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;

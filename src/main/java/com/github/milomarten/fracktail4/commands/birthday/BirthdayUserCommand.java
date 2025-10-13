@@ -1,5 +1,7 @@
 package com.github.milomarten.fracktail4.commands.birthday;
 
+import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
+import com.github.milomarten.fracktail.core.birthday.BirthdayUtils;
 import com.github.milomarten.fracktail4.platform.discord.slash.UserCommandWrapper;
 import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import discord4j.core.event.domain.interaction.UserInteractionEvent;

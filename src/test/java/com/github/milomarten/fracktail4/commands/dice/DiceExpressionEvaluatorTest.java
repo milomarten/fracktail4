@@ -1,8 +1,10 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.ConstantTerm;
-import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
-import com.github.milomarten.fracktail4.commands.dice.term.Operation;
+import com.github.milomarten.fracktail.core.dice.DiceEvaluatorOptions;
+import com.github.milomarten.fracktail.core.dice.DiceExpressionEvaluator;
+import com.github.milomarten.fracktail.core.dice.term.ConstantTerm;
+import com.github.milomarten.fracktail.core.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail.core.dice.term.Operation;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

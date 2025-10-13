@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail4.commands.dice;
 
-import com.github.milomarten.fracktail4.commands.dice.term.ExpressionSyntaxError;
+import com.github.milomarten.fracktail.core.dice.StringDiceExpressionEvaluator;
+import com.github.milomarten.fracktail.core.dice.term.ExpressionSyntaxError;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
