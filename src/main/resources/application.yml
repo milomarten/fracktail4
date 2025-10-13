@@ -1,5 +1,5 @@
 app:
-  version: fracktail4
+  version: fracktail5
 
 spring:
   jackson:
