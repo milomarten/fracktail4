@@ -4,9 +4,7 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
 import discord4j.core.object.command.ApplicationCommandInteractionOption;
 import discord4j.discordjson.json.ApplicationCommandOptionData;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -68,18 +66,25 @@ public class PojoParser<ARG> implements Argument<ARG>{
         return obj;
     }
 
+    private static final Comparator<ApplicationCommandOptionData> REQUIRED_FIRST
+            = Comparator.<ApplicationCommandOptionData, Boolean>comparing(
+                    e -> e.required().toOptional().orElse(false))
+            .reversed();
+
     @Override
     public List<ApplicationCommandOptionData> getOptions() {
         return fields.stream()
                 .map(sf -> sf.arg)
                 .map(Argument::getOptions)
                 .flatMap(List::stream)
+                .sorted(REQUIRED_FIRST)
                 .collect(
                         Collectors.collectingAndThen(
                                 Collectors.toMap(
                                     ApplicationCommandOptionData::name,
                                     Function.identity(),
-                                    (one, two) -> two
+                                    (one, two) -> two,
+                                    LinkedHashMap::new
                             ),
                                 map -> new ArrayList<>(map.values())
                         )

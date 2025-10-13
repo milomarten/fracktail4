@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail4.platform.discord;
 
+import com.github.milomarten.fracktail.core.discord.DiscordHookSource;
 import com.github.milomarten.fracktail4.config.FracktailRoles;
 import com.github.milomarten.fracktail4.permissions.PermissionsProvider;
 import com.github.milomarten.fracktail4.platform.discord.slash.SlashCommandRegistry;

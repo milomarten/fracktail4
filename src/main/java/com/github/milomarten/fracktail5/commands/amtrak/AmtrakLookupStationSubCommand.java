@@ -91,11 +91,11 @@ public class AmtrakLookupStationSubCommand {
 
         var response = station
                 .map(this::forStation)
-                .map(summary -> templateCache.apply("station-lookup", summary))
+                .map(summary -> templateCache.apply("amtrak/station-lookup", summary))
                 .defaultIfEmpty("Sorry, I don't know that station.")
                 .onErrorReturn("Sorry, I had trouble getting that station.");
 
-        return DiscordResponses.defer(response.map(DiscordResponses::reply));
+        return DiscordResponses.delayedResponse(response);
     }
 
     @Data

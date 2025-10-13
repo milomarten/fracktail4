@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail4.platform.discord;
+package com.github.milomarten.fracktail.core.discord;
 
 import discord4j.core.GatewayDiscordClient;
 

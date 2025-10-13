@@ -57,13 +57,13 @@ public class AmtrakLookupTrainSubCommand {
                 .map(this::toView)
                 .map(view -> {
                     if (view.state() == TrainState.PREDEPARTURE) {
-                        return templateCache.apply("train-lookup-predeparture", view);
+                        return templateCache.apply("amtrak/train-lookup-predeparture", view);
                     } else if (view.state() == TrainState.COMPLETED) {
-                        return templateCache.apply("train-lookup-completed", view);
+                        return templateCache.apply("amtrak/train-lookup-completed", view);
                     } else if (view.state() == TrainState.AT_STATION) {
-                        return templateCache.apply("train-lookup-at-station", view);
+                        return templateCache.apply("amtrak/train-lookup-at-station", view);
                     } else {
-                        return templateCache.apply("train-lookup", view);
+                        return templateCache.apply("amtrak/train-lookup", view);
                     }
                 })
                 .map(m -> m + "\n-# All times are in local time.")
@@ -74,7 +74,7 @@ public class AmtrakLookupTrainSubCommand {
                 })
                 .onErrorReturn("Sorry, I had trouble getting that train.");
 
-        return DiscordResponses.defer(responseMono.map(DiscordResponses::reply));
+        return DiscordResponses.delayedResponse(responseMono);
     }
 
     @Data

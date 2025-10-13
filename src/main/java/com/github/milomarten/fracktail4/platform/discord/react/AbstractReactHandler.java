@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail4.platform.discord.react;
 
-import com.github.milomarten.fracktail4.platform.discord.DiscordHookSource;
+import com.github.milomarten.fracktail.core.discord.DiscordHookSource;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.ReactionAddEvent;

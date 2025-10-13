@@ -77,10 +77,10 @@ public class RemindMeCommand implements DiscordSlashCommand {
         }
 
         var job = new ReminderJob(now.plus(d), parameters.getWhere(), parameters.getMessage());
-        return DiscordResponses.defer(
+        return DiscordResponses.delayedResponse(
                 handler.scheduleJob(parameters.getWho().getId(), job)
                         .thenReturn(true)
-                        .thenReturn(DiscordResponses.replyEphemeral("Sure! I'll remind you in " + DurationUtils.durationToString(d) + "(" + job.toDiscordTimestamp() + ")"))
+                        .thenReturn("Sure! I'll remind you in " + DurationUtils.durationToString(d) + "(" + job.toDiscordTimestamp() + ")")
         );
     }
 

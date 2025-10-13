@@ -1,9 +1,11 @@
 package com.github.milomarten.fracktail5.platform.discord;
 
+import com.github.milomarten.fracktail.core.discord.DiscordHookSource;
 import com.github.milomarten.fracktail5.platform.Visitor;
 import com.github.milomarten.fracktail5.platform.VisitorGroup;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent;
+import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -71,5 +73,15 @@ public class DiscordSlashCommandRegistry implements DiscordHookSource {
             return Mono.empty();
         })
         .subscribe();
+    }
+
+    public List<ApplicationCommandRequest> getSpecs() {
+        return slashCommands.values()
+                .stream()
+                .map(dsc -> {
+                    var spec = dsc.getDiscordSlashCommandDetails().getSpec();
+                    return (ApplicationCommandRequest) (spec.visit(ApplicationCommandRequest.builder()).build());
+                })
+                .toList();
     }
 }

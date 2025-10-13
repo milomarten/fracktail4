@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail5.platform.discord;
+package com.github.milomarten.fracktail.core.discord;
 
 import com.github.milomarten.fracktail.core.FracktailVersion;
 import discord4j.common.util.Snowflake;
