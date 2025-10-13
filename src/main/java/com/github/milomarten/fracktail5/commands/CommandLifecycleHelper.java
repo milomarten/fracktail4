@@ -2,25 +2,33 @@ package com.github.milomarten.fracktail5.commands;
 
 import com.github.milomarten.fracktail.core.discord.DiscordHookSource;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommandRegistry;
-import discord4j.common.util.Snowflake;
+import com.github.milomarten.fracktail5.platform.discord.DiscordUserCommandRegistry;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class CommandLifecycleHelper implements DiscordHookSource {
-    private final DiscordSlashCommandRegistry registry;
+    private final DiscordSlashCommandRegistry slashCommandRegistry;
+    private final DiscordUserCommandRegistry userCommandRegistry;
     private GatewayDiscordClient client;
 
     @Override
     public void addDiscordHook(GatewayDiscordClient client) {
         this.client = client;
         client.on(MessageCreateEvent.class, mce -> {
+            if (mce.getGuildId().isPresent()) {
+                return Mono.empty();
+            }
             var content = mce.getMessage().getContent();
             if (content.startsWith("!")) {
                 var args = StringUtils.split(content.substring(1), ' ');
@@ -56,10 +64,11 @@ public class CommandLifecycleHelper implements DiscordHookSource {
     private Mono<String> handleLocalCommand(long where) {
         return getApplicationId()
                 .flatMap(appId -> {
-                    var specs = registry.getSpecs();
+                    var slashCommandSpecs = slashCommandRegistry.getSpecs();
+                    var userCommandSpecs = userCommandRegistry.getSpecs();
                     return client.getRestClient()
                             .getApplicationService()
-                            .bulkOverwriteGuildApplicationCommand(appId, where, specs)
+                            .bulkOverwriteGuildApplicationCommand(appId, where, concat(slashCommandSpecs, userCommandSpecs))
                             .collectList();
                 })
                 .map(done -> {
@@ -71,10 +80,11 @@ public class CommandLifecycleHelper implements DiscordHookSource {
     private Mono<String> handleGlobalCommand() {
         return getApplicationId()
                 .flatMap(appId -> {
-                    var specs = registry.getSpecs();
+                    var slashCommandSpecs = slashCommandRegistry.getSpecs();
+                    var userCommandSpecs = userCommandRegistry.getSpecs();
                     return client.getRestClient()
                             .getApplicationService()
-                            .bulkOverwriteGlobalApplicationCommand(appId, specs)
+                            .bulkOverwriteGlobalApplicationCommand(appId, concat(slashCommandSpecs, userCommandSpecs))
                             .collectList();
                 })
                 .map(done -> {
@@ -86,5 +96,11 @@ public class CommandLifecycleHelper implements DiscordHookSource {
     private Mono<Long> getApplicationId() {
         return client.getRestClient()
                 .getApplicationId();
+    }
+
+    private static <T> List<T> concat(List<T> one, List<T> two) {
+        var copy = new ArrayList<>(one);
+        copy.addAll(two);
+        return copy;
     }
 }
