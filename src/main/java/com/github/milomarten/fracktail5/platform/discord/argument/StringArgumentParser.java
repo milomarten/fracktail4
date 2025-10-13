@@ -28,6 +28,10 @@ public class StringArgumentParser extends BaseOptionalArgumentParser<String> {
         return this;
     }
 
+    public Argument<String> defaultToEmpty() {
+        return defaultTo("");
+    }
+
     @Override
     public Optional<String> get(ChatInputInteractionEvent event) {
         return event.getOption(this.name)

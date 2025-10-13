@@ -9,10 +9,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AmtrakSlashCommand implements DiscordSlashCommand {
     private final AmtrakLookupTrainSubCommand amtrakLookupTrainSubCommand;
+    private final AmtrakLookupStationSubCommand amtrakLookupStationSubCommand;
 
     @Override
     public Details getDiscordSlashCommandDetails() {
         return new DiscordSubCommand("amtrak", "Retrieve Amtrak information")
-                .addBranch(amtrakLookupTrainSubCommand.getDetails());
+                .addBranch(amtrakLookupTrainSubCommand.getDetails())
+                .addBranch(amtrakLookupStationSubCommand.getDetails())
+                ;
     }
 }
