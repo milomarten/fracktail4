@@ -68,9 +68,8 @@ public class DiscordSlashCommandRegistry implements DiscordHookSource {
                        });
            }
         })
-        .onErrorResume(ex -> {
-            log.error("Error executing command", ex);
-            return Mono.empty();
+        .onErrorContinue((ex, obj) -> {
+            log.error("Error executing slash command {}", obj, ex);
         })
         .subscribe();
     }

@@ -9,6 +9,7 @@ import discord4j.core.event.domain.interaction.UserInteractionEvent;
 import discord4j.discordjson.json.ApplicationCommandRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -60,9 +61,8 @@ public class DiscordUserCommandRegistry implements DiscordHookSource {
                        });
            }
         })
-        .onErrorResume(ex -> {
-            log.error("Error executing command", ex);
-            return Mono.empty();
+        .onErrorContinue((ex, obj) -> {
+            log.error("Error executing user command {}", obj, ex);
         })
         .subscribe();
     }

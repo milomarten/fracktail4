@@ -10,6 +10,7 @@ import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -28,6 +29,7 @@ public class BirthdayHandler implements PersistenceBean {
 
     private final Persistence persistence;
     private final GatewayDiscordClient discordClient;
+    private final BirthdayConfiguration birthdayConfiguration;
 
     Map<Snowflake, BirthdayEventInstance> birthdaysById;
     EventCalendar<BirthdayEventInstance> birthdaysByDate;
@@ -51,16 +53,8 @@ public class BirthdayHandler implements PersistenceBean {
                         this.birthdaysByDate.addEvent(bc);
                     });
 
-                    // Load static birthdays!
-                    this.birthdaysByDate.addEvent(new HardCodedBirthdayEventInstance(
-                            MonthDay.of(Month.APRIL, 2), null,
-                            "Mom Marten",
-                            Set.of(Snowflake.of(423976318082744321L))));
-
-                    this.birthdaysByDate.addEvent(new HardCodedBirthdayEventInstance(
-                            MonthDay.of(Month.MARCH, 6), null,
-                            "Dad Marten",
-                            Set.of(Snowflake.of(423976318082744321L))));
+                    this.birthdayConfiguration.getHardCoded()
+                            .forEach(this.birthdaysByDate::addEvent);
                 })
                 .then();
     }
