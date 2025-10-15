@@ -16,6 +16,8 @@ import discord4j.core.object.entity.User;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.DateTimeException;
@@ -27,7 +29,9 @@ import java.time.Year;
 @RequiredArgsConstructor
 public class BirthdaySetSubCommand {
     private final BirthdayHandler handler;
-    private final BirthdayJob job;
+
+    @Autowired(required = false)
+    @Setter private BirthdayJob job;
 
     @Getter
     private final DiscordSubCommand.Details details = new DiscordArgumentSubCommandDetails<>(
@@ -71,7 +75,10 @@ public class BirthdaySetSubCommand {
                 day, birthday.getYear()
         ).thenReturn("Added your birthday to the calendar!");
 
-        job.checkBirthdayAndAnnounceIfNecessary(birthday.getUser().getId());
+        if (job != null) {
+            job.checkBirthdayAndAnnounceIfNecessary(birthday.getUser().getId());
+        }
+
         return DiscordResponses.delayedResponse(response);
     }
 

@@ -9,11 +9,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Slf4j
 public class AbstractAnnouncementJob {
-    @Setter private GatewayDiscordClient discordClient;
+    @Setter @Autowired private GatewayDiscordClient discordClient;
 
     @Getter private final Snowflake announcementChannelId;
     @Getter private TextChannel announcementChannel;
