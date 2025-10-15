@@ -1,6 +1,7 @@
 package com.github.milomarten.fracktail5.commands.birthday;
 
 import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
+import com.github.milomarten.fracktail.core.birthday.BirthdayJob;
 import com.github.milomarten.fracktail.core.birthday.BirthdayUtils;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.argument.ContextParameter;
@@ -26,6 +27,7 @@ import java.time.Year;
 @RequiredArgsConstructor
 public class BirthdaySetSubCommand {
     private final BirthdayHandler handler;
+    private final BirthdayJob job;
 
     @Getter
     private final DiscordSubCommand.Details details = new DiscordArgumentSubCommandDetails<>(
@@ -69,6 +71,7 @@ public class BirthdaySetSubCommand {
                 day, birthday.getYear()
         ).thenReturn("Added your birthday to the calendar!");
 
+        job.checkBirthdayAndAnnounceIfNecessary(birthday.getUser().getId());
         return DiscordResponses.delayedResponse(response);
     }
 
