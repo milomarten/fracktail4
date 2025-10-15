@@ -1,5 +1,7 @@
-package com.github.milomarten.fracktail.core.birthday;
+package com.github.milomarten.fracktail.core.job;
 
+import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
+import com.github.milomarten.fracktail.core.birthday.EventCalendar;
 import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
 import com.github.milomarten.fracktail.core.birthday.v2.DynamicHolidays;
 import com.github.milomarten.fracktail.core.birthday.v2.StaticHolidays;
@@ -24,32 +26,21 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Configuration
-@RequiredArgsConstructor
 @Slf4j
 @ConditionalOnProperty(value = "discord.birthday.enabled", havingValue = "true")
-public class BirthdayJob {
+public class BirthdayJob extends AbstractAnnouncementJob {
     private final BirthdayHandler handler;
     private final EventCalendar<StaticHolidays> holidayCalendar;
-    private final GatewayDiscordClient discordClient;
 
-    @Value("${discord.birthday.announcementChannelId}")
-    private Snowflake announcementChannelId;
-    private TextChannel announcementChannel;
+    BirthdayJob(BirthdayHandler handler, EventCalendar<StaticHolidays> holidayCalendar,
+            @Value("${discord.birthday.announcementChannelId}") Snowflake announcementChannelId) {
+        super(announcementChannelId);
+        this.handler = handler;
+        this.holidayCalendar = holidayCalendar;
+    }
 
     public static final String HOME_TIMEZONE_RAW = "America/New_York";
     public static final ZoneId HOME_TIMEZONE = ZoneId.of(HOME_TIMEZONE_RAW);
-
-    @PostConstruct
-    private void setUp() {
-        var aChannelMaybe = discordClient.getChannelById(announcementChannelId)
-                .cast(TextChannel.class)
-                .blockOptional();
-        if (aChannelMaybe.isPresent()) {
-            this.announcementChannel = aChannelMaybe.get();
-        } else {
-            log.error("Couldn't pull text channel {}", announcementChannelId);
-        }
-    }
 
     @Scheduled(cron = "@midnight", zone = HOME_TIMEZONE_RAW)
     public void announceBirthday() {
@@ -57,7 +48,7 @@ public class BirthdayJob {
         var birthdaysToday = handler.getBirthdaysOn(today);
 
         Flux.fromIterable(birthdaysToday)
-                .filterWhen(bei -> bei.shouldDisplayForGuild(this.announcementChannel.getGuildId()))
+                .filterWhen(bei -> bei.shouldDisplayForGuild(getAnnouncementChannel().getGuildId()))
                 .flatMap(BirthdayEventInstance::resolve)
                 .collectList()
                 .filter(Predicate.not(List::isEmpty))
@@ -75,7 +66,7 @@ public class BirthdayJob {
                                     "<@&1366975961932894278> \uD83C\uDF89 It's Birthday Time! Happy Birthday to ",
                                     ""));
                 })
-                .flatMap(str -> announcementChannel.createMessage(str))
+                .doOnSuccess(this::sendAnnouncement)
                 .subscribe(null, ex -> log.error("Error sending birthday message", ex));
     }
 
@@ -88,7 +79,7 @@ public class BirthdayJob {
 
         if (MonthDay.from(today).equals(specificBirthday.getDayOfCelebration())) {
             specificBirthday.resolve()
-                    .filterWhen(bei -> bei.getT1().shouldDisplayForGuild(this.announcementChannel.getGuildId()))
+                    .filterWhen(bei -> bei.getT1().shouldDisplayForGuild(getAnnouncementChannel().getGuildId()))
                     .map(birthday -> {
                         var ageOptionally = birthday.getT1()
                                 .getStartYear()
@@ -98,7 +89,7 @@ public class BirthdayJob {
                         return birthday.getT2() + " " + ageOptionally;
                     })
                     .map(text -> String.format("<@&1366975961932894278> \uD83C\uDF89 It's Birthday Time! Happy Birthday to %s", text))
-                    .flatMap(str -> announcementChannel.createMessage(str))
+                    .doOnSuccess(this::sendAnnouncement)
                     .subscribe(null, ex -> log.error("Error sending birthday message", ex));
         }
     }
@@ -113,9 +104,12 @@ public class BirthdayJob {
                 .map(h -> Tuples.of(h.getGreeting(), h.getName()));
 
         Flux.concat(normalHolidays, dynamicHolidays)
-                .flatMap(h -> {
-                    String message = "%s %s, everyone!".formatted(h.getT1(), h.getT2());
-                    return this.announcementChannel.createMessage(message);
+                .collectList()
+                .doOnSuccess(h -> {
+                    h.forEach(tuple -> {
+                        String message = "%s %s, everyone!".formatted(tuple.getT1(), tuple.getT2());
+                        this.sendAnnouncement(message);
+                    });
                 })
                 .subscribe(null, ex -> log.error("Error sending holiday message", ex));
     }

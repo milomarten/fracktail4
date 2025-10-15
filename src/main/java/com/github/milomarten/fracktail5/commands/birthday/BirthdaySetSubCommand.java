@@ -1,7 +1,7 @@
 package com.github.milomarten.fracktail5.commands.birthday;
 
 import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
-import com.github.milomarten.fracktail.core.birthday.BirthdayJob;
+import com.github.milomarten.fracktail.core.job.BirthdayJob;
 import com.github.milomarten.fracktail.core.birthday.BirthdayUtils;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.argument.ContextParameter;

@@ -9,10 +9,10 @@ spring:
 discord:
   ownerId: 248612704019808258
   modRoleId: 423978071394222091
-  startupAnnouncement:
-    enabled: true
-    timezone: America/Chicago
   birthday:
+    enabled: true
+    announcementChannelId: 746898862098087977
+  moon:
     enabled: true
     announcementChannelId: 746898862098087977
 
@@ -21,6 +21,6 @@ birthdays:
     - name: Mom Marten
       day: --04-02
       guildIds: 423976318082744321
-    - name: Dad Marte
+    - name: Dad Marten
       day: --03-06
       guildIds: 423976318082744321

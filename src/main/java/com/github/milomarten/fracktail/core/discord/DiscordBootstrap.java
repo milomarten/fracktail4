@@ -34,22 +34,6 @@ public class DiscordBootstrap {
     }
 
     @Bean
-    @ConditionalOnProperty(value = "discord.startupAnnouncement.enabled", havingValue = "true")
-    public ApplicationListener<ApplicationReadyEvent> onReadyDiscord(
-            GatewayDiscordClient client,
-            @Value("${discord.startupAnnouncement.timezone:UTC}") ZoneId timezone,
-            @Value("${discord.ownerId}") Snowflake ownerId
-    ) {
-        return event -> client.getUserById(ownerId)
-                .flatMap(User::getPrivateChannel)
-                .flatMap(pc -> {
-                    ZonedDateTime zdt = ZonedDateTime.now(timezone);
-                    return pc.createMessage("Good morning! It is " + DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG).format(zdt) + ", and I am ready to serve.");
-                })
-                .subscribe((obj) -> {}, (err) -> {}, () -> {});
-    }
-
-    @Bean
     public ApplicationListener<ApplicationReadyEvent> onReadyDiscordDescriptionSetup(GatewayDiscordClient client) {
         return event -> {
             String version = FracktailVersion.getVersion();

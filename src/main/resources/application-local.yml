@@ -2,7 +2,7 @@ app:
   version: fracktail5
 
 discord:
-  startupAnnouncement:
-    enabled: false
   birthday:
+    enabled: false
+  moon:
     enabled: false
