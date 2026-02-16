@@ -1,6 +1,5 @@
-package com.github.milomarten.fracktail.core.birthday;
+package com.github.milomarten.fracktail.core.birthday.v2;
 
-import com.github.milomarten.fracktail.core.birthday.v2.HardCodedBirthdayEventInstance;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

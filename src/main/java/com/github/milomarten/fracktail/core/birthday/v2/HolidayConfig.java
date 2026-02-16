@@ -1,6 +1,5 @@
 package com.github.milomarten.fracktail.core.birthday.v2;
 
-import com.github.milomarten.fracktail.core.birthday.EventCalendar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

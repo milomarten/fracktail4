@@ -1,15 +1,11 @@
 package com.github.milomarten.fracktail.core.job;
 
-import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
-import com.github.milomarten.fracktail.core.birthday.EventCalendar;
+import com.github.milomarten.fracktail.core.birthday.v2.BirthdayHandler;
+import com.github.milomarten.fracktail.core.birthday.v2.EventCalendar;
 import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
 import com.github.milomarten.fracktail.core.birthday.v2.DynamicHolidays;
 import com.github.milomarten.fracktail.core.birthday.v2.StaticHolidays;
 import discord4j.common.util.Snowflake;
-import discord4j.core.GatewayDiscordClient;
-import discord4j.core.object.entity.channel.TextChannel;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

@@ -1,9 +1,7 @@
 package com.github.milomarten.fracktail.core.birthday.v2;
 
-import com.github.milomarten.fracktail.core.birthday.BirthdayCritter;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.object.entity.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
