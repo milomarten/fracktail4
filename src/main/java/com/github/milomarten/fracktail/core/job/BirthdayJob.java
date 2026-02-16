@@ -1,6 +1,6 @@
 package com.github.milomarten.fracktail.core.job;
 
-import com.github.milomarten.fracktail.core.birthday.v2.BirthdayHandler;
+import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
 import com.github.milomarten.fracktail.core.birthday.v2.EventCalendar;
 import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
 import com.github.milomarten.fracktail.core.birthday.v2.DynamicHolidays;
@@ -44,19 +44,18 @@ public class BirthdayJob extends AbstractAnnouncementJob {
         var birthdaysToday = handler.getBirthdaysOn(today);
 
         Flux.fromIterable(birthdaysToday)
-                .filterWhen(bei -> bei.shouldDisplayForGuild(getAnnouncementChannel().getGuildId()))
-                .flatMap(BirthdayEventInstance::resolve)
+                .filterWhen(bei -> bei.isValidForServer(getAnnouncementChannel().getClient(), getAnnouncementChannel().getGuildId()))
                 .collectList()
                 .filter(Predicate.not(List::isEmpty))
                 .map(birthdays -> {
                     return birthdays.stream()
                             .map(birthday -> {
-                                var ageOptionally = birthday.getT1()
-                                        .getStartYear()
+                                var ageOptionally = birthday
+                                        .displayYearOfBirth()
                                         .map(year -> String.valueOf(today.getYear() - year.getValue()))
                                         .map(s -> "[" + s + "]")
                                         .orElse("");
-                                return birthday.getT2() + " " + ageOptionally;
+                                return birthday.displayName() + " " + ageOptionally;
                             })
                             .collect(Collectors.joining(", ",
                                     "<@&1366975961932894278> \uD83C\uDF89 It's Birthday Time! Happy Birthday to ",

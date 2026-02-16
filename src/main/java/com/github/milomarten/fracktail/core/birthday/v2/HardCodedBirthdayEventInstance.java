@@ -17,6 +17,10 @@ public class HardCodedBirthdayEventInstance
     private String name;
     private Set<Snowflake> guilds;
 
+    public String getRawName() {
+        return this.name;
+    }
+
     @Override
     public Mono<String> getName() {
         return Mono.just(this.name);
