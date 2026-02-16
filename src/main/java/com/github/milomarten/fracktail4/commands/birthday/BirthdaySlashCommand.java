@@ -3,7 +3,6 @@ package com.github.milomarten.fracktail4.commands.birthday;
 import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
 import com.github.milomarten.fracktail.core.job.BirthdayJob;
 import com.github.milomarten.fracktail.core.birthday.BirthdayUtils;
-import com.github.milomarten.fracktail.core.birthday.ical.BirthdayICalCacheJob;
 import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
 import com.github.milomarten.fracktail4.config.FracktailRoles;
 import com.github.milomarten.fracktail4.permissions.PermissionsProvider;
@@ -36,7 +35,6 @@ import static com.github.milomarten.fracktail4.platform.discord.utils.SlashComma
 @Slf4j
 public class BirthdaySlashCommand implements SlashCommandWrapper {
     private final BirthdayHandler handler;
-    private final BirthdayICalCacheJob cacheJob;
     private final PermissionsProvider<User, FracktailRoles> permissionsProvider;
 
     @Autowired(required = false)
@@ -436,7 +434,6 @@ public class BirthdaySlashCommand implements SlashCommandWrapper {
 
     private void onUpdate(Snowflake userId) {
         // todo: Make this more refined?
-        this.cacheJob.updateCalendar();
         if (this.birthdayJob != null) {
             this.birthdayJob.checkBirthdayAndAnnounceIfNecessary(userId);
         }
