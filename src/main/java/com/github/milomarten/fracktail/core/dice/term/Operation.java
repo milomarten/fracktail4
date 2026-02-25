@@ -157,6 +157,7 @@ public enum Operation {
                     .die(die)
                     .totalingStrategy(new DotStrategy())
                     .explodeAt(die.getNumFaces())
+                    .infiniteExplode(true)
                     .build();
         }
 

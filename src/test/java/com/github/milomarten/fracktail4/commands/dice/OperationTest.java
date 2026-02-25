@@ -13,8 +13,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
@@ -84,6 +83,19 @@ class OperationTest {
         var result = roll.evaluate(OPTS);
 
         assertEquals(20, result.valueAsInt(OPTS.getRoundingMode()));
+    }
+
+    @Test
+    public void testDotDiceOperator() {
+        var stack = createStack(ConstantTerm.of(10), ConstantTerm.of(5));
+        var roll = (DiceExpression) Operation.DOT_DICE.evaluate(stack, OPTS);
+
+        assertTrue(roll.isInfiniteExplode());
+
+        roll.setDie(new MockDie(10, 5, 7, 3, 1, 6));
+        var result = roll.evaluate(OPTS);
+
+        assertEquals(0, result.valueAsInt(OPTS.getRoundingMode()));
     }
 
     @Test
