@@ -257,7 +257,7 @@ public enum Operation {
     EXPLODE_INFINITE("E", 4) {
         @Override
         public Term evaluate(Deque<Term> termStack, DiceEvaluatorOptions options) throws ExpressionSyntaxError {
-            return evaluateTwoParameterFunc(termStack, options, "Dice", "Explode", (a, b, opt) -> a.reroll(b, true, opt));
+            return evaluateTwoParameterFunc(termStack, options, "Dice", "Explode", (a, b, opt) -> a.explode(b, true, opt));
         }
     },
     /**
