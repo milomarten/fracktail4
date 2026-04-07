@@ -17,6 +17,13 @@ public interface RandomlySelected<T> {
      */
     T get(UniformRandomProvider random);
 
+    /**
+     * Map the result of get() to another type
+     * Nulls are passed through verbatim.
+     * @param mapper The mapper to use
+     * @return A RandomlySelected which uses mapper to change the result.
+     * @param <U> The new type
+     */
     default <U> RandomlySelected<U> map(Function<T, U> mapper) {
         var self = this;
         return random -> {

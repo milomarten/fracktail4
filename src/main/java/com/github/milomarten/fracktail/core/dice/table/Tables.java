@@ -2,16 +2,20 @@ package com.github.milomarten.fracktail.core.dice.table;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.rng.UniformRandomProvider;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
+import java.util.List;
 
+/**
+ * Some standard tables
+ */
 public class Tables {
-    enum FrenchSuit {
+    public enum FrenchSuit {
         HEARTS, DIAMONDS, SPADES, CLUBS
     }
 
-    enum FrenchValue {
+    public enum FrenchValue {
         ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT,
         NINE, TEN, JACK, QUEEN, KING
     }
@@ -24,14 +28,18 @@ public class Tables {
     }
 
     /**
-     * Get all the cards in the standard deck of cards
-     * @return The cards, in value order and suit order.
+     * Get a randomized deck of all the standard playing cards
+     * @return The table which randomly returns playing cards.
      */
     public static RandomlySelected<FrenchCard> frenchCards() {
-        var cards = Arrays.stream(FrenchValue.values())
-                .flatMap(value -> Arrays.stream(FrenchSuit.values()).map(suit -> new FrenchCard(suit, value)))
-                .toList();
-        return new UnweightedTable<>(cards);
+        return new RandomlySelected<FrenchCard>() {
+            @Override
+            public FrenchCard get(UniformRandomProvider random) {
+                var suit = FrenchSuit.values()[random.nextInt(4)];
+                var value = FrenchValue.values()[random.nextInt(13)];
+                return new FrenchCard(suit, value);
+            }
+        };
     }
 
     @Getter
@@ -95,8 +103,12 @@ public class Tables {
         private final String value;
     }
 
+    /**
+     * Get a table with all Loteria cards
+     * @return The Loteria cards, in number order.
+     */
     public static RandomlySelected<Loteria> loteria() {
-        return new UnweightedTable<>(Arrays.asList(Loteria.values()));
+        return UnweightedTable.fromArray(Loteria.values());
     }
 
     public enum PokemonType {
@@ -104,7 +116,11 @@ public class Tables {
         FIRE, WATER, GRASS, ELECTRIC, PSYCHIC, ICE, DARK, DRAGON, FAIRY
     }
 
+    /**
+     * Get a table with all Pokemon types
+     * @return The Pokemon types, in index order.
+     */
     public static RandomlySelected<PokemonType> pokemonTypes() {
-        return new UnweightedTable<>(Arrays.asList(PokemonType.values()));
+        return UnweightedTable.fromArray(PokemonType.values());
     }
 }
