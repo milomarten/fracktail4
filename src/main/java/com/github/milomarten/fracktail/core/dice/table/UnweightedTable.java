@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A table where each entry is equally possible.
+ * A table where each entry is equally possible when randomly selected.
  * Equivalent to a WeightedTable where all weights are the same, this avoids some costly
  * computation and allows for simply picking randomly from a list.
  * <br>
@@ -25,10 +25,6 @@ public class UnweightedTable<T> implements RandomlySelected<T> {
         return new UnweightedTable<>(Arrays.stream(table)
                 .map(Static::new)
                 .toList());
-    }
-
-    public UnweightedTable() {
-        this.table = new ArrayList<>();
     }
 
     @Override

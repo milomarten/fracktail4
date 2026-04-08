@@ -11,19 +11,39 @@ import java.util.List;
  * Some standard tables
  */
 public class Tables {
+    @RequiredArgsConstructor
     public enum FrenchSuit {
-        HEARTS, DIAMONDS, SPADES, CLUBS
+        HEARTS("♥"),
+        DIAMONDS("♦"),
+        SPADES("♠"),
+        CLUBS("♣");
+
+        private final String value;
     }
 
+    @RequiredArgsConstructor
     public enum FrenchValue {
-        ACE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT,
-        NINE, TEN, JACK, QUEEN, KING
+        ACE("A"),
+        TWO("2"),
+        THREE("3"),
+        FOUR("4"),
+        FIVE("5"),
+        SIX("6"),
+        SEVEN("7"),
+        EIGHT("8"),
+        NINE("9"),
+        TEN("10"),
+        JACK("J"),
+        QUEEN("Q"),
+        KING("K");
+
+        private final String value;
     }
 
     public record FrenchCard(FrenchSuit suit, FrenchValue value) {
         @Override
         public String toString() {
-            return value + " of " + suit;
+            return value.value + suit.value;
         }
     }
 
@@ -32,14 +52,11 @@ public class Tables {
      * @return The table which randomly returns playing cards.
      */
     public static RandomlySelected<FrenchCard> frenchCards() {
-        return new RandomlySelected<FrenchCard>() {
-            @Override
-            public FrenchCard get(UniformRandomProvider random) {
-                var suit = FrenchSuit.values()[random.nextInt(4)];
-                var value = FrenchValue.values()[random.nextInt(13)];
-                return new FrenchCard(suit, value);
-            }
-        };
+        return new MergedTable<>(
+                UnweightedTable.fromArray(FrenchSuit.values()),
+                UnweightedTable.fromArray(FrenchValue.values()),
+                FrenchCard::new
+        );
     }
 
     @Getter
@@ -122,5 +139,45 @@ public class Tables {
      */
     public static RandomlySelected<PokemonType> pokemonTypes() {
         return UnweightedTable.fromArray(PokemonType.values());
+    }
+
+    public enum PokemonFilterType {
+        ALL {
+            @Override
+            public List<PokemonDataSource.Pokemon> filter(List<PokemonDataSource.Pokemon> input) {
+                return input;
+            }
+        },
+        EVOLVED_ONLY {
+            @Override
+            public List<PokemonDataSource.Pokemon> filter(List<PokemonDataSource.Pokemon> input) {
+                return input.stream()
+                        .filter(p -> p.getEvolvesFromSpeciesId() != null)
+                        .toList();
+            }
+        },
+        UNEVOLVED_ONLY {
+            @Override
+            public List<PokemonDataSource.Pokemon> filter(List<PokemonDataSource.Pokemon> input) {
+                return input.stream()
+                        .filter(p -> p.getEvolvesFromSpeciesId() == null)
+                        .toList();
+            }
+        };
+
+        public abstract List<PokemonDataSource.Pokemon> filter(List<PokemonDataSource.Pokemon> input);
+    }
+
+    public static RandomlySelected<PokemonDataSource.Pokemon> pokemon(PokemonFilterType filter) {
+        return new RandomlySelected<PokemonDataSource.Pokemon>() {
+            @Override
+            public PokemonDataSource.Pokemon get(UniformRandomProvider random) {
+                return PokemonDataSource.extract(list -> {
+                    list = filter.filter(list);
+                    var randomIndex = random.nextInt(list.size());
+                    return list.get(randomIndex);
+                });
+            }
+        };
     }
 }

@@ -27,10 +27,6 @@ public class WeightedTable<T> implements RandomlySelected<T> {
         this.table = new ArrayList<>(table);
     }
 
-    public WeightedTable() {
-        this.table = new ArrayList<>();
-    }
-
     void recompile() {
         totalWeightSize = 0;
         tableProcessed.clear();
