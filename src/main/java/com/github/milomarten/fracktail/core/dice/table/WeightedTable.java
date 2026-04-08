@@ -27,6 +27,10 @@ public class WeightedTable<T> implements RandomlySelected<T> {
         this.table = new ArrayList<>(table);
     }
 
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
+
     void recompile() {
         totalWeightSize = 0;
         tableProcessed.clear();
@@ -59,4 +63,22 @@ public class WeightedTable<T> implements RandomlySelected<T> {
      * @param <T> The type of the contained content.
      */
     public record Entry<T>(int weight, RandomlySelected<T> content) {}
+
+    public static class Builder<T> {
+        private final List<Entry<T>> table = new ArrayList<>();
+
+        public Builder<T> add(int weight, T content) {
+            this.table.add(new Entry<>(weight, new RandomlySelected.Static<>(content)));
+            return this;
+        }
+
+        public Builder<T> add(int weight, RandomlySelected<T> content) {
+            this.table.add(new Entry<>(weight, content));
+            return this;
+        }
+
+        public WeightedTable<T> build() {
+            return new WeightedTable<>(table);
+        }
+    }
 }

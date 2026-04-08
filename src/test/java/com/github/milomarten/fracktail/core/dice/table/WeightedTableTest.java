@@ -13,9 +13,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class WeightedTableTest {
     @Test
     public void simpleTableEqualWeights() {
-        var table = new WeightedTable<Boolean>();
-        table.add(1, true);
-        table.add(1, false);
+        var table = WeightedTable.builder()
+                .add(1, true)
+                .add(1, false)
+                .build();
 
         var results = monteCarlo(table);
         assertWithinError(results.get(true), 0.5, 0.01);
@@ -24,9 +25,10 @@ class WeightedTableTest {
 
     @Test
     public void tableUnequalWeights() {
-        var table = new WeightedTable<Boolean>();
-        table.add(3, true);
-        table.add(1, false);
+        var table = WeightedTable.builder()
+                .add(3, true)
+                .add(1, false)
+                .build();
 
         var results = monteCarlo(table);
         assertWithinError(results.get(true), 0.75, 0.01);
@@ -35,9 +37,10 @@ class WeightedTableTest {
 
     @Test
     public void tableUnequalAwkwardWeights() {
-        var table = new WeightedTable<Boolean>();
-        table.add(2, true);
-        table.add(1, false);
+        var table = WeightedTable.builder()
+                .add(2, true)
+                .add(1, false)
+                .build();
 
         var results = monteCarlo(table);
         assertWithinError(results.get(true), 0.666, 0.01);
