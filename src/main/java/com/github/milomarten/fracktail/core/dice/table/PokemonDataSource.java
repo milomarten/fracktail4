@@ -5,6 +5,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.fortuna.ical4j.vcard.property.N;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,11 @@ public class PokemonDataSource {
               ) {
                 name
                 id,
-                evolves_from_species_id
+                evolves_from_species_id,
+                pokemonspeciesnames {
+                  name,
+                  language_id
+                }
               }
             }
             """);
@@ -75,14 +80,6 @@ public class PokemonDataSource {
     }
 
     @Data
-    public static class Pokemon {
-        private int id;
-        private String name;
-        @JsonProperty("evolves_from_species_id")
-        private Integer evolvesFromSpeciesId;
-    }
-
-    @Data
     private static class PokemonResponse {
         private PokemonResponseData data;
     }
@@ -90,5 +87,29 @@ public class PokemonDataSource {
     @Data
     private static class PokemonResponseData {
         private List<Pokemon> normals;
+    }
+
+    @Data
+    public static class Pokemon {
+        private int id;
+        private String name;
+        @JsonProperty("evolves_from_species_id")
+        private Integer evolvesFromSpeciesId;
+
+        @JsonProperty("pokemonspeciesnames")
+        private void setEnglishName(List<Name> names) {
+            names.stream()
+                    .filter(n -> n.id == 9)
+                    .findFirst()
+                    .map(Name::getName)
+                    .ifPresent(n -> this.name = n);
+        }
+    }
+
+    @Data
+    private static class Name {
+        private String name;
+        @JsonProperty("language_id")
+        private int id;
     }
 }
