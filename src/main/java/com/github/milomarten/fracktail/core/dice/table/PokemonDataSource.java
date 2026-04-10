@@ -23,23 +23,26 @@ public class PokemonDataSource {
     private static final List<Pokemon> DATA = new ArrayList<>();
     private static final Map<String, String> QUERY = Map.of("query", """
             query normalPokemonList {
-              normals: pokemonspecies(
-                where: {is_mythical:  {
-                   _eq: false
-                }, is_legendary:  {
-                   _eq: false
-                }}
-                order_by: {id: asc}
-              ) {
-                name
-                id,
-                evolves_from_species_id,
-                pokemonspeciesnames {
-                  name,
-                  language_id
+                  normals: pokemonspecies(
+                    where: {is_mythical:  {
+                       _eq: false
+                    }, is_legendary:  {
+                       _eq: false
+                    }}
+                    order_by: {id: asc}
+                  ) {
+                    name
+                    id,
+                    evolves_from_species_id,
+                    pokemonspeciesnames(where:  {
+                       language_id:  {
+                          _eq: 9
+                       }
+                    }) {
+                      name
+                    }
+                  }
                 }
-              }
-            }
             """);
 
     private final WebClient graphQL;
@@ -100,11 +103,7 @@ public class PokemonDataSource {
 
         @JsonProperty("pokemonspeciesnames")
         private void setEnglishName(List<Name> names) {
-            names.stream()
-                    .filter(n -> n.id == 9)
-                    .findFirst()
-                    .map(Name::getName)
-                    .ifPresent(name -> this.englishName = name );
+            this.englishName = names.isEmpty() ? null : names.get(0).name;
         }
 
         public String getEnglishName() {
@@ -115,8 +114,6 @@ public class PokemonDataSource {
     @Data
     private static class Name {
         private String name;
-        @JsonProperty("language_id")
-        private int id;
     }
 
     @Data
