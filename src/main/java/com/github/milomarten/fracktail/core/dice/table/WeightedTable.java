@@ -57,6 +57,21 @@ public class WeightedTable<T> implements RandomlySelected<T> {
     }
 
     /**
+     * The number of options in the table
+     * This length counts the number of entries in this weighted table, discounting any weights set to 0,
+     * since these functionally do not exist.
+     * @return The number of possible options.
+     */
+    @Override
+    public OptionalInt length() {
+        if (tableProcessed.isEmpty()) {
+            recompile();
+        }
+
+        return OptionalInt.of(totalWeightSize);
+    }
+
+    /**
      * A entry with some weight
      * @param weight The weight of the entry
      * @param content The content itself, allowing for recursion.

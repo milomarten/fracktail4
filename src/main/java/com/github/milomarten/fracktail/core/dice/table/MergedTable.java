@@ -3,6 +3,7 @@ package com.github.milomarten.fracktail.core.dice.table;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.rng.UniformRandomProvider;
 
+import java.util.OptionalInt;
 import java.util.function.BiFunction;
 
 /**
@@ -27,5 +28,23 @@ public class MergedTable<A, B, T> implements RandomlySelected<T> {
         if (bGet == null) { return null; }
 
         return merger.apply(aGet, bGet);
+    }
+
+    /**
+     * The number of options in the table
+     * If the two sub-tables both have a finite length, the result of this method
+     * is the product of both of them. If either or both have an infinite length, the result is Optional.empty.
+     * @return The number of options in this table.
+     */
+    @Override
+    public OptionalInt length() {
+        var left = a.length();
+        var right = b.length();
+
+        if (left.isPresent() && right.isPresent()) {
+            return OptionalInt.of(left.getAsInt() * right.getAsInt());
+        } else {
+            return OptionalInt.empty();
+        }
     }
 }

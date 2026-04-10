@@ -5,6 +5,7 @@ import org.apache.commons.rng.UniformRandomProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalInt;
 
 /**
  * A table where each entry is equally possible when randomly selected.
@@ -33,5 +34,10 @@ public class UnweightedTable<T> implements RandomlySelected<T> {
             return null;
         }
         return table.get(random.nextInt(table.size())).get(random);
+    }
+
+    @Override
+    public OptionalInt length() {
+        return OptionalInt.of(table.size());
     }
 }

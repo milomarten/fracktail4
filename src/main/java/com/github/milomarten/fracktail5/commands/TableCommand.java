@@ -1,17 +1,21 @@
 package com.github.milomarten.fracktail5.commands;
 
 import com.github.milomarten.fracktail.core.dice.table.Rolltables;
+import com.github.milomarten.fracktail.core.dice.table.multi.MultiRollParams;
 import com.github.milomarten.fracktail5.platform.discord.DiscordArgumentDetails;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
 import com.github.milomarten.fracktail5.platform.discord.argument.*;
 import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
 import lombok.Data;
+import org.apache.commons.rng.RestorableUniformRandomProvider;
 import org.apache.commons.rng.simple.RandomSource;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TableCommand implements DiscordSlashCommand {
+    private static final RestorableUniformRandomProvider RANDOMNESS = RandomSource.MT_64.create();
+
     private final Details DISCORD_SPEC = new DiscordArgumentDetails<>(
             "table",
             "Select a random item from one of our tables",
@@ -34,6 +38,18 @@ public class TableCommand implements DiscordSlashCommand {
                                     .defaultTo(true),
                             TableCommand.Arguments::setVisible
                     )
+                    .addField(new IntArgumentParser(
+                                    "quantity",
+                                    "The number of options to get")
+                                    .min(0).max(15).defaultTo(1),
+                            TableCommand.Arguments::setQuantity
+                    )
+                    .addField(new BooleanArgumentParser(
+                                    "distinct",
+                                    "Whether the results from each roll should be unique between each other")
+                            .defaultTo(false),
+                            TableCommand.Arguments::setDistinct
+                    )
             ,
             this::roll
     );
@@ -44,7 +60,11 @@ public class TableCommand implements DiscordSlashCommand {
     }
 
     private DiscordResponse roll(Arguments args) {
-        var roll = Rolltables.rollTable(args.table, RandomSource.MT_64.create());
+        var roll = Rolltables.rollMultitable(args.table, MultiRollParams.builder()
+                        .distinct(args.distinct)
+                        .quantity(args.quantity)
+                        .random(RANDOMNESS)
+                .build());
         if (roll == null) {
             return DiscordResponses.replyEphemeral("Table " + args.table + " has no data.");
         } else {
@@ -64,5 +84,7 @@ public class TableCommand implements DiscordSlashCommand {
         private String table;
         private String comment;
         private boolean visible;
+        private int quantity;
+        private boolean distinct;
     }
 }

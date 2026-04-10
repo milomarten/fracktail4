@@ -6,6 +6,8 @@ import org.apache.commons.rng.UniformRandomProvider;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.function.Predicate;
 
 /**
@@ -178,6 +180,11 @@ public class Tables {
                     var randomIndex = random.nextInt(list.size());
                     return list.get(randomIndex);
                 });
+            }
+
+            @Override
+            public OptionalInt length() {
+                return OptionalInt.of(PokemonDataSource.extract(List::size));
             }
         };
     }

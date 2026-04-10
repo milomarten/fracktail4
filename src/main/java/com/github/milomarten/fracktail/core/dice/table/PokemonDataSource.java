@@ -73,7 +73,7 @@ public class PokemonDataSource {
                 });
     }
 
-    public static Pokemon extract(Function<List<Pokemon>, Pokemon> function) {
+    public static <T> T extract(Function<List<Pokemon>, T> function) {
         synchronized (DATA) {
             return function.apply(DATA);
         }
