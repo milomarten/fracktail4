@@ -5,14 +5,11 @@ import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.fortuna.ical4j.vcard.property.N;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -93,8 +90,13 @@ public class PokemonDataSource {
     public static class Pokemon {
         private int id;
         private String name;
+        private String englishName;
+        private boolean hasEvolved;
+
         @JsonProperty("evolves_from_species_id")
-        private Integer evolvesFromSpeciesId;
+        private void setHasEvolved(Integer i) {
+            this.hasEvolved = (i != null);
+        }
 
         @JsonProperty("pokemonspeciesnames")
         private void setEnglishName(List<Name> names) {
@@ -102,7 +104,11 @@ public class PokemonDataSource {
                     .filter(n -> n.id == 9)
                     .findFirst()
                     .map(Name::getName)
-                    .ifPresent(n -> this.name = n);
+                    .ifPresent(name -> this.englishName = name );
+        }
+
+        public String getEnglishName() {
+            return Objects.requireNonNullElse(this.englishName, this.name);
         }
     }
 
@@ -111,5 +117,10 @@ public class PokemonDataSource {
         private String name;
         @JsonProperty("language_id")
         private int id;
+    }
+
+    @Data
+    private static class EvolutionChain {
+        private List<Name> pokemonspecies;
     }
 }

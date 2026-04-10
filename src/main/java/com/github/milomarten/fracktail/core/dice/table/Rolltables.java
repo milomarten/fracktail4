@@ -18,13 +18,13 @@ public class Rolltables {
         tables.put("pokemon-types", Tables.pokemonTypes().map(Tables.PokemonType::toString));
 
         tables.put("pokemon", Tables.pokemon(Tables.PokemonFilterType.ALL)
-                .map(PokemonDataSource.Pokemon::getName)
+                .map(PokemonDataSource.Pokemon::getEnglishName)
         );
         tables.put("evolved-pokemon", Tables.pokemon(Tables.PokemonFilterType.EVOLVED_ONLY)
-                .map(PokemonDataSource.Pokemon::getName)
+                .map(PokemonDataSource.Pokemon::getEnglishName)
         );
         tables.put("unevolved-pokemon", Tables.pokemon(Tables.PokemonFilterType.UNEVOLVED_ONLY)
-                .map(PokemonDataSource.Pokemon::getName)
+                .map(PokemonDataSource.Pokemon::getEnglishName)
         );
     }
 

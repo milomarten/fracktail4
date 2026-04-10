@@ -6,6 +6,7 @@ import org.apache.commons.rng.UniformRandomProvider;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Some standard tables
@@ -152,7 +153,7 @@ public class Tables {
             @Override
             public List<PokemonDataSource.Pokemon> filter(List<PokemonDataSource.Pokemon> input) {
                 return input.stream()
-                        .filter(p -> p.getEvolvesFromSpeciesId() != null)
+                        .filter(PokemonDataSource.Pokemon::isHasEvolved)
                         .toList();
             }
         },
@@ -160,7 +161,7 @@ public class Tables {
             @Override
             public List<PokemonDataSource.Pokemon> filter(List<PokemonDataSource.Pokemon> input) {
                 return input.stream()
-                        .filter(p -> p.getEvolvesFromSpeciesId() == null)
+                        .filter(Predicate.not(PokemonDataSource.Pokemon::isHasEvolved))
                         .toList();
             }
         };
