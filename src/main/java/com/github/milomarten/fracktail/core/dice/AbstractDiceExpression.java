@@ -111,10 +111,10 @@ public abstract class AbstractDiceExpression<T> implements Term {
 
         public String toString() {
             var str = String.valueOf(roll.getValue());
-            if (roll.getStatus() == Status.CRITICAL_SUCCESS) {
-                str += "✨";
-            } else if (exploded) {
+            if (exploded) {
                 str += "\uD83D\uDCA5";
+            } else if (roll.getStatus() == Status.CRITICAL_SUCCESS) {
+                str += "✨";
             }
             return dropped ? "~~" + str + "~~" : str;
         }
