@@ -32,7 +32,7 @@ public interface Term {
         var b = addend.evaluate(options);
         var sum = a.value().add(b.value());
 
-        return new BinaryOperatorTerm(this, addend, Operation.ADD, sum);
+        return new BinaryOperatorTerm(a, b, Operation.ADD, sum);
     }
 
     default Term subtract(Term minuend, DiceEvaluatorOptions options){
@@ -40,7 +40,7 @@ public interface Term {
         var b = minuend.evaluate(options);
         var diff = a.value().subtract(b.value());
 
-        return new BinaryOperatorTerm(this, minuend, Operation.SUBTRACT, diff);
+        return new BinaryOperatorTerm(a, b, Operation.SUBTRACT, diff);
     }
 
     default Term multiply(Term multiplier, DiceEvaluatorOptions options){
@@ -49,7 +49,7 @@ public interface Term {
 
         var mult = a.value().multiply(b.value());
 
-        return new BinaryOperatorTerm(this, multiplier, Operation.MULTIPLY, mult);
+        return new BinaryOperatorTerm(a, b, Operation.MULTIPLY, mult);
     }
 
     default Term divide(Term divisor, DiceEvaluatorOptions options){
@@ -62,7 +62,7 @@ public interface Term {
 
         var ratio = a.value().divide(b.value(), MathContext.DECIMAL128);
 
-        return new BinaryOperatorTerm(this, divisor, Operation.DIVIDE, ratio);
+        return new BinaryOperatorTerm(a, b, Operation.DIVIDE, ratio);
     }
 
     default Term root(Term radicand, DiceEvaluatorOptions options){
@@ -75,16 +75,16 @@ public interface Term {
         if (nAsInt == 1) {
             // special case: the 1th root of any number is itself.
             return new BinaryOperatorTerm(
-                    ConstantTerm.of(1),
-                    radicand,
+                    new TermEvaluationResult(BigDecimal.ONE, "1"),
+                    x,
                     Operation.ROOT,
                     x.value());
         } else if (nAsInt == 2) {
             // special case: BigDecimal supports square roots natively.
             try {
                 return new BinaryOperatorTerm(
-                        ConstantTerm.of(2),
-                        radicand,
+                        new TermEvaluationResult(BigDecimal.valueOf(2), "2"),
+                        x,
                         Operation.ROOT,
                         x.value().sqrt(MathContext.DECIMAL128)
                 );
@@ -96,8 +96,8 @@ public interface Term {
             var result = Math.pow(x.value().doubleValue(), power);
             if (Double.isFinite(result)) {
                 return new BinaryOperatorTerm(
-                        ConstantTerm.of(nAsInt),
-                        radicand,
+                        new TermEvaluationResult(BigDecimal.valueOf(nAsInt), Integer.toString(nAsInt)),
+                        x,
                         Operation.ROOT,
                         BigDecimal.valueOf(result)
                 );
