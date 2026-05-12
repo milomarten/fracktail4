@@ -9,13 +9,14 @@ import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
 import discord4j.common.util.Snowflake;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
+@Component
 public class RoleReactCommand implements DiscordSlashCommand {
     @Getter private final RoleHandler reacts;
 
