@@ -7,7 +7,6 @@ import java.util.Objects;
 
 @RequiredArgsConstructor
 public enum FracktailImplementation {
-    FRACKTAIL_4("fracktail4"),
     FRACKTAIL_5("fracktail5"),;
 
     private final String value;

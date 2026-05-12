@@ -4,8 +4,6 @@ import com.github.milomarten.fracktail.core.amtrak.AmtrakLookup;
 import com.github.milomarten.fracktail.core.amtrak.models.Station;
 import com.github.milomarten.fracktail.core.amtrak.models.TrainId;
 import com.github.milomarten.fracktail.core.config.TemplateCache;
-import com.github.milomarten.fracktail4.commands.amtrak.parameters.AmtrakStationLookup;
-import com.github.milomarten.fracktail4.platform.discord.slash.adapter.Responses;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.argument.PojoParser;
 import com.github.milomarten.fracktail5.platform.discord.argument.StringArgumentParser;

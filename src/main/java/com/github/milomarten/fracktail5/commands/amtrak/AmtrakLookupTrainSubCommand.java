@@ -3,7 +3,6 @@ package com.github.milomarten.fracktail5.commands.amtrak;
 import com.github.milomarten.fracktail.core.amtrak.AmtrakGateway;
 import com.github.milomarten.fracktail.core.amtrak.models.*;
 import com.github.milomarten.fracktail.core.config.TemplateCache;
-import com.github.milomarten.fracktail4.commands.amtrak.parameters.AmtrakTrainLookup;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.argument.IntArgumentParser;
 import com.github.milomarten.fracktail5.platform.discord.argument.PojoParser;
@@ -83,7 +82,7 @@ public class AmtrakLookupTrainSubCommand {
         private Integer dayOfMonth;
     }
 
-    private AmtrakTrainLookup.TrainView toView(Train train) {
+    private TrainView toView(Train train) {
         var firstStation = CollectionUtils.firstElement(train.getStations());
         var lastStation = CollectionUtils.lastElement(train.getStations());
         var upcomingStation = train.getEventStation();
@@ -91,14 +90,14 @@ public class AmtrakLookupTrainSubCommand {
             train.setTrainState(TrainState.AT_STATION);
         }
 
-        return new AmtrakTrainLookup.TrainView(
+        return new TrainView(
                 train.getProvider(),
                 train.getTrainNum(),
                 train.getRouteName(),
                 train.getHeading(),
-                AmtrakTrainLookup.StationView.of(firstStation),
-                AmtrakTrainLookup.StationView.of(lastStation),
-                AmtrakTrainLookup.StationView.of(upcomingStation),
+                StationView.of(firstStation),
+                StationView.of(lastStation),
+                StationView.of(upcomingStation),
                 train.getTrainState(),
                 train.getVelocity(),
                 train.getUpdatedAt().withZoneSameInstant(train.getEventTimezone().toZoneId())
@@ -110,9 +109,9 @@ public class AmtrakLookupTrainSubCommand {
             String id,
             String name,
             String bearing,
-            AmtrakTrainLookup.StationView origin,
-            AmtrakTrainLookup.StationView finalDestination,
-            AmtrakTrainLookup.StationView nextDestination,
+            StationView origin,
+            StationView finalDestination,
+            StationView nextDestination,
             TrainState state,
             double speed,
             ZonedDateTime lastEvent
@@ -129,30 +128,30 @@ public class AmtrakLookupTrainSubCommand {
     public record StationView(
             String code,
             String name,
-            AmtrakTrainLookup.DepartureArrival times
+            DepartureArrival times
     ) {
-        public static AmtrakTrainLookup.StationView of(RouteStation station) {
+        public static StationView of(RouteStation station) {
             if (station == null) return null;
-            return new AmtrakTrainLookup.StationView(station.getCode(), station.getName(), AmtrakTrainLookup.DepartureArrival.of(station));
+            return new StationView(station.getCode(), station.getName(), DepartureArrival.of(station));
         }
     }
 
     public record DepartureArrival(ZonedDateTime schDeparture, ZonedDateTime schArrival,
                                    ZonedDateTime estDeparture, ZonedDateTime estArrival) {
-        public static AmtrakTrainLookup.DepartureArrival of(RouteStation rs) {
+        public static DepartureArrival of(RouteStation rs) {
             if (rs == null) { return null; }
             if (rs.getCode().length() == 4) {
                 // Non-Amtrak station times are in UTC, so we have to normalize with the timezone sadly.
                 // VIA and Brightline stations are all four-letters
                 var timezone = rs.getTimezone().toZoneId();
-                return new AmtrakTrainLookup.DepartureArrival(
+                return new DepartureArrival(
                         rs.getScheduledDeparture().withZoneSameInstant(timezone),
                         rs.getScheduledArrival().withZoneSameInstant(timezone),
                         rs.getDeparture().withZoneSameInstant(timezone),
                         rs.getArrival().withZoneSameInstant(timezone)
                 );
             }
-            return new AmtrakTrainLookup.DepartureArrival(
+            return new DepartureArrival(
                     rs.getScheduledDeparture(), rs.getScheduledArrival(),
                     rs.getDeparture(), rs.getArrival()
             );
