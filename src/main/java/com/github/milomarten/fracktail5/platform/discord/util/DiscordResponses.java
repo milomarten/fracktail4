@@ -32,12 +32,29 @@ public class DiscordResponses {
      * Respond in a certain way after some amount of time goes by.
      * This can be used for slower responses, that may call a backend. While the bot is
      * "thinking", a message will display automatically for the command user to indicate that.
+     * All messages are visible, so all viewers can see it
      * @param later A Mono which, when finished, has the content to display
      * @return A DiscordResponse which invokes the later response when it is ready.
      */
     public DiscordResponse delayedResponse(Mono<String> later) {
         return event ->
                 event.deferReply()
+                        .then(later)
+                        .flatMap(event::createFollowup);
+    }
+
+    /**
+     * Respond in a certain way after some amount of time goes by.
+     * This can be used for slower responses, that may call a backend. While the bot is
+     * "thinking", a message will display automatically for the command user to indicate that.
+     * All messages are ephemeral, meaning they are only visible on the user's device.
+     * @param later A Mono which, when finished, has the content to display
+     * @return A DiscordResponse which invokes the later response when it is ready.
+     */
+    public DiscordResponse delayedEphemeralResponse(Mono<String> later) {
+        return event ->
+                event.deferReply()
+                        .withEphemeral(true)
                         .then(later)
                         .flatMap(event::createFollowup);
     }
