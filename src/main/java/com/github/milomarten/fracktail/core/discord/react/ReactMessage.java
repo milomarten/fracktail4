@@ -39,6 +39,11 @@ public class ReactMessage<ID> {
     }
 
     @JsonIgnore
+    public boolean isNew() {
+        return messageId == null;
+    }
+
+    @JsonIgnore
     public boolean isLinked() {
         return this.link > -1;
     }

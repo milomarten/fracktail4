@@ -2,7 +2,6 @@ package com.github.milomarten.fracktail5.commands.birthday;
 
 import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
 import com.github.milomarten.fracktail.core.birthday.BirthdayUtils;
-import com.github.milomarten.fracktail4.platform.discord.utils.SlashCommands;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
 import com.github.milomarten.fracktail5.platform.discord.DiscordUserCommand;
 import com.github.milomarten.fracktail5.platform.discord.DiscordUserResponse;
