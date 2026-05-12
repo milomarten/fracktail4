@@ -6,6 +6,9 @@ import discord4j.discordjson.json.ImmutableApplicationCommandOptionData;
 import discord4j.discordjson.json.ImmutableApplicationCommandRequest;
 import lombok.experimental.UtilityClass;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 @UtilityClass
 public class DiscordVisitor {
     public Visitor<ImmutableApplicationCommandRequest.Builder> name(String name) {
@@ -14,6 +17,16 @@ public class DiscordVisitor {
 
     public Visitor<ImmutableApplicationCommandRequest.Builder> description(String description) {
         return input -> input.description(description);
+    }
+
+    public Visitor<ImmutableApplicationCommandRequest.Builder> permission(Permission... permissions) {
+        return input -> {
+            var computed = BigInteger.ZERO;
+            for (var permission : permissions) {
+                computed = computed.or(permission.getRaw());
+            }
+            return input.defaultMemberPermissions(computed.toString());
+        };
     }
 
     public Visitor<ImmutableApplicationCommandOptionData.Builder> argType(ApplicationCommandOption.Type type) {

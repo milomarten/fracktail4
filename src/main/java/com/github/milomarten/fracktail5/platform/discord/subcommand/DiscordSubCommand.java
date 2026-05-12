@@ -1,5 +1,6 @@
 package com.github.milomarten.fracktail5.platform.discord.subcommand;
 
+import com.github.milomarten.fracktail5.platform.Visitor;
 import com.github.milomarten.fracktail5.platform.VisitorGroup;
 import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
@@ -26,6 +27,11 @@ public class DiscordSubCommand implements DiscordSlashCommand.Details {
         this.spec = new VisitorGroup<ImmutableApplicationCommandRequest.Builder>()
                 .add(DiscordVisitor.name(name))
                 .add(DiscordVisitor.description(description));
+    }
+
+    public DiscordSubCommand addVisitor(Visitor<ImmutableApplicationCommandRequest.Builder> visitor) {
+        this.spec.add(visitor);
+        return this;
     }
 
     public DiscordSubCommand addBranch(Details details) {

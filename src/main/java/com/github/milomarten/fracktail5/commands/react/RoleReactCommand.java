@@ -6,6 +6,8 @@ import com.github.milomarten.fracktail5.platform.discord.DiscordResponse;
 import com.github.milomarten.fracktail5.platform.discord.DiscordSlashCommand;
 import com.github.milomarten.fracktail5.platform.discord.subcommand.DiscordSubCommand;
 import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
+import com.github.milomarten.fracktail5.platform.discord.util.DiscordVisitor;
+import com.github.milomarten.fracktail5.platform.discord.util.Permission;
 import discord4j.common.util.Snowflake;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +27,8 @@ public class RoleReactCommand implements DiscordSlashCommand {
 
     @Override
     public Details getDiscordSlashCommandDetails() {
-        // options:
-        // view
         return new DiscordSubCommand("role-react", "Adjust a Role React")
+                .addVisitor(DiscordVisitor.permission(Permission.MANAGE_ROLES))
                 .addBranch(CreateBranch.details(this))
                 .addBranch(ViewBranch.details(this))
                 .addBranch(EditBranch.details(this))
