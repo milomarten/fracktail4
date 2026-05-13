@@ -9,8 +9,8 @@ import com.github.milomarten.fracktail5.platform.discord.util.DiscordResponses;
 public class EditBranch {
     public static DiscordArgumentSubCommandDetails<Integer> details(RoleReactCommand parent) {
         return new DiscordArgumentSubCommandDetails<>(
-                "create",
-                "Create a new Role React set",
+                "edit",
+                "Edit an existing Role React set",
                 new IntArgumentParser("id", "ID of role-react to edit").required(),
                 params -> edit(parent, params)
         );
