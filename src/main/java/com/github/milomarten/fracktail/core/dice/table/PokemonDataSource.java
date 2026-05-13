@@ -50,10 +50,11 @@ public class PokemonDataSource {
     @PostConstruct
     private void populateData() {
         getData()
+                .onErrorComplete()
                 .block();
     }
 
-    @Scheduled(cron = "0 0 8 * * SUN")
+    @Scheduled(cron = "0 0 8 * * *")
     private void populateDataScheduled() {
         getData()
                 .onErrorComplete()
@@ -75,6 +76,9 @@ public class PokemonDataSource {
 
     public static <T> T extract(Function<List<Pokemon>, T> function) {
         synchronized (DATA) {
+            if (DATA.isEmpty()) {
+                return null;
+            }
             return function.apply(DATA);
         }
     }

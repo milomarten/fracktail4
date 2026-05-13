@@ -184,7 +184,8 @@ public class Tables {
 
             @Override
             public OptionalInt length() {
-                return OptionalInt.of(PokemonDataSource.extract(List::size));
+                var extract = PokemonDataSource.extract(List::size);
+                return extract == null ? OptionalInt.empty() : OptionalInt.of(extract);
             }
         };
     }
