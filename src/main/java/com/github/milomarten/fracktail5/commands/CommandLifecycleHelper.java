@@ -57,6 +57,16 @@ public class CommandLifecycleHelper implements DiscordHookSource {
             }
         } else if ("global".equals(command)) {
             return handleGlobalCommand();
+        } else if ("clocal".equals(command)) {
+            if (args.length == 0) {
+                return Mono.just("Must provide ID of server");
+            }
+            try {
+                var snowflake = Long.parseLong(args[0]);
+                return deleteLocalCommands(snowflake);
+            } catch (NumberFormatException ex) {
+                return Mono.just("Must provide ID of server");
+            }
         }
         return Mono.empty();
     }
@@ -75,6 +85,21 @@ public class CommandLifecycleHelper implements DiscordHookSource {
                     return String.format("%d command pushed to %d", done.size(), where);
                 })
                 .onErrorResume(e -> Mono.just(e.getMessage()));
+    }
+
+    private Mono<String> deleteLocalCommands(long where) {
+        return getApplicationId()
+                .flatMap(appId -> {
+                    return client.getRestClient()
+                            .getApplicationService()
+                            .bulkOverwriteGuildApplicationCommand(
+                                    appId,
+                                    where,
+                                    List.of()
+                            )
+                            .collectList();
+                })
+                .thenReturn("DONE");
     }
 
     private Mono<String> handleGlobalCommand() {
