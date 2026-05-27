@@ -23,7 +23,7 @@ public class DiceSlashCommand implements DiscordSlashCommand {
 
     private final Details DISCORD_SPEC = new DiscordArgumentDetails<>(
             "roll",
-            "Roll some dice! See https://milomarten.github.io/fracktail4/dice for more.",
+            "Roll some dice! See https://milomarten.github.io/fracktail/dice for more.",
             new PojoParser<>(Arguments::new)
                     .addField(new StringArgumentParser(
                                     "expression",

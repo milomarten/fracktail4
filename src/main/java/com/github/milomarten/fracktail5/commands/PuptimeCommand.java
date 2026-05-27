@@ -28,7 +28,7 @@ public class PuptimeCommand implements DiscordSlashCommand, ApplicationListener<
             () -> {
                 return DiscordResponses.reply(String.format("""
                             Woof! My arf bark Fracktail. Milo Marten woofed me!
-                            You bow-wow my arf yip bark: https://github.com/milomarten/fracktail4/. You'll \\
+                            You bow-wow my arf yip bark: https://github.com/milomarten/fracktail/. You'll \\
                             bark arf I'm sniff howl %s.
                             I woof woof %s. Bow-wow!
                         """,

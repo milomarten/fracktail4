@@ -28,7 +28,7 @@ public class UptimeCommand implements DiscordSlashCommand, ApplicationListener<A
             () -> {
                 return DiscordResponses.reply(String.format("""
                         Hi! My name is Fracktail. Milo Marten created me!
-                        You can see my source code here: https://github.com/milomarten/fracktail4/. You'll \
+                        You can see my source code here: https://github.com/milomarten/fracktail/. You'll \
                         notice that I'm on version %s.
                         I started up %s. Wow!
                         """,
