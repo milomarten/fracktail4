@@ -1,22 +1,16 @@
 package com.github.milomarten.fracktail.core.job;
 
 import com.github.milomarten.fracktail.core.birthday.BirthdayHandler;
-import com.github.milomarten.fracktail.core.birthday.EventCalendar;
 import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
-import com.github.milomarten.fracktail.core.birthday.v2.DynamicHolidays;
-import com.github.milomarten.fracktail.core.birthday.v2.StaticHolidays;
+import com.github.milomarten.fracktail.core.birthday.v3.GenericCalendar;
+import com.github.milomarten.fracktail.core.birthday.v3.Holiday;
 import discord4j.common.util.Snowflake;
-import discord4j.core.GatewayDiscordClient;
-import discord4j.core.object.entity.channel.TextChannel;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 import reactor.core.publisher.Flux;
-import reactor.util.function.Tuples;
 
 import java.time.LocalDate;
 import java.time.MonthDay;
@@ -30,9 +24,9 @@ import java.util.stream.Collectors;
 @ConditionalOnProperty(value = "discord.birthday.enabled", havingValue = "true")
 public class BirthdayJob extends AbstractAnnouncementJob {
     private final BirthdayHandler handler;
-    private final EventCalendar<StaticHolidays> holidayCalendar;
+    private final GenericCalendar<Holiday> holidayCalendar;
 
-    BirthdayJob(BirthdayHandler handler, EventCalendar<StaticHolidays> holidayCalendar,
+    BirthdayJob(BirthdayHandler handler, GenericCalendar<Holiday> holidayCalendar,
             @Value("${discord.birthday.announcementChannelId}") Snowflake announcementChannelId) {
         super(announcementChannelId);
         this.handler = handler;
@@ -98,16 +92,11 @@ public class BirthdayJob extends AbstractAnnouncementJob {
     public void announceHoliday() {
         var today = LocalDate.now(HOME_TIMEZONE);
 
-        var normalHolidays = Flux.fromIterable(holidayCalendar.getEventsOn(today))
-                .map(h -> Tuples.of(h.getGreeting(), h.getName()));
-        var dynamicHolidays = Flux.fromIterable(DynamicHolidays.getEventsOn(today))
-                .map(h -> Tuples.of(h.getGreeting(), h.getName()));
-
-        Flux.concat(normalHolidays, dynamicHolidays)
+        Flux.fromIterable(this.holidayCalendar.getItemsForDay(today))
                 .collectList()
                 .doOnSuccess(h -> {
-                    h.forEach(tuple -> {
-                        String message = "%s %s, everyone!".formatted(tuple.getT1(), tuple.getT2());
+                    h.forEach(holiday -> {
+                        String message = "%s %s, everyone!".formatted(holiday.getGreeting(), holiday.getName());
                         this.sendAnnouncement(message);
                     });
                 })
