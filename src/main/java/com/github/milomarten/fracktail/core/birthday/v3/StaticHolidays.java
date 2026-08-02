@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail.core.birthday.v2;
+package com.github.milomarten.fracktail.core.birthday.v3;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import java.time.MonthDay;
  */
 @RequiredArgsConstructor
 @Getter
-public enum StaticHolidays implements EventInstance {
+public enum StaticHolidays implements Holiday {
     WOLFENOOT("Wolfenoot", "Happy", MonthDay.of(11, 23)),
     CHRISTMAS("Christmas", "Merry", MonthDay.of(12, 25)),
     HALLOWEEN("Halloween", "Happy", MonthDay.of(10, 31)),

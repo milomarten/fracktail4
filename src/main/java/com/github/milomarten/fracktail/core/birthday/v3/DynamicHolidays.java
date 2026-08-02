@@ -1,4 +1,4 @@
-package com.github.milomarten.fracktail.core.birthday.v2;
+package com.github.milomarten.fracktail.core.birthday.v3;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * List of holidays that can vary on when their day is.
@@ -23,7 +21,7 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 @Getter
-public enum DynamicHolidays {
+public enum DynamicHolidays implements Holiday {
     ARBOR_DAY("Arbor Day", "Happy") {
         @Override
         public boolean isOnDay(LocalDate when) {
@@ -75,11 +73,5 @@ public enum DynamicHolidays {
                 test.getDayOfMonth() >= ((7 * (n - 1)) + 1) &&
                 test.getDayOfMonth() <= (7 * n) &&
                 test.getDayOfWeek() == ofTheWeek;
-    }
-
-    public static List<DynamicHolidays> getEventsOn(LocalDate when) {
-        return Arrays.stream(DynamicHolidays.values())
-                .filter(d -> d.isOnDay(when))
-                .toList();
     }
 }

@@ -47,7 +47,7 @@ public class BirthdayPreviousSubCommand {
             return Mono.just( "There are no birthdays in the calendar...");
         }
         var previousBirthdays = previousBirthdaysMaybe.get();
-        var previousBirthdayCritters = previousBirthdays.celebrators();
+        var previousBirthdayCritters = previousBirthdays.item();
         return Flux.fromIterable(previousBirthdayCritters)
                 .filterWhen(bei -> bei.shouldDisplayForGuild(guildId))
                 .flatMap(BirthdayEventInstance::resolve)

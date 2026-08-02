@@ -2,15 +2,14 @@ package com.github.milomarten.fracktail.core.birthday;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.milomarten.fracktail.core.birthday.v2.BirthdayEventInstance;
-import com.github.milomarten.fracktail.core.birthday.v2.HardCodedBirthdayEventInstance;
 import com.github.milomarten.fracktail.core.birthday.v2.UserBirthdayEventInstance;
+import com.github.milomarten.fracktail.core.birthday.v3.MonthDayCalendar;
 import com.github.milomarten.fracktail.core.persistence.Persistence;
 import com.github.milomarten.fracktail.core.persistence.PersistenceBean;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -32,7 +31,7 @@ public class BirthdayHandler implements PersistenceBean {
     private final BirthdayConfiguration birthdayConfiguration;
 
     Map<Snowflake, BirthdayEventInstance> birthdaysById;
-    EventCalendar<BirthdayEventInstance> birthdaysByDate;
+    MonthDayCalendar<BirthdayEventInstance> birthdaysByDate;
 
     @PostConstruct
     private void initLoad() {
@@ -48,13 +47,13 @@ public class BirthdayHandler implements PersistenceBean {
                             .map(bc -> bc.toEvent(discordClient))
                             .collect(Collectors.toMap(UserBirthdayEventInstance::userId, b -> b)));
 
-                    this.birthdaysByDate = new EventCalendar<>();
+                    this.birthdaysByDate = new MonthDayCalendar<>();
                     this.birthdaysById.forEach((id, bc) -> {
-                        this.birthdaysByDate.addEvent(bc);
+                        this.birthdaysByDate.addEvent(bc.getDayOfCelebration(), bc);
                     });
 
                     this.birthdayConfiguration.getHardCoded()
-                            .forEach(this.birthdaysByDate::addEvent);
+                            .forEach(bday -> this.birthdaysByDate.addEvent(bday.getDayOfCelebration(), bday));
                 })
                 .then();
     }
@@ -75,81 +74,34 @@ public class BirthdayHandler implements PersistenceBean {
     }
 
     public List<BirthdayEventInstance> getBirthdaysOn(LocalDate day) {
-        return birthdaysByDate.getEventsOn(day);
+        return new ArrayList<>(birthdaysByDate.getItemsForDay(day));
     }
 
     public List<BirthdayEventInstance> getBirthdaysOn(MonthDay day) {
-        return birthdaysByDate.getEventsOn(day);
+        return new ArrayList<>(birthdaysByDate.getItemsForDay(day));
     }
 
     public List<BirthdayEventInstance> getBirthdaysOn(Month month) {
-        return birthdaysByDate.getEventsOn(month);
+        return new ArrayList<>(birthdaysByDate.getItemsForMonth(month));
     }
 
-    public Optional<EventCalendar.NotNowEvents<BirthdayEventInstance>> getNextBirthdays(LocalDate start) {
-        return birthdaysByDate.getNextEvent(start);
+    public Optional<MonthDayCalendar.DayAndItem<List<BirthdayEventInstance>>> getNextBirthdays(LocalDate start) {
+        return birthdaysByDate.getNextEvents(start);
     }
 
-    public Optional<EventCalendar.NotNowEvents<BirthdayEventInstance>> getPreviousBirthdays(LocalDate start) {
-        return birthdaysByDate.getPreviousEvent(start);
-    }
-
-    public List<BirthdayEventInstance> getBirthdays() {
-        return birthdaysByDate.getEvents();
+    public Optional<MonthDayCalendar.DayAndItem<List<BirthdayEventInstance>>> getPreviousBirthdays(LocalDate start) {
+        return birthdaysByDate.getPreviousEvents(start);
     }
 
     public boolean hasBirthday(Snowflake critter) {
         return this.birthdaysById.containsKey(critter);
     }
 
-    public int getNumberOfBirthdays() {
-        return this.birthdaysById.size();
-    }
-
     public Mono<Void> createBirthday(Snowflake critter, MonthDay day, Year year) {
         var newCritter = new BirthdayCritter(critter, day, year).toEvent(discordClient);
 
-        if (this.birthdaysById.containsKey(critter)) {
-            this.birthdaysById.put(critter, newCritter);
-            this.birthdaysByDate.removeEvent(newCritter);
-            this.birthdaysByDate.addEvent(newCritter);
-        } else {
-            this.birthdaysById.put(critter, newCritter);
-            this.birthdaysByDate.addEvent(newCritter);
-        }
-        return store();
-    }
-//
-//    public Mono<Void> addYear(Snowflake critter, Year year) {
-//        if (this.birthdaysById.containsKey(critter)) {
-//            this.birthdaysById.get(critter).setYear(year);
-//            return persist();
-//        }
-//        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
-//    }
-//
-//    public Mono<Void> removeYear(Snowflake critter) {
-//        if (this.birthdaysById.containsKey(critter)) {
-//            this.birthdaysById.get(critter).setYear(null);
-//            return persist();
-//        }
-//        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
-//    }
-
-    public Mono<Void> removeBirthday(Snowflake critter) {
-        if (this.birthdaysById.containsKey(critter)) {
-            var fullCritter = this.birthdaysById.remove(critter);
-            this.birthdaysByDate.removeEvent(fullCritter);
-            return store();
-        }
-        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
-    }
-
-    public Mono<Void> removeBirthdays(List<BirthdayCritter> critters) {
-        critters.forEach(s -> {
-            var fullCritter = this.birthdaysById.remove(s.getCritter());
-            this.birthdaysByDate.removeEvent(fullCritter);
-        });
+        this.birthdaysById.put(critter, newCritter);
+        this.birthdaysByDate.addEvent(day, newCritter);
         return store();
     }
 }
