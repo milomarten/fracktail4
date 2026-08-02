@@ -93,62 +93,15 @@ public class BirthdayHandler implements PersistenceBean {
         return birthdaysByDate.getPreviousEvents(start);
     }
 
-//    public List<BirthdayEventInstance> getBirthdays() {
-//        return birthdaysByDate.getEvents();
-//    }
-
     public boolean hasBirthday(Snowflake critter) {
         return this.birthdaysById.containsKey(critter);
-    }
-
-    public int getNumberOfBirthdays() {
-        return this.birthdaysById.size();
     }
 
     public Mono<Void> createBirthday(Snowflake critter, MonthDay day, Year year) {
         var newCritter = new BirthdayCritter(critter, day, year).toEvent(discordClient);
 
-        if (this.birthdaysById.containsKey(critter)) {
-            this.birthdaysById.put(critter, newCritter);
-//            this.birthdaysByDate.removeEvent(newCritter);
-            this.birthdaysByDate.addEvent(day, newCritter);
-        } else {
-            this.birthdaysById.put(critter, newCritter);
-            this.birthdaysByDate.addEvent(day, newCritter);
-        }
-        return store();
-    }
-//
-//    public Mono<Void> addYear(Snowflake critter, Year year) {
-//        if (this.birthdaysById.containsKey(critter)) {
-//            this.birthdaysById.get(critter).setYear(year);
-//            return persist();
-//        }
-//        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
-//    }
-//
-//    public Mono<Void> removeYear(Snowflake critter) {
-//        if (this.birthdaysById.containsKey(critter)) {
-//            this.birthdaysById.get(critter).setYear(null);
-//            return persist();
-//        }
-//        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
-//    }
-
-    public Mono<Void> removeBirthday(Snowflake critter) {
-        if (this.birthdaysById.containsKey(critter)) {
-            var fullCritter = this.birthdaysById.remove(critter);
-            this.birthdaysByDate.removeEvent(fullCritter.getDayOfCelebration(), fullCritter);
-            return store();
-        }
-        return Mono.error(new IllegalArgumentException("Critter does not have a birthday"));
-    }
-
-    public Mono<Void> removeBirthdays(List<BirthdayCritter> critters) {
-        critters.forEach(s -> {
-            var fullCritter = this.birthdaysById.remove(s.getCritter());
-            this.birthdaysByDate.removeEvent(fullCritter.getDayOfCelebration(), fullCritter);
-        });
+        this.birthdaysById.put(critter, newCritter);
+        this.birthdaysByDate.addEvent(day, newCritter);
         return store();
     }
 }
